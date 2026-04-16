@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Meridian AI Cockpit — Phase 1 Aligned Data Model</title>
+<style>
+:root{
+  --ink:#0d1f35;--ink2:#3a506b;--ink3:#6e87a0;--ink4:#a8bcce;
+  --page:#f0f4f9;--surf:#fff;--surf2:#f7f9fc;--surf3:#eef2f7;
+  --line:#dce4ef;--line2:#c8d4e3;
+  --blue:#1a55a3;--blue2:#2d6ec8;--blue-lt:#e8f0fb;--blue-bd:#b8d0f4;
+  --teal:#0e7c6b;--teal-lt:#e2f5f0;--teal-bd:#8dd4c4;
+  --purple:#534ab7;--purple-lt:#eeedfe;--purple-bd:#afa9ec;
+  --amber:#9a6500;--amber-lt:#fdf3e0;--amber-bd:#f0c870;
+  --coral:#993c1d;--coral-lt:#faece7;--coral-bd:#f0997b;
+  --green:#1a7a4a;--green-lt:#e4f5ec;--green-bd:#8dd4ae;
+  --red:#b52e2e;--red-lt:#fce9e9;--red-bd:#f0b0b0;
+  --gray-lt:#f1efe8;--gray-bd:#d3d1c7;
+  --sans:system-ui,-apple-system,sans-serif;
+  --mono:'SF Mono','Fira Code',monospace;
+  --r:10px;--r2:14px;
+  --sh:0 2px 10px rgba(13,31,53,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:13px;scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height:1.5}
+
+/* ── PAGE LAYOUT ── */
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{background:var(--ink);color:#fff;padding:24px 0;position:sticky;top:0;height:100vh;overflow-y:auto;scrollbar-width:thin}
+.sb-logo{padding:0 20px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:16px}
+.sb-logo h1{font-size:14px;font-weight:700;letter-spacing:-.02em}
+.sb-logo p{font-size:.72rem;color:rgba(255,255,255,.35);margin-top:2px}
+.sb-section{padding:4px 20px;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:16px;margin-bottom:4px}
+.sb-link{display:block;padding:5px 20px;font-size:.78rem;color:rgba(255,255,255,.55);text-decoration:none;border-left:2px solid transparent;transition:all .15s}
+.sb-link:hover{color:#fff;background:rgba(255,255,255,.05)}
+.sb-link.active{color:#fff;border-left-color:var(--blue2)}
+.content{padding:32px 40px 80px;max-width:1100px}
+
+/* ── SECTION HEADERS ── */
+.pg-title{font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
+.pg-sub{font-size:.85rem;color:var(--ink3);margin-bottom:32px}
+.sec{margin-bottom:48px}
+.sec-header{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid var(--blue-lt)}
+.sec-num{font-size:.7rem;font-weight:700;color:var(--blue2);letter-spacing:.08em;background:var(--blue-lt);padding:3px 9px;border-radius:999px;white-space:nowrap}
+.sec-title{font-size:16px;font-weight:700;letter-spacing:-.02em}
+
+/* ── FLOW DIAGRAM ── */
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin-bottom:24px;background:var(--surf);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;box-shadow:var(--sh)}
+.flow-zone{padding:16px 12px;border-right:1px solid var(--line)}
+.flow-zone:last-child{border-right:none}
+.fz-label{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid}
+.fz-items{display:flex;flex-direction:column;gap:5px}
+.fz-item{font-size:.72rem;padding:5px 8px;border-radius:6px;line-height:1.35}
+.fz-arrow{display:flex;align-items:center;justify-content:center;padding:16px 2px;font-size:18px;color:var(--ink4)}
+
+/* zone colors */
+.zone-src .fz-label{color:var(--ink2);border-color:var(--gray-bd)}
+.zone-src .fz-item{background:var(--gray-lt);color:var(--ink2)}
+.zone-ing .fz-label{color:var(--teal);border-color:var(--teal-bd)}
+.zone-ing .fz-item{background:var(--teal-lt);color:var(--teal)}
+.zone-tr .fz-label{color:var(--purple);border-color:var(--purple-bd)}
+.zone-tr .fz-item{background:var(--purple-lt);color:var(--purple)}
+.zone-sc .fz-label{color:var(--amber);border-color:var(--amber-bd)}
+.zone-sc .fz-item{background:var(--amber-lt);color:var(--amber)}
+.zone-st .fz-label{color:var(--blue);border-color:var(--blue-bd)}
+.zone-st .fz-item{background:var(--blue-lt);color:var(--blue)}
+.zone-dl .fz-label{color:var(--coral);border-color:var(--coral-bd)}
+.zone-dl .fz-item{background:var(--coral-lt);color:var(--coral)}
+
+/* ── ENTITY CARDS ── */
+.entities{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.entity{background:var(--surf);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;box-shadow:var(--sh)}
+.entity.full{grid-column:1/-1}
+.entity-head{padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.entity-name{font-size:.85rem;font-weight:800;letter-spacing:-.01em;font-family:var(--mono)}
+.entity-badge{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:999px}
+.entity-desc{font-size:.74rem;color:var(--ink3);padding:0 16px 10px;line-height:1.5}
+.entity-source{font-size:.68rem;padding:0 16px 8px;display:flex;align-items:center;gap:6px}
+.src-pill{background:var(--surf3);border:1px solid var(--line);border-radius:999px;padding:2px 7px;font-size:.65rem;color:var(--ink3)}
+table.fields{width:100%;border-collapse:collapse;font-size:.76rem}
+table.fields th{text-align:left;padding:5px 10px;font-size:.62rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);background:var(--surf2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+table.fields td{padding:5px 10px;border-bottom:1px solid var(--surf3);vertical-align:top}
+table.fields tr:last-child td{border-bottom:none}
+table.fields td:first-child{font-family:var(--mono);font-size:.72rem;color:var(--ink);font-weight:600;white-space:nowrap}
+table.fields td:nth-child(2){color:var(--blue2);font-family:var(--mono);font-size:.69rem;white-space:nowrap}
+table.fields td:nth-child(3){color:var(--ink3);line-height:1.4}
+.pk{background:var(--amber-lt);color:var(--amber);border-radius:3px;padding:1px 5px;font-size:.62rem;font-weight:700;font-family:var(--sans);margin-left:4px}
+.fk{background:var(--blue-lt);color:var(--blue);border-radius:3px;padding:1px 5px;font-size:.62rem;font-weight:700;font-family:var(--sans);margin-left:4px}
+.view-tag{font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:999px;margin-left:4px}
+.vtag-s{background:var(--blue-lt);color:var(--blue)}
+.vtag-d{background:var(--coral-lt);color:var(--coral)}
+.vtag-b{background:var(--purple-lt);color:var(--purple)}
+
+/* ── RELATIONSHIPS ── */
+.rels{display:flex;flex-direction:column;gap:8px}
+.rel-row{display:grid;grid-template-columns:220px 80px 220px 1fr;gap:12px;align-items:center;padding:8px 14px;background:var(--surf);border:1px solid var(--line);border-radius:var(--r)}
+.rel-entity{font-family:var(--mono);font-size:.74rem;font-weight:600;color:var(--ink)}
+.rel-card{font-size:.72rem;font-weight:700;color:var(--blue);text-align:center;background:var(--blue-lt);padding:3px 8px;border-radius:6px;letter-spacing:.04em}
+.rel-note{font-size:.72rem;color:var(--ink3)}
+
+/* ── LEGEND ── */
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:.74rem;color:var(--ink2)}
+.leg-dot{width:10px;height:10px;border-radius:50%}
+
+/* ── SOURCE MAP ── */
+.srcmap{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.src-card{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.src-name{font-size:.8rem;font-weight:700;margin-bottom:3px}
+.src-tech{font-size:.68rem;color:var(--ink3);margin-bottom:8px}
+.src-feeds{display:flex;flex-direction:column;gap:3px}
+.src-feed{font-size:.7rem;display:flex;align-items:center;gap:5px}
+.src-feed::before{content:'→';color:var(--ink4);flex-shrink:0}
+
+/* ── CALLOUT ── */
+.callout{padding:12px 16px;border-radius:var(--r);border-left:3px solid;margin-bottom:16px;font-size:.8rem;line-height:1.6}
+.callout-blue{background:var(--blue-lt);border-color:var(--blue2);color:var(--ink)}
+.callout-amber{background:var(--amber-lt);border-color:var(--amber);color:var(--ink)}
+
+@media print{
+  .sidebar{display:none}
+  .layout{grid-template-columns:1fr}
+  .content{padding:20px}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar">
+  <div class="sb-logo">
+    <h1>Meridian AI Cockpit</h1>
+    <p>Phase 1 aligned data model · v4.2</p>
+  </div>
+  <div class="sb-section">Overview</div>
+  <a class="sb-link active" href="#flow">1 · End-to-end data flow</a>
+  <a class="sb-link" href="#sources">2 · Source systems</a>
+  <a class="sb-link" href="#alignment">3 · Phase 1 alignment</a>
+  <div class="sb-section">Core entities</div>
+  <a class="sb-link" href="#org">ORGANISATION</a>
+  <a class="sb-link" href="#aii">AII_SCORE</a>
+  <a class="sb-link" href="#dim">DIMENSION_SCORE</a>
+  <a class="sb-link" href="#initiative">AI_INITIATIVE</a>
+  <a class="sb-link" href="#gov">GOVERNANCE_RECORD</a>
+  <a class="sb-link" href="#model">MODEL_ASSET</a>
+  <a class="sb-link" href="#workforce">WORKFORCE_METRIC</a>
+  <a class="sb-link" href="#benchmark">BENCHMARK</a>
+  <a class="sb-link" href="#datasource">DATA_SOURCE_LOG</a>
+  <div class="sb-section">Phase 1 shared layer</div>
+  <a class="sb-link" href="#metricdef">METRIC_DEFINITION</a>
+  <a class="sb-link" href="#segmentslice">SEGMENT_SLICE</a>
+  <a class="sb-link" href="#accessscope">ACCESS_SCOPE</a>
+  <a class="sb-link" href="#metricobs">METRIC_OBSERVATION</a>
+  <a class="sb-link" href="#valuereal">VALUE_REALIZATION</a>
+  <a class="sb-link" href="#financeval">FINANCE_VALIDATION</a>
+  <a class="sb-link" href="#evidence">EVIDENCE_PACK</a>
+  <a class="sb-link" href="#action">EXECUTIVE_ACTION</a>
+  <a class="sb-link" href="#roadmap">ROADMAP_MILESTONE</a>
+  <div class="sb-section">Strategic view</div>
+  <a class="sb-link" href="#sla">SLA_XLA_RECORD</a>
+  <a class="sb-link" href="#techdebt">TECH_DEBT_SCORE</a>
+  <a class="sb-link" href="#rai">RAI_PILLAR_SCORE</a>
+  <a class="sb-link" href="#narrative">SCORE_NARRATIVE</a>
+  <div class="sb-section">Delivery view</div>
+  <a class="sb-link" href="#portfolio">PORTFOLIO</a>
+  <a class="sb-link" href="#delivkpi">DELIVERY_KPI</a>
+  <a class="sb-link" href="#swimlane">SWIMLANE_METRIC</a>
+  <a class="sb-link" href="#routing">OVERSIGHT_ROUTING</a>
+  <a class="sb-link" href="#escalation">ESCALATION_LOG</a>
+  <a class="sb-link" href="#aiop">AI_SERVICE_OPERATION</a>
+  <div class="sb-section">Platform</div>
+  <a class="sb-link" href="#prompt">PROMPT_REGISTRY</a>
+  <a class="sb-link" href="#llmlog">LLM_OPERATION_LOG</a>
+  <div class="sb-section">Relationships</div>
+  <a class="sb-link" href="#rels">Entity relationships</a>
+</nav>
+
+<!-- ── MAIN CONTENT ── -->
+<main class="content">
+  <div class="pg-title">Phase 1 aligned data model</div>
+  <div class="pg-sub">Meridian Group · AI Institutionalisation Cockpit · Institutionalisation + Delivery views · v4.2 aligned to the current prototype</div>
+
+  <!-- ══ 1. FLOW ══ -->
+  <section class="sec" id="flow">
+    <div class="sec-header"><span class="sec-num">01</span><span class="sec-title">End-to-end data flow</span></div>
+    <div class="callout callout-blue">Data moves through six zones — from raw source systems on the left to the two cockpit presentation views on the right. Every entity in this document maps to one of these zones. The unified data model means both views read from the same underlying tables; the difference is which fields and aggregations each view surfaces.</div>
+    <div class="flow">
+      <div class="flow-zone zone-src">
+        <div class="fz-label">Zone 1 · Sources</div>
+        <div class="fz-items">
+          <div class="fz-item">HR platform<br><span style="opacity:.6">Workday / SAP</span></div>
+          <div class="fz-item">Project tracker<br><span style="opacity:.6">Jira / ServiceNow</span></div>
+          <div class="fz-item">GRC platform<br><span style="opacity:.6">Archer / OneTrust</span></div>
+          <div class="fz-item">MLOps platform<br><span style="opacity:.6">SageMaker / MLflow</span></div>
+          <div class="fz-item">Finance ERP<br><span style="opacity:.6">SAP / Oracle</span></div>
+          <div class="fz-item">M365 / Copilot<br><span style="opacity:.6">Graph API telemetry</span></div>
+          <div class="fz-item">ITSM<br><span style="opacity:.6">ServiceNow / Jira</span></div>
+          <div class="fz-item">Telephony<br><span style="opacity:.6">Azure Comm. Svc</span></div>
+          <div class="fz-item">Knowledge base<br><span style="opacity:.6">Azure AI Search</span></div>
+        </div>
+      </div>
+      <div class="flow-zone zone-ing">
+        <div class="fz-label">Zone 2 · Ingestion</div>
+        <div class="fz-items">
+          <div class="fz-item">REST API connectors<br><span style="opacity:.6">Scheduled pulls</span></div>
+          <div class="fz-item">Webhook listeners<br><span style="opacity:.6">Real-time events</span></div>
+          <div class="fz-item">Classification layer<br><span style="opacity:.6">LLM T1 · tagging</span></div>
+          <div class="fz-item">Validation &amp; cleanse<br><span style="opacity:.6">Schema enforcement</span></div>
+          <div class="fz-item">Manual input portal<br><span style="opacity:.6">Curator interface</span></div>
+          <div class="fz-item">DATA_SOURCE_LOG<br><span style="opacity:.6">Sync audit trail</span></div>
+        </div>
+      </div>
+      <div class="flow-zone zone-tr">
+        <div class="fz-label">Zone 3 · Transform</div>
+        <div class="fz-items">
+          <div class="fz-item">Unified schema<br><span style="opacity:.6">Normalised tables</span></div>
+          <div class="fz-item">Dimension mapper<br><span style="opacity:.6">9 AII dimensions</span></div>
+          <div class="fz-item">Metrics calculator<br><span style="opacity:.6">KPIs · sub-scores</span></div>
+          <div class="fz-item">LLM routing layer<br><span style="opacity:.6">T1 / T2 / T3</span></div>
+          <div class="fz-item">Prompt registry<br><span style="opacity:.6">Versioned prompts</span></div>
+          <div class="fz-item">Audit log<br><span style="opacity:.6">Full lineage</span></div>
+        </div>
+      </div>
+      <div class="flow-zone zone-sc">
+        <div class="fz-label">Zone 4 · Scoring</div>
+        <div class="fz-items">
+          <div class="fz-item">AII scoring engine<br><span style="opacity:.6">Composite 0–100</span></div>
+          <div class="fz-item">Dimension scorer<br><span style="opacity:.6">Weighted sub-scores</span></div>
+          <div class="fz-item">RAG engine<br><span style="opacity:.6">Signal prioritisation</span></div>
+          <div class="fz-item">Trend engine<br><span style="opacity:.6">QoQ deltas</span></div>
+          <div class="fz-item">Benchmarking<br><span style="opacity:.6">Peer comparison</span></div>
+          <div class="fz-item">Narrative gen (T2)<br><span style="opacity:.6">Plain-language insight</span></div>
+        </div>
+      </div>
+      <div class="flow-zone zone-st">
+        <div class="fz-label">Zone 5 · Strategic view</div>
+        <div class="fz-items">
+          <div class="fz-item">AII Index</div>
+          <div class="fz-item">Portfolio &amp; ROI</div>
+          <div class="fz-item">Governance &amp; risk</div>
+          <div class="fz-item">Operational AI</div>
+          <div class="fz-item">SLA / XLA / BPLA</div>
+          <div class="fz-item">Workforce</div>
+          <div class="fz-item">Technology</div>
+          <div class="fz-item">Culture</div>
+          <div class="fz-item">Tech Debt</div>
+          <div class="fz-item">Responsible AI</div>
+          <div class="fz-item">Benchmarks</div>
+        </div>
+      </div>
+      <div class="flow-zone zone-dl">
+        <div class="fz-label">Zone 6 · Delivery view</div>
+        <div class="fz-items">
+          <div class="fz-item">Portfolio KPIs<br><span style="opacity:.6">Baseline · Pilot · Target</span></div>
+          <div class="fz-item">Workflow swimlanes<br><span style="opacity:.6">Plan · Build · Run</span></div>
+          <div class="fz-item">Human oversight<br><span style="opacity:.6">Auto · Supervised · Esc.</span></div>
+          <div class="fz-item">Pending escalations</div>
+          <div class="fz-item">Trend charts</div>
+          <div class="fz-item">Economics<br><span style="opacity:.6">Spend · model mix</span></div>
+          <div class="fz-item">Governance console</div>
+          <div class="fz-item">Actions &amp; roadmap</div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#5f5e5a"></div>Source systems</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#0e7c6b"></div>Ingestion</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#534ab7"></div>Transform</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#9a6500"></div>Scoring engine</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#1a55a3"></div>Strategic view (CEO/CFO/Board)</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#993c1d"></div>Delivery view (CIO/Engineering)</div>
+    </div>
+  </section>
+
+  <!-- ══ 2. SOURCE MAP ══ -->
+  <section class="sec" id="sources">
+    <div class="sec-header"><span class="sec-num">02</span><span class="sec-title">Source system map</span></div>
+    <div class="callout callout-blue">Phase 1 implementation currently proves the model with sources such as Jira Align delivery telemetry, GitHub Enterprise workflows, ServiceNow operations records, FinOps AI ledger, Control Tower policy registry, internal audit evidence hub, workforce telemetry, and benchmark datasets. The conceptual map below remains broader, but the canonical model now explicitly supports those Phase 1 sources.</div>
+    <div class="srcmap">
+      <div class="src-card">
+        <div class="src-name">HR platform</div>
+        <div class="src-tech">Workday / SAP SuccessFactors · REST API · daily pull</div>
+        <div class="src-feeds">
+          <div class="src-feed">WORKFORCE_METRIC (literacy %, certification %, safe-use validation)</div>
+          <div class="src-feed">ORGANISATION (employee_count)</div>
+        </div>
+      </div>
+      <div class="src-card">
+        <div class="src-name">Project tracker</div>
+        <div class="src-tech">Jira Align / ServiceNow PPM · REST API · daily pull</div>
+        <div class="src-feeds">
+          <div class="src-feed">AI_INITIATIVE (stage, owner, dates)</div>
+          <div class="src-feed">PORTFOLIO (delivery_mode, trains)</div>
+          <div class="src-feed">SWIMLANE_METRIC (value_metric, risk_metric)</div>
+        </div>
+      </div>
+      <div class="src-card">
+        <div class="src-name">GRC platform</div>
+        <div class="src-tech">Archer / OneTrust · REST API · daily pull</div>
+        <div class="src-feeds">
+          <div class="src-feed">GOVERNANCE_RECORD (risks, policy controls)</div>
+          <div class="src-feed">RAI_PILLAR_SCORE (regulatory readiness)</div>
+          <div class="src-feed">TECH_DEBT_SCORE (org debt signals)</div>
+        </div>
+      </div>
+      <div class="src-card">
+        <div class="src-name">MLOps platform</div>
+        <div class="src-tech">SageMaker / MLflow / Azure ML · REST API · hourly pull</div>
+        <div class="src-feeds">
+          <div class="src-feed">MODEL_ASSET (health, drift_score, deployment)</div>
+          <div class="src-feed">TECH_DEBT_SCORE (model debt)</div>
+          <div class="src-feed">LLM_OPERATION_LOG (latency, tokens, cost)</div>
+        </div>
+      </div>
+      <div class="src-card">
+        <div class="src-name">Finance ERP</div>
+        <div class="src-tech">SAP S/4HANA / Oracle Fusion · REST API · weekly pull</div>
+        <div class="src-feeds">
+          <div class="src-feed">AI_INITIATIVE (cost, realised_value)</div>
+          <div class="src-feed">DELIVERY_KPI (ai_run_rate_cost)</div>
+          <div class="src-feed">BENCHMARK (spend benchmarks)</div>
+        </div>
+      </div>
+      <div class="src-card">
+        <div class="src-name">M365 / Copilot telemetry</div>
+        <div class="src-tech">Microsoft Graph API · daily pull · admin consent required</div>
+        <div class="src-feeds">
+          <div class="src-feed">WORKFORCE_METRIC (adoption_pct, daily_active)</div>
+          <div class="src-feed">AI_SERVICE_OPERATION (copilot interactions)</div>
+        </div>
+      </div>
+      <div class="src-card">
+        <div class="src-name">ITSM platform</div>
+        <div class="src-tech">ServiceNow / Jira Service · webhook + REST · real-time</div>
+        <div class="src-feeds">
+          <div class="src-feed">AI_SERVICE_OPERATION (ticket events)</div>
+          <div class="src-feed">ESCALATION_LOG (escalation events)</div>
+          <div class="src-feed">SLA_XLA_RECORD (SLA breach, MTTR)</div>
+          <div class="src-feed">SWIMLANE_METRIC (cycle time, failure rate)</div>
+        </div>
+      </div>
+      <div class="src-card">
+        <div class="src-name">Telephony</div>
+        <div class="src-tech">Azure Communication Services · webhook · real-time</div>
+        <div class="src-feeds">
+          <div class="src-feed">AI_SERVICE_OPERATION (voice calls, containment)</div>
+          <div class="src-feed">ESCALATION_LOG (voice escalations)</div>
+          <div class="src-feed">SLA_XLA_RECORD (CSAT, handle time)</div>
+        </div>
+      </div>
+      <div class="src-card">
+        <div class="src-name">Knowledge base</div>
+        <div class="src-tech">Azure AI Search · API · on-demand by agents</div>
+        <div class="src-feeds">
+          <div class="src-feed">AI_SERVICE_OPERATION (KB lookup events)</div>
+          <div class="src-feed">LLM_OPERATION_LOG (RAG retrieval calls, citation telemetry, freshness checks)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ CORE ENTITIES ══ -->
+  <section class="sec" id="org">
+    <div class="sec-header"><span class="sec-num">03</span><span class="sec-title">Core entities — shared by both views</span></div>
+
+    <div class="entities">
+      <!-- ORGANISATION -->
+      <div class="entity" id="org">
+        <div class="entity-head" style="background:var(--surf2);border-bottom:1px solid var(--line)">
+          <span class="entity-name">ORGANISATION</span>
+          <span class="entity-badge vtag-b">Both views · root</span>
+        </div>
+        <div class="entity-desc">Root entity. All other entities carry org_id, making the platform multi-tenant from day one. A single Meridian deployment has one record; a group deployment would have one per business unit.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td>Primary key</td></tr>
+          <tr><td>name</td><td>varchar(200)</td><td>e.g. "Meridian Group"</td></tr>
+          <tr><td>sector</td><td>varchar(100)</td><td>For benchmarking peer group selection</td></tr>
+          <tr><td>size_band</td><td>varchar(20)</td><td>SMALL / MID / LARGE / ENTERPRISE</td></tr>
+          <tr><td>employee_count</td><td>int</td><td>Used to normalise workforce metrics</td></tr>
+          <tr><td>hq_country</td><td>char(2)</td><td>ISO 3166-1 alpha-2. Drives regulatory readiness requirements</td></tr>
+          <tr><td>aii_maturity_band</td><td>varchar(30)</td><td>Computed. EXPLORING / SCALING / INSTITUTIONALISING / NATIVE</td></tr>
+          <tr><td>created_at</td><td>timestamptz</td><td>Immutable</td></tr>
+        </table>
+      </div>
+
+      <!-- AII_SCORE -->
+      <div class="entity" id="aii">
+        <div class="entity-head" style="background:var(--blue-lt);border-bottom:1px solid var(--blue-bd)">
+          <span class="entity-name">AII_SCORE</span>
+          <span class="entity-badge vtag-b">Both views · north star</span>
+        </div>
+        <div class="entity-desc">One record per organisation per scoring period. Composite score 0–100 computed by the scoring engine from dimension sub-scores. Time-series aware via period_date.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td>→ ORGANISATION.id</td></tr>
+          <tr><td>composite_score</td><td>smallint</td><td>0–100. Weighted avg of dimension scores</td></tr>
+          <tr><td>strategy_score</td><td>smallint</td><td>Sub-aggregate: strategic alignment + portfolio + governance</td></tr>
+          <tr><td>operational_score</td><td>smallint</td><td>Sub-aggregate: ops AI + SLA/XLA + technology</td></tr>
+          <tr><td>people_score</td><td>smallint</td><td>Sub-aggregate: workforce + culture</td></tr>
+          <tr><td>maturity_band</td><td>varchar(30)</td><td>Derived from composite_score thresholds</td></tr>
+          <tr><td>qoq_delta</td><td>smallint</td><td>Change vs prior period. Null for first period</td></tr>
+          <tr><td>period_date</td><td>date</td><td>Quarter start date. YYYY-MM-01</td></tr>
+          <tr><td>calculated_at</td><td>timestamptz</td><td>When the scoring engine ran</td></tr>
+        </table>
+      </div>
+
+      <!-- DIMENSION_SCORE -->
+      <div class="entity" id="dim">
+        <div class="entity-head" style="background:var(--surf2);border-bottom:1px solid var(--line)">
+          <span class="entity-name">DIMENSION_SCORE</span>
+          <span class="entity-badge vtag-b">Both views</span>
+        </div>
+        <div class="entity-desc">One row per AII dimension per scoring period. The 9 dimensions are: Strategic Alignment, Portfolio &amp; ROI, Governance &amp; Risk, Workforce, Technology, Culture, Operational AI, SLA/XLA, Responsible AI.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>aii_score_id <span class="fk">FK</span></td><td>uuid</td><td>→ AII_SCORE.id</td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td>Denormalised for direct querying</td></tr>
+          <tr><td>dimension_name</td><td>varchar(60)</td><td>Enum: STRATEGIC_ALIGNMENT | PORTFOLIO_ROI | GOVERNANCE_RISK | WORKFORCE | TECHNOLOGY | CULTURE | OPERATIONAL_AI | SLA_XLA | RESPONSIBLE_AI</td></tr>
+          <tr><td>score</td><td>smallint</td><td>0–100</td></tr>
+          <tr><td>sector_avg</td><td>smallint</td><td>Peer benchmark for this dimension this period</td></tr>
+          <tr><td>vs_sector</td><td>smallint</td><td>Computed: score − sector_avg</td></tr>
+          <tr><td>rag_status</td><td>varchar(10)</td><td>GREEN | AMBER | RED</td></tr>
+          <tr><td>weight</td><td>decimal(4,3)</td><td>Scoring weight for this dimension. Must sum to 1.0 across all 9</td></tr>
+          <tr><td>qoq_delta</td><td>smallint</td><td>Vs prior period</td></tr>
+          <tr><td>period_date</td><td>date</td><td></td></tr>
+        </table>
+      </div>
+
+      <!-- AI_INITIATIVE -->
+      <div class="entity" id="initiative">
+        <div class="entity-head" style="background:var(--surf2);border-bottom:1px solid var(--line)">
+          <span class="entity-name">AI_INITIATIVE</span>
+          <span class="entity-badge vtag-b">Both views</span>
+        </div>
+        <div class="entity-desc">One record per AI use case in the shared portfolio. Phase 1 now treats this as the common object behind both Institutionalisation and Delivery, so it needs explicit segmentation attributes such as geography, workflow stage, use case, and delivery train. Finance-grade value history should live in VALUE_REALIZATION, while this entity remains the descriptive backbone.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>portfolio_id <span class="fk">FK</span></td><td>uuid</td><td>→ PORTFOLIO.id. Null if standalone</td></tr>
+          <tr><td>name</td><td>varchar(200)</td><td></td></tr>
+          <tr><td>function_area</td><td>varchar(60)</td><td>e.g. Operations, Engineering, Legal</td></tr>
+          <tr><td>geography</td><td>varchar(40)</td><td>Region or market slice used by the persistent filters. e.g. EMEA, APAC, LATAM</td></tr>
+          <tr><td>delivery_train</td><td>varchar(120)</td><td>Delivery train or service tower for targeted intervention</td></tr>
+          <tr><td>workflow_stage</td><td>varchar(20)</td><td>PLANNING | BUILD | RUN. Aligns to the Delivery view swimlanes</td></tr>
+          <tr><td>use_case</td><td>varchar(120)</td><td>Normalized use-case category used in global segmentation and board rollups</td></tr>
+          <tr><td>stage</td><td>varchar(30)</td><td>DISCOVERY | PILOT | SCALING | PRODUCTION | STALLED</td></tr>
+          <tr><td>delivery_mode</td><td>varchar(20)</td><td>BASELINE | PILOT. Delivery view toggle</td></tr>
+          <tr><td>estimated_value</td><td>decimal(12,2)</td><td>Cached snapshot only. Authoritative forecast history should live in VALUE_REALIZATION</td></tr>
+          <tr><td>realised_value</td><td>decimal(12,2)</td><td>Cached snapshot only. Authoritative realized history should live in VALUE_REALIZATION</td></tr>
+          <tr><td>cost</td><td>decimal(12,2)</td><td>Cached snapshot only. Authoritative spend history should live in VALUE_REALIZATION</td></tr>
+          <tr><td>benefit_type</td><td>varchar(30)</td><td>COST_OUT | REVENUE | RISK_REDUCTION. Current dominant value type</td></tr>
+          <tr><td>use_case_classification</td><td>varchar(10)</td><td>GREEN | AMBER | RED. Governance policy tier</td></tr>
+          <tr><td>llm_tier</td><td>varchar(20)</td><td>T1 | T2 | T3 | T1_T2 | T2_T3. Primary model tier(s) used</td></tr>
+          <tr><td>rag_status</td><td>varchar(10)</td><td>Health status: ON_TRACK | AT_RISK | STALLED</td></tr>
+          <tr><td>owner_id</td><td>varchar(100)</td><td>Email or user ID of initiative owner</td></tr>
+          <tr><td>human_override_rate</td><td>decimal(5,2)</td><td>% of AI outputs overridden by humans. Governance signal</td></tr>
+          <tr><td>policy_exceptions</td><td>int</td><td>Count of active policy exceptions for this initiative</td></tr>
+          <tr><td>start_date</td><td>date</td><td></td></tr>
+          <tr><td>production_date</td><td>date</td><td>Null if not yet in production</td></tr>
+          <tr><td>updated_at</td><td>timestamptz</td><td>Last data refresh</td></tr>
+        </table>
+      </div>
+
+      <!-- GOVERNANCE_RECORD -->
+      <div class="entity" id="gov">
+        <div class="entity-head" style="background:var(--red-lt);border-bottom:1px solid var(--red-bd)">
+          <span class="entity-name">GOVERNANCE_RECORD</span>
+          <span class="entity-badge vtag-b">Both views</span>
+        </div>
+        <div class="entity-desc">Risk register entries, shadow AI detections, policy compliance items, and ethics board decisions. Source: GRC platform + manual curator input. Strategic view shows risk register; Delivery view now also slices governance by inherent risk tier, service criticality, and data sensitivity, then maps framework readiness back to concrete control families, owners, and named gaps so one topline compliance score does not hide concentrated exposure.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>initiative_id <span class="fk">FK</span></td><td>uuid</td><td>→ AI_INITIATIVE.id. Null for org-level risks</td></tr>
+          <tr><td>risk_type</td><td>varchar(40)</td><td>SHADOW_AI | MODEL_DRIFT | ETHICS_BOARD | REGULATORY | DATA_RESIDENCY | POLICY_EXCEPTION | PROMPT_INJECTION</td></tr>
+          <tr><td>risk_title</td><td>varchar(300)</td><td></td></tr>
+          <tr><td>severity</td><td>varchar(10)</td><td>CRITICAL | HIGH | MEDIUM | LOW</td></tr>
+          <tr><td>risk_tier</td><td>varchar(12)</td><td>HIGH | MEDIUM | LOW. Inherent AI risk tier for the governed route or initiative</td></tr>
+          <tr><td>service_criticality</td><td>varchar(24)</td><td>MISSION_CRITICAL | BUSINESS_CRITICAL | STANDARD</td></tr>
+          <tr><td>data_sensitivity</td><td>varchar(24)</td><td>RESTRICTED | CONFIDENTIAL | INTERNAL</td></tr>
+          <tr><td>framework_name</td><td>varchar(80)</td><td>MERIDIAN_POLICY | ISO_42001 | NIST_AI_RMF | EU_AI_ACT</td></tr>
+          <tr><td>framework_obligation_ref</td><td>varchar(120)</td><td>Specific clause, article, or internal policy obligation reference</td></tr>
+          <tr><td>control_family</td><td>varchar(80)</td><td>MODEL_INVENTORY | DATA_PRIVACY | HUMAN_OVERSIGHT | PROMPT_SECURITY | EVAL_QUALITY | AUDIT_LOGGING</td></tr>
+          <tr><td>rag_status</td><td>varchar(10)</td><td>RED | AMBER | GREEN</td></tr>
+          <tr><td>owner</td><td>varchar(100)</td><td>Responsible party</td></tr>
+          <tr><td>review_path</td><td>varchar(30)</td><td>STANDARD | SUPERVISED | EXCEPTION_REVIEW | BOARD_ESCALATION</td></tr>
+          <tr><td>control_readiness_pct</td><td>decimal(5,2)</td><td>% of required controls and evidence currently complete for this record</td></tr>
+          <tr><td>gap_summary</td><td>text</td><td>Primary missing control, evidence gap, or remediation blocker</td></tr>
+          <tr><td>due_date</td><td>date</td><td></td></tr>
+          <tr><td>resolution_notes</td><td>text</td><td>Populated on closure</td></tr>
+          <tr><td>audit_evidence_pct</td><td>decimal(5,2)</td><td>% of required audit evidence captured. Delivery view metric</td></tr>
+          <tr><td>policy_controls</td><td>jsonb</td><td>Structured policy control checklist. Array of {control, framework, owner, status, gap, last_checked}</td></tr>
+          <tr><td>raised_at</td><td>timestamptz</td><td></td></tr>
+          <tr><td>resolved_at</td><td>timestamptz</td><td>Null if open</td></tr>
+        </table>
+      </div>
+
+      <!-- MODEL_ASSET -->
+      <div class="entity" id="model">
+        <div class="entity-head" style="background:var(--surf2);border-bottom:1px solid var(--line)">
+          <span class="entity-name">MODEL_ASSET</span>
+          <span class="entity-badge vtag-b">Both views</span>
+        </div>
+        <div class="entity-desc">Model inventory. One record per deployed model or agent. Source: MLOps platform. Strategic view uses for governance coverage %; Delivery view now also uses it for model-mix economics, control status, route-level runtime monitoring, resilience posture, and answer-quality evaluation by use case.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>model_name</td><td>varchar(200)</td><td></td></tr>
+          <tr><td>vendor</td><td>varchar(100)</td><td>OpenAI | Anthropic | Azure | Internal</td></tr>
+          <tr><td>model_tier</td><td>varchar(5)</td><td>T1 | T2 | T3. Maps to LLM routing tiers</td></tr>
+          <tr><td>primary_use_case</td><td>varchar(80)</td><td>Dominant mapped use case for this deployed route</td></tr>
+          <tr><td>workflow_stage</td><td>varchar(20)</td><td>PLANNING | BUILD | RUN</td></tr>
+          <tr><td>runtime_route_name</td><td>varchar(120)</td><td>Named operating route shown in Delivery trust telemetry</td></tr>
+          <tr><td>deployment_status</td><td>varchar(20)</td><td>PRODUCTION | PILOT | DEPRECATED | UNGOVERNED</td></tr>
+          <tr><td>health_status</td><td>varchar(20)</td><td>HEALTHY | DRIFT_DETECTED | UNDER_REVIEW | INCIDENT</td></tr>
+          <tr><td>governed_by</td><td>varchar(100)</td><td>Owner or policy reference</td></tr>
+          <tr><td>drift_score</td><td>decimal(5,4)</td><td>0.0–1.0. 0 = no drift. Threshold alerts at 0.15</td></tr>
+          <tr><td>hallucination_rate</td><td>decimal(5,4)</td><td>Measured in production. Per-model aggregate</td></tr>
+          <tr><td>cost_per_1k_tokens</td><td>decimal(8,4)</td><td>£. Used for economics calculations</td></tr>
+          <tr><td>fallback_rate</td><td>decimal(5,4)</td><td>Share of routed calls needing an alternate or lower-tier path</td></tr>
+          <tr><td>refusal_rate</td><td>decimal(5,4)</td><td>Share of calls refused by policy, safety, or task-fit controls</td></tr>
+          <tr><td>safety_events_7d</td><td>int</td><td>Rolling seven-day count of flagged safety events for this route</td></tr>
+          <tr><td>eval_suite_name</td><td>varchar(120)</td><td>Named evaluation suite used for route-level grounded-answer checks</td></tr>
+          <tr><td>eval_sample_size</td><td>int</td><td>Current reviewed sample count behind the route-level pass rate</td></tr>
+          <tr><td>eval_pass_rate</td><td>decimal(5,4)</td><td>Share of evaluated answers judged grounded / passing</td></tr>
+          <tr><td>eval_ci_low</td><td>decimal(5,4)</td><td>Lower bound of the current confidence interval</td></tr>
+          <tr><td>eval_ci_high</td><td>decimal(5,4)</td><td>Upper bound of the current confidence interval</td></tr>
+          <tr><td>last_evaluated</td><td>timestamptz</td><td></td></tr>
+          <tr><td>risk_tier</td><td>varchar(10)</td><td>HIGH | MEDIUM | LOW. Determines governance requirements</td></tr>
+        </table>
+      </div>
+
+      <!-- WORKFORCE_METRIC -->
+      <div class="entity" id="workforce">
+        <div class="entity-head" style="background:var(--surf2);border-bottom:1px solid var(--line)">
+          <span class="entity-name">WORKFORCE_METRIC</span>
+          <span class="entity-badge vtag-s">Strategic view</span>
+        </div>
+        <div class="entity-desc">AI literacy, certification, and validated safe-use scores by function. Source: HR platform (training completions), assessment workflow, supervised sign-off records, and M365 telemetry. Time-series via period_date.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>function_area</td><td>varchar(60)</td><td>e.g. Technology, Operations, Finance</td></tr>
+          <tr><td>awareness_pct</td><td>decimal(5,2)</td><td>% with AI awareness training complete</td></tr>
+          <tr><td>prompting_pct</td><td>decimal(5,2)</td><td>% with prompting / applied AI skills</td></tr>
+          <tr><td>integration_pct</td><td>decimal(5,2)</td><td>% integrating AI into daily workflows</td></tr>
+          <tr><td>governance_pct</td><td>decimal(5,2)</td><td>% with AI governance / risk training</td></tr>
+          <tr><td>role_certified_pct</td><td>decimal(5,2)</td><td>% who passed role-specific AI certification for their function</td></tr>
+          <tr><td>scenario_pass_pct</td><td>decimal(5,2)</td><td>% passing the current scenario-based assessment battery on the measured cycle</td></tr>
+          <tr><td>safe_use_validated_pct</td><td>decimal(5,2)</td><td>% with supervised safe-use validation on live workflow samples</td></tr>
+          <tr><td>decision_rights_certified_pct</td><td>decimal(5,2)</td><td>% of leaders in scope certified to approve scaled or higher-risk AI use</td></tr>
+          <tr><td>supervised_signoff_pct</td><td>decimal(5,2)</td><td>% of candidate users with named supervisor sign-off on governed live use</td></tr>
+          <tr><td>build_pct</td><td>decimal(5,2)</td><td>% with build / engineering AI skills</td></tr>
+          <tr><td>adoption_pct</td><td>decimal(5,2)</td><td>Behavioural: % actively using AI tools (from M365 telemetry)</td></tr>
+          <tr><td>daily_active_users</td><td>int</td><td>DAU for AI tooling in this function</td></tr>
+          <tr><td>sentiment_positive</td><td>decimal(5,2)</td><td>% survey respondents positive about AI</td></tr>
+          <tr><td>sentiment_resistant</td><td>decimal(5,2)</td><td>% resistant. Resistance hotspot signal</td></tr>
+          <tr><td>validation_basis</td><td>varchar(120)</td><td>SCENARIO_ASSESSMENT | LIVE_SIGNOFF | MANAGER_ATTESTATION | MIXED_EVIDENCE</td></tr>
+          <tr><td>literacy_level</td><td>varchar(10)</td><td>Computed: HIGH | MEDIUM | LOW</td></tr>
+          <tr><td>champion_count</td><td>int</td><td>Certified AI champions in this function</td></tr>
+          <tr><td>period_date</td><td>date</td><td></td></tr>
+        </table>
+      </div>
+
+      <!-- BENCHMARK -->
+      <div class="entity" id="benchmark">
+        <div class="entity-head" style="background:var(--surf2);border-bottom:1px solid var(--line)">
+          <span class="entity-name">BENCHMARK</span>
+          <span class="entity-badge vtag-s">Strategic view</span>
+        </div>
+        <div class="entity-desc">Peer comparison data for each dimension. Sourced from sector benchmarking surveys and industry data. Used to populate the "vs sector" columns throughout the Strategic view.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>dimension_name</td><td>varchar(60)</td><td>Matches DIMENSION_SCORE.dimension_name enum</td></tr>
+          <tr><td>org_score</td><td>smallint</td><td>Meridian's score for this period</td></tr>
+          <tr><td>sector_avg</td><td>smallint</td><td>Average across peer group</td></tr>
+          <tr><td>sector_leader</td><td>smallint</td><td>Top quartile score</td></tr>
+          <tr><td>sector</td><td>varchar(100)</td><td>The peer group sector used for comparison</td></tr>
+          <tr><td>sample_size</td><td>int</td><td>Number of orgs in peer group</td></tr>
+          <tr><td>data_source</td><td>varchar(100)</td><td>Survey or report citation</td></tr>
+          <tr><td>period_date</td><td>date</td><td></td></tr>
+        </table>
+      </div>
+
+      <!-- DATA_SOURCE_LOG -->
+      <div class="entity" id="datasource">
+        <div class="entity-head" style="background:var(--surf2);border-bottom:1px solid var(--line)">
+          <span class="entity-name">DATA_SOURCE_LOG</span>
+          <span class="entity-badge vtag-b">Both views · ops</span>
+        </div>
+        <div class="entity-desc">Every sync from every upstream system is logged here. Enables the "last refreshed" trust signal shown in the cockpit header. Critical for CxO confidence in the data.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>source_system</td><td>varchar(60)</td><td>HR_PLATFORM | PROJECT_TRACKER | GRC | MLOPS | FINANCE_ERP | M365 | ITSM | TELEPHONY | KB</td></tr>
+          <tr><td>connector_type</td><td>varchar(20)</td><td>REST_PULL | WEBHOOK | MANUAL</td></tr>
+          <tr><td>status</td><td>varchar(20)</td><td>SUCCESS | PARTIAL | FAILED | PENDING</td></tr>
+          <tr><td>records_ingested</td><td>int</td><td></td></tr>
+          <tr><td>records_rejected</td><td>int</td><td>Failed schema validation</td></tr>
+          <tr><td>last_sync</td><td>timestamptz</td><td>When sync completed successfully</td></tr>
+          <tr><td>error_detail</td><td>text</td><td>Null on success</td></tr>
+          <tr><td>next_scheduled</td><td>timestamptz</td><td></td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ PHASE 1 ALIGNMENT EXTENSIONS ══ -->
+  <section class="sec" id="alignment">
+    <div class="sec-header"><span class="sec-num">04</span><span class="sec-title">Phase 1 alignment extensions</span></div>
+    <div class="callout callout-amber">The current Phase 1 cockpit introduced four new shared needs that were previously implicit: a measurement spine, a finance-grade value spine, a persistent segmentation / action spine, and an explicit viewer-access spine. The new guided Ask-the-cockpit layer and role-specific saved views now ride on those same spines, so the model stays grounded without adding a separate chat-only or preset-only entity.</div>
+    <div class="entities">
+
+      <div class="entity" id="metricdef">
+        <div class="entity-head" style="background:var(--blue-lt);border-bottom:1px solid var(--blue-bd)">
+          <span class="entity-name">METRIC_DEFINITION</span>
+          <span class="entity-badge vtag-b">Both views · metric dictionary</span>
+        </div>
+        <div class="entity-desc">The canonical metric dictionary. Supports both the metric-card explain layer and the guided Ask-the-cockpit answers by storing what a metric means, how it is calculated, who owns it, and how fresh it should be.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>metric_code</td><td>varchar(80)</td><td>Stable ID. e.g. AII_SCORE, PORTFOLIO_ROI, DELIVERY_FLOW_INDEX</td></tr>
+          <tr><td>metric_label</td><td>varchar(160)</td><td>User-facing label shown in the cockpit</td></tr>
+          <tr><td>lens</td><td>varchar(30)</td><td>INSTITUTIONALISATION | DELIVERY | CROSS_VIEW</td></tr>
+          <tr><td>definition</td><td>text</td><td>Plain-language meaning of the metric</td></tr>
+          <tr><td>formula</td><td>text</td><td>Human-readable formula or calculation logic</td></tr>
+          <tr><td>numerator_definition</td><td>text</td><td>What counts in the numerator</td></tr>
+          <tr><td>denominator_definition</td><td>text</td><td>What counts in the denominator or scale</td></tr>
+          <tr><td>owner_role</td><td>varchar(120)</td><td>Named accountable owner or owning function</td></tr>
+          <tr><td>unit</td><td>varchar(20)</td><td>PCT | INDEX | GBP_M | HOURS | COUNT</td></tr>
+          <tr><td>higher_is_better</td><td>boolean</td><td></td></tr>
+          <tr><td>source_systems</td><td>jsonb</td><td>Array of authoritative source systems feeding the metric</td></tr>
+          <tr><td>refresh_cadence</td><td>varchar(60)</td><td>e.g. DAILY, WEEKLY, MONTHLY, QUARTERLY</td></tr>
+          <tr><td>confidence_policy</td><td>varchar(120)</td><td>How confidence bands are assigned</td></tr>
+          <tr><td>is_active</td><td>boolean</td><td>Allows controlled metric deprecation</td></tr>
+        </table>
+      </div>
+
+      <div class="entity" id="segmentslice">
+        <div class="entity-head" style="background:var(--teal-lt);border-bottom:1px solid var(--teal-bd)">
+          <span class="entity-name">SEGMENT_SLICE</span>
+          <span class="entity-badge vtag-b">Both views · persistent filters</span>
+        </div>
+        <div class="entity-desc">Normalized filter context used by the persistent segmentation controls. Lets the board and delivery views read the same metrics and value records through different slices without storing duplicate logic in the UI. The same slice definition can also be restored through role-specific saved views.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>portfolio_id <span class="fk">FK</span></td><td>uuid</td><td>→ PORTFOLIO.id. Null for enterprise-wide slices</td></tr>
+          <tr><td>period_key</td><td>varchar(30)</td><td>LAST_30 | Q1_2026 | Q2_2026 etc.</td></tr>
+          <tr><td>geography</td><td>varchar(40)</td><td>EMEA | APAC | LATAM | UK_I | etc.</td></tr>
+          <tr><td>function_area</td><td>varchar(60)</td><td>Engineering, Finance, Ops, Legal, Product, Risk</td></tr>
+          <tr><td>use_case</td><td>varchar(120)</td><td>Normalized use-case family</td></tr>
+          <tr><td>model_tier</td><td>varchar(20)</td><td>T1 | T2 | T3 | HYBRID</td></tr>
+          <tr><td>workflow_stage</td><td>varchar(20)</td><td>ALL | PLANNING | BUILD | RUN</td></tr>
+          <tr><td>slice_label</td><td>varchar(200)</td><td>Human-readable combined label for audit and caching</td></tr>
+          <tr><td>is_default</td><td>boolean</td><td>Marks the default enterprise slice</td></tr>
+        </table>
+      </div>
+
+      <div class="entity" id="accessscope">
+        <div class="entity-head" style="background:var(--teal-lt);border-bottom:1px solid var(--teal-bd)">
+          <span class="entity-name">ACCESS_SCOPE</span>
+          <span class="entity-badge vtag-b">Both views · RBAC and masking</span>
+        </div>
+        <div class="entity-desc">Viewer-role scope for the cockpit itself. Captures what each role can inspect, what granularity is allowed in each named view, which sensitive data classes remain masked by default, and how evidence exports, guided Ask responses, and saved-view restoration are governed and logged.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>viewer_role</td><td>varchar(80)</td><td>BOARD | CFO | CEO | CIO | DELIVERY_LEAD | ENGINEERING</td></tr>
+          <tr><td>view_name</td><td>varchar(40)</td><td>INSTITUTIONALISATION | DELIVERY</td></tr>
+          <tr><td>clearance_level</td><td>varchar(40)</td><td>BOARD_SUMMARY | OPERATIONAL_GOVERNANCE | RESTRICTED_EXCEPTION</td></tr>
+          <tr><td>allowed_granularity</td><td>varchar(60)</td><td>AGGREGATE_ONLY | PORTFOLIO_DETAIL | ROUTE_AND_ACTION_DETAIL</td></tr>
+          <tr><td>masked_data_classes</td><td>jsonb</td><td>Array of masked classes such as PROMPT_TEXT, PII_CASE_NOTE, PERSON_LEVEL_ACTIVITY</td></tr>
+          <tr><td>export_policy</td><td>varchar(60)</td><td>BOARD_PACK_ONLY | SUMMARY_AND_REFERENCES | RESTRICTED_EXCEPTION_PATH</td></tr>
+          <tr><td>evidence_access_mode</td><td>varchar(40)</td><td>SUMMARY_ONLY | SUMMARY_PLUS_REFERENCES | APPROVAL_REQUIRED</td></tr>
+          <tr><td>approval_group</td><td>varchar(120)</td><td>Who may approve access exceptions or restricted exports</td></tr>
+          <tr><td>audit_logging_mode</td><td>varchar(40)</td><td>READ_AND_EXPORT_LOGGED | EXPORT_LOGGED_ONLY</td></tr>
+          <tr><td>last_reviewed_at</td><td>timestamptz</td><td>Latest policy or access review timestamp</td></tr>
+        </table>
+      </div>
+
+      <div class="entity full" id="metricobs">
+        <div class="entity-head" style="background:var(--blue-lt);border-bottom:1px solid var(--blue-bd)">
+          <span class="entity-name">METRIC_OBSERVATION</span>
+          <span class="entity-badge vtag-b">Both views · measured values</span>
+        </div>
+        <div class="entity-desc">Stores actual metric values by period and slice. This is the canonical measurement layer behind the board north-star cards, bridge metrics, and delivery KPI cards. DELIVERY_KPI and SWIMLANE_METRIC can continue as presentation-friendly aggregates, but this is the deeper measurement record.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>metric_definition_id <span class="fk">FK</span></td><td>uuid</td><td>→ METRIC_DEFINITION.id</td></tr>
+          <tr><td>segment_slice_id <span class="fk">FK</span></td><td>uuid</td><td>→ SEGMENT_SLICE.id</td></tr>
+          <tr><td>related_entity_type</td><td>varchar(40)</td><td>Optional: AII_SCORE | AI_INITIATIVE | PORTFOLIO | MODEL_ASSET</td></tr>
+          <tr><td>related_entity_id</td><td>uuid</td><td>Optional parent entity for drill-down</td></tr>
+          <tr><td>baseline_value</td><td>decimal(14,4)</td><td>Reference value where relevant</td></tr>
+          <tr><td>current_value</td><td>decimal(14,4)</td><td>Current observed value</td></tr>
+          <tr><td>target_value</td><td>decimal(14,4)</td><td>Approved target where relevant</td></tr>
+          <tr><td>sample_size</td><td>int</td><td>Observed sample count behind the measured value where methodology requires it</td></tr>
+          <tr><td>ci_low_value</td><td>decimal(14,4)</td><td>Lower confidence interval bound where applicable</td></tr>
+          <tr><td>ci_high_value</td><td>decimal(14,4)</td><td>Upper confidence interval bound where applicable</td></tr>
+          <tr><td>confidence_band</td><td>varchar(10)</td><td>HIGH | MEDIUM | LOW</td></tr>
+          <tr><td>last_refresh</td><td>timestamptz</td><td>Last successful observation update</td></tr>
+          <tr><td>period_date</td><td>date</td><td></td></tr>
+        </table>
+      </div>
+
+      <div class="entity" id="valuereal">
+        <div class="entity-head" style="background:var(--green-lt);border-bottom:1px solid var(--green-bd)">
+          <span class="entity-name">VALUE_REALIZATION</span>
+          <span class="entity-badge vtag-b">Both views · finance-grade value</span>
+        </div>
+        <div class="entity-desc">The canonical value ledger behind portfolio ROI and value delivered. Separates forecast from realized value, captures spend, payback, confidence, and benefit type, and supports segmentation by slice and initiative.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>initiative_id <span class="fk">FK</span></td><td>uuid</td><td>→ AI_INITIATIVE.id</td></tr>
+          <tr><td>segment_slice_id <span class="fk">FK</span></td><td>uuid</td><td>→ SEGMENT_SLICE.id</td></tr>
+          <tr><td>forecast_value_gbp</td><td>decimal(12,2)</td><td>Current finance or product forecast</td></tr>
+          <tr><td>realized_value_gbp</td><td>decimal(12,2)</td><td>Observed annualized value run rate</td></tr>
+          <tr><td>spend_gbp</td><td>decimal(12,2)</td><td>Annualized or period spend, consistent with reporting frame</td></tr>
+          <tr><td>benefit_type</td><td>varchar(30)</td><td>COST_OUT | REVENUE | RISK_REDUCTION</td></tr>
+          <tr><td>payback_months</td><td>smallint</td><td>Current payback estimate</td></tr>
+          <tr><td>confidence_band</td><td>varchar(10)</td><td>HIGH | MEDIUM | LOW</td></tr>
+          <tr><td>value_note</td><td>text</td><td>Short narrative or caveat for the current value position</td></tr>
+          <tr><td>period_date</td><td>date</td><td></td></tr>
+        </table>
+      </div>
+
+      <div class="entity" id="financeval">
+        <div class="entity-head" style="background:var(--green-lt);border-bottom:1px solid var(--green-bd)">
+          <span class="entity-name">FINANCE_VALIDATION</span>
+          <span class="entity-badge vtag-b">Both views · finance sign-off</span>
+        </div>
+        <div class="entity-desc">Explicit finance review state for a value record. This is the missing control that stops ROI from being a storytelling number and turns it into a defendable executive number.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>value_realization_id <span class="fk">FK</span></td><td>uuid</td><td>→ VALUE_REALIZATION.id</td></tr>
+          <tr><td>validation_status</td><td>varchar(20)</td><td>VALIDATED | PARTIAL | CHALLENGED | PENDING</td></tr>
+          <tr><td>finance_owner</td><td>varchar(100)</td><td>Finance approver or reviewer</td></tr>
+          <tr><td>validated_value_gbp</td><td>decimal(12,2)</td><td>Finance-accepted value number, if different from proposed</td></tr>
+          <tr><td>challenged_delta_gbp</td><td>decimal(12,2)</td><td>How much finance disagreed by</td></tr>
+          <tr><td>review_note</td><td>text</td><td>Why the value was accepted, challenged, or held</td></tr>
+          <tr><td>reviewed_at</td><td>timestamptz</td><td></td></tr>
+          <tr><td>next_review_due</td><td>date</td><td></td></tr>
+        </table>
+      </div>
+
+      <div class="entity" id="evidence">
+        <div class="entity-head" style="background:var(--red-lt);border-bottom:1px solid var(--red-bd)">
+          <span class="entity-name">EVIDENCE_PACK</span>
+          <span class="entity-badge vtag-b">Both views · traceability</span>
+        </div>
+        <div class="entity-desc">A reusable evidence object linked to a metric, initiative, control, or action. This is the bridge from a polished cockpit to an auditable cockpit, and it is what lets guided Ask answers point back to traceable proof instead of unsupported prose.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>entity_type</td><td>varchar(40)</td><td>AI_INITIATIVE | METRIC_OBSERVATION | GOVERNANCE_RECORD | EXECUTIVE_ACTION | ACCESS_SCOPE</td></tr>
+          <tr><td>entity_id</td><td>uuid</td><td>ID of the parent item the evidence supports</td></tr>
+          <tr><td>pack_type</td><td>varchar(40)</td><td>MODEL_CARD | RISK_ASSESSMENT | APPROVAL_TRAIL | EVAL_RESULTS | AUDIT_EXPORT | VALUE_WORKPAPER | ACCESS_POLICY</td></tr>
+          <tr><td>evidence_status</td><td>varchar(20)</td><td>COMPLETE | PARTIAL | MISSING | EXPIRED</td></tr>
+          <tr><td>storage_ref</td><td>varchar(300)</td><td>URI, document ID, or evidence-store locator</td></tr>
+          <tr><td>immutable_snapshot</td><td>boolean</td><td>True when an evidence snapshot is sealed for audit</td></tr>
+          <tr><td>version</td><td>int</td><td>Evidence pack version number</td></tr>
+          <tr><td>owner</td><td>varchar(100)</td><td>Named owner responsible for evidence completeness</td></tr>
+          <tr><td>last_checked_at</td><td>timestamptz</td><td></td></tr>
+        </table>
+      </div>
+
+      <div class="entity" id="action">
+        <div class="entity-head" style="background:var(--coral-lt);border-bottom:1px solid var(--coral-bd)">
+          <span class="entity-name">EXECUTIVE_ACTION</span>
+          <span class="entity-badge vtag-b">Both views · action center</span>
+        </div>
+        <div class="entity-desc">Turns signals into owned work. This is the canonical object behind the Top 5 executive actions and the future detect → assign → remediate → verify workflow.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>portfolio_id <span class="fk">FK</span></td><td>uuid</td><td>Null when enterprise-wide</td></tr>
+          <tr><td>initiative_id <span class="fk">FK</span></td><td>uuid</td><td>Optional: targeted initiative</td></tr>
+          <tr><td>signal_type</td><td>varchar(40)</td><td>VALUE_GAP | GOVERNANCE_GAP | COST_RISK | OVERSIGHT | ADOPTION | TECH_DEBT</td></tr>
+          <tr><td>title</td><td>varchar(280)</td><td></td></tr>
+          <tr><td>owner</td><td>varchar(100)</td><td>Named accountable owner</td></tr>
+          <tr><td>severity</td><td>varchar(10)</td><td>CRITICAL | HIGH | MEDIUM | LOW</td></tr>
+          <tr><td>status</td><td>varchar(20)</td><td>OPEN | IN_PROGRESS | BLOCKED | DONE</td></tr>
+          <tr><td>due_date</td><td>date</td><td></td></tr>
+          <tr><td>expected_impact</td><td>varchar(200)</td><td>Short impact statement shown in the cockpit</td></tr>
+          <tr><td>evidence_required</td><td>boolean</td><td>Whether closure requires evidence-pack attachment</td></tr>
+        </table>
+      </div>
+
+      <div class="entity" id="roadmap">
+        <div class="entity-head" style="background:var(--coral-lt);border-bottom:1px solid var(--coral-bd)">
+          <span class="entity-name">ROADMAP_MILESTONE</span>
+          <span class="entity-badge vtag-b">Both views · 30/60/90 roadmap</span>
+        </div>
+        <div class="entity-desc">A structured milestone behind the current 30/60/90 roadmap. Keeps roadmap items tied to owners, actions, and success measures instead of leaving them as static copy.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>portfolio_id <span class="fk">FK</span></td><td>uuid</td><td>Null for board-wide milestones</td></tr>
+          <tr><td>related_action_id <span class="fk">FK</span></td><td>uuid</td><td>→ EXECUTIVE_ACTION.id. Optional but preferred</td></tr>
+          <tr><td>milestone_window</td><td>varchar(20)</td><td>30_DAYS | 60_DAYS | 90_DAYS | QUARTER</td></tr>
+          <tr><td>milestone_type</td><td>varchar(40)</td><td>CONTROL | ADOPTION | VALUE | DELIVERY | GOVERNANCE</td></tr>
+          <tr><td>title</td><td>varchar(280)</td><td></td></tr>
+          <tr><td>owner</td><td>varchar(100)</td><td></td></tr>
+          <tr><td>status</td><td>varchar(20)</td><td>PLANNED | IN_PROGRESS | COMPLETE | SLIPPED</td></tr>
+          <tr><td>target_date</td><td>date</td><td></td></tr>
+          <tr><td>success_metric</td><td>varchar(160)</td><td>What successful completion should move</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ STRATEGIC VIEW ENTITIES ══ -->
+  <section class="sec" id="sla">
+    <div class="sec-header"><span class="sec-num">05</span><span class="sec-title">Strategic view entities</span></div>
+    <div class="entities">
+
+      <!-- SLA_XLA_RECORD -->
+      <div class="entity" id="sla">
+        <div class="entity-head" style="background:var(--blue-lt);border-bottom:1px solid var(--blue-bd)">
+          <span class="entity-name">SLA_XLA_RECORD</span>
+          <span class="entity-badge vtag-s">Strategic view</span>
+        </div>
+        <div class="entity-desc">Captures SLA, XLA (experience-level), and BPLA (business process-level) metrics per period. Source: ITSM for SLA; telephony + survey for XLA; operational systems for BPLA. Strategic view section 5.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>channel</td><td>varchar(30)</td><td>VOICE | TICKET | CHAT | EMAIL</td></tr>
+          <tr><td>sla_breach_rate</td><td>decimal(5,2)</td><td>% of tickets/calls breaching SLA. Lower is better</td></tr>
+          <tr><td>mttr_ai_minutes</td><td>decimal(8,2)</td><td>Mean time to resolve — AI handled</td></tr>
+          <tr><td>mttr_human_minutes</td><td>decimal(8,2)</td><td>Mean time to resolve — human handled</td></tr>
+          <tr><td>fcr_rate</td><td>decimal(5,2)</td><td>First contact resolution %</td></tr>
+          <tr><td>csat_ai</td><td>decimal(3,2)</td><td>Customer satisfaction score — AI channel (1–5)</td></tr>
+          <tr><td>csat_human</td><td>decimal(3,2)</td><td>CSAT — human channel (1–5)</td></tr>
+          <tr><td>nps_ai</td><td>smallint</td><td>Net Promoter Score — AI channel (−100 to +100)</td></tr>
+          <tr><td>customer_effort_score</td><td>decimal(3,2)</td><td>CES (1–5). Lower is better</td></tr>
+          <tr><td>sentiment_positive_pct</td><td>decimal(5,2)</td><td>% positive sentiment at resolution</td></tr>
+          <tr><td>bpla_cycle_improvement</td><td>decimal(5,2)</td><td>% improvement in business process cycle time</td></tr>
+          <tr><td>repeat_contact_rate</td><td>decimal(5,2)</td><td>% of contacts requiring follow-up within 7 days</td></tr>
+          <tr><td>period_date</td><td>date</td><td></td></tr>
+        </table>
+      </div>
+
+      <!-- TECH_DEBT_SCORE -->
+      <div class="entity" id="techdebt">
+        <div class="entity-head" style="background:var(--amber-lt);border-bottom:1px solid var(--amber-bd)">
+          <span class="entity-name">TECH_DEBT_SCORE</span>
+          <span class="entity-badge vtag-s">Strategic view</span>
+        </div>
+        <div class="entity-desc">AI technical debt index across four taxonomy categories. Lower composite index = less debt. Trend tracked quarterly. Source: GRC (org debt), MLOps (model debt), manual audit (prompt + data debt).</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>initiative_id <span class="fk">FK</span></td><td>uuid</td><td>Null for org-level aggregate; populated for per-initiative heatmap</td></tr>
+          <tr><td>composite_index</td><td>smallint</td><td>0–100. LOWER is better. Aggregate of four categories</td></tr>
+          <tr><td>data_debt_score</td><td>smallint</td><td>Data quality, lineage, schema issues</td></tr>
+          <tr><td>model_debt_score</td><td>smallint</td><td>Drift, stale models, undocumented fine-tunes</td></tr>
+          <tr><td>prompt_debt_score</td><td>smallint</td><td>Undocumented prompts, no injection testing, no versioning</td></tr>
+          <tr><td>org_debt_score</td><td>smallint</td><td>Missing ownership, governance gaps, shadow AI</td></tr>
+          <tr><td>severity_band</td><td>varchar(10)</td><td>LOW | MEDIUM | HIGH | CRITICAL</td></tr>
+          <tr><td>trend_direction</td><td>varchar(10)</td><td>IMPROVING | STABLE | WORSENING</td></tr>
+          <tr><td>prompt_undocumented_pct</td><td>decimal(5,2)</td><td>% of production prompts not in PROMPT_REGISTRY</td></tr>
+          <tr><td>injection_tested_pct</td><td>decimal(5,2)</td><td>% of use cases with prompt injection testing complete</td></tr>
+          <tr><td>period_date</td><td>date</td><td></td></tr>
+        </table>
+      </div>
+
+      <!-- RAI_PILLAR_SCORE -->
+      <div class="entity" id="rai">
+        <div class="entity-head" style="background:var(--purple-lt);border-bottom:1px solid var(--purple-bd)">
+          <span class="entity-name">RAI_PILLAR_SCORE</span>
+          <span class="entity-badge vtag-s">Strategic view</span>
+        </div>
+        <div class="entity-desc">Responsible AI scores across six Microsoft RAI Framework pillars. One row per pillar per period. Rolls up to RAI Index (composite). Strategic view section 10.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>pillar</td><td>varchar(30)</td><td>FAIRNESS | RELIABILITY_SAFETY | PRIVACY_SECURITY | INCLUSIVENESS | TRANSPARENCY | ACCOUNTABILITY</td></tr>
+          <tr><td>score</td><td>smallint</td><td>0–100</td></tr>
+          <tr><td>rag_status</td><td>varchar(10)</td><td></td></tr>
+          <tr><td>qoq_delta</td><td>smallint</td><td></td></tr>
+          <tr><td>regulatory_framework</td><td>varchar(50)</td><td>EU_AI_ACT | GDPR | ISO_42001 | UK_AI_SAFETY | NIST_AI_RMF | SOC2_TYPE2</td></tr>
+          <tr><td>readiness_pct</td><td>decimal(5,2)</td><td>% of regulatory requirements met for this pillar's framework</td></tr>
+          <tr><td>incident_count</td><td>int</td><td>RAI incidents logged this period for this pillar</td></tr>
+          <tr><td>period_date</td><td>date</td><td></td></tr>
+        </table>
+      </div>
+
+      <!-- SCORE_NARRATIVE -->
+      <div class="entity" id="narrative">
+        <div class="entity-head" style="background:var(--surf2);border-bottom:1px solid var(--line)">
+          <span class="entity-name">SCORE_NARRATIVE</span>
+          <span class="entity-badge vtag-b">Both views · LLM-generated</span>
+        </div>
+        <div class="entity-desc">Plain-language narrative generated by the T2 scoring engine for any scoreable entity. Links a narrative to its parent entity via polymorphic entity_type + entity_id. Enables the "what's driving this" explanations in both views and provides reusable wording patterns for guided Ask answers.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>entity_type</td><td>varchar(40)</td><td>AII_SCORE | DIMENSION_SCORE | DELIVERY_KPI | SWIMLANE_METRIC</td></tr>
+          <tr><td>entity_id</td><td>uuid</td><td>ID of the parent entity</td></tr>
+          <tr><td>narrative_type</td><td>varchar(30)</td><td>SUMMARY | DRIVER_ANALYSIS | RISK_CALLOUT | RECOMMENDATION</td></tr>
+          <tr><td>text</td><td>text</td><td>LLM-generated narrative. Shown in cockpit insight panels</td></tr>
+          <tr><td>prompt_id <span class="fk">FK</span></td><td>uuid</td><td>→ PROMPT_REGISTRY.id. For auditability</td></tr>
+          <tr><td>model_used</td><td>varchar(50)</td><td>e.g. gpt-4.1</td></tr>
+          <tr><td>generated_at</td><td>timestamptz</td><td></td></tr>
+          <tr><td>period_date</td><td>date</td><td></td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ DELIVERY VIEW ENTITIES ══ -->
+  <section class="sec" id="portfolio">
+    <div class="sec-header"><span class="sec-num">06</span><span class="sec-title">Delivery view entities</span></div>
+    <div class="entities">
+
+      <!-- PORTFOLIO -->
+      <div class="entity" id="portfolio">
+        <div class="entity-head" style="background:var(--coral-lt);border-bottom:1px solid var(--coral-bd)">
+          <span class="entity-name">PORTFOLIO</span>
+          <span class="entity-badge vtag-d">Delivery view</span>
+        </div>
+        <div class="entity-desc">Groups AI_INITIATIVEs into delivery portfolios (e.g. Enterprise, Digital Products, RunOps). Phase 1 keeps portfolio as the primary delivery lens, but no longer treats it as the only scope dimension because geography, function, use case, and model tier are now first-class filters.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>name</td><td>varchar(100)</td><td>e.g. "Enterprise Portfolio", "Digital Products", "RunOps &amp; Support"</td></tr>
+          <tr><td>scope_description</td><td>text</td><td>e.g. "27 delivery trains · 4,800 engineers and analysts"</td></tr>
+          <tr><td>delivery_trains</td><td>int</td><td>Number of delivery trains / teams</td></tr>
+          <tr><td>headcount</td><td>int</td><td>People in scope</td></tr>
+          <tr><td>portfolio_type</td><td>varchar(30)</td><td>ENTERPRISE | DIGITAL_PRODUCTS | RUNOPS | CUSTOM</td></tr>
+          <tr><td>owner</td><td>varchar(100)</td><td></td></tr>
+          <tr><td>active</td><td>boolean</td><td></td></tr>
+        </table>
+      </div>
+
+      <!-- DELIVERY_KPI -->
+      <div class="entity" id="delivkpi">
+        <div class="entity-head" style="background:var(--coral-lt);border-bottom:1px solid var(--coral-bd)">
+          <span class="entity-name">DELIVERY_KPI</span>
+          <span class="entity-badge vtag-d">Delivery view</span>
+        </div>
+        <div class="entity-desc">The six headline KPIs in the Delivery view, each stored with baseline, pilot (current), and target values. In the aligned model these remain useful presentation aggregates, but the canonical explainability and segmentation layer should come from METRIC_DEFINITION + METRIC_OBSERVATION.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>portfolio_id <span class="fk">FK</span></td><td>uuid</td><td>→ PORTFOLIO.id</td></tr>
+          <tr><td>kpi_name</td><td>varchar(60)</td><td>NET_PRODUCTIVITY_GAIN | AI_WORKFLOW_COVERAGE | DELIVERY_FLOW_INDEX | QUALITY_GUARDRAIL | GOVERNANCE_COMPLIANCE | AI_RUN_RATE_COST</td></tr>
+          <tr><td>baseline_value</td><td>decimal(10,4)</td><td>Pre-AI reference value</td></tr>
+          <tr><td>pilot_value</td><td>decimal(10,4)</td><td>Current AI-assisted value</td></tr>
+          <tr><td>target_value</td><td>decimal(10,4)</td><td>Approved target</td></tr>
+          <tr><td>unit</td><td>varchar(10)</td><td>PCT | INDEX | GBP | HOURS</td></tr>
+          <tr><td>higher_is_better</td><td>boolean</td><td>False for cost and cycle-time KPIs</td></tr>
+          <tr><td>rag_status</td><td>varchar(10)</td><td>Computed from pilot_value vs target_value</td></tr>
+          <tr><td>period_date</td><td>date</td><td></td></tr>
+        </table>
+      </div>
+
+      <!-- SWIMLANE_METRIC -->
+      <div class="entity" id="swimlane">
+        <div class="entity-head" style="background:var(--coral-lt);border-bottom:1px solid var(--coral-bd)">
+          <span class="entity-name">SWIMLANE_METRIC</span>
+          <span class="entity-badge vtag-d">Delivery view</span>
+        </div>
+        <div class="entity-desc">One record per workflow swimlane (Planning, Build/Test, Run/Support) per portfolio per period. Stores both value metric (throughput) and risk metric (quality guard) in baseline and pilot modes.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>portfolio_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>swimlane</td><td>varchar(30)</td><td>PLANNING | BUILD_TEST | RUN_SUPPORT</td></tr>
+          <tr><td>value_metric_name</td><td>varchar(60)</td><td>e.g. "Decision latency", "PR cycle time", "Mean time to resolve"</td></tr>
+          <tr><td>value_metric_baseline</td><td>decimal(10,2)</td><td></td></tr>
+          <tr><td>value_metric_pilot</td><td>decimal(10,2)</td><td></td></tr>
+          <tr><td>value_metric_unit</td><td>varchar(10)</td><td>DAYS | HOURS | PCT</td></tr>
+          <tr><td>value_higher_is_better</td><td>boolean</td><td></td></tr>
+          <tr><td>risk_metric_name</td><td>varchar(60)</td><td>e.g. "Requirements quality", "Critical rework rate", "Change failure rate"</td></tr>
+          <tr><td>risk_metric_baseline</td><td>decimal(10,2)</td><td></td></tr>
+          <tr><td>risk_metric_pilot</td><td>decimal(10,2)</td><td></td></tr>
+          <tr><td>risk_metric_unit</td><td>varchar(10)</td><td></td></tr>
+          <tr><td>risk_higher_is_better</td><td>boolean</td><td></td></tr>
+          <tr><td>interpretation_baseline</td><td>text</td><td>Human-readable interpretation of baseline state</td></tr>
+          <tr><td>interpretation_pilot</td><td>text</td><td>Human-readable interpretation of pilot state</td></tr>
+          <tr><td>period_date</td><td>date</td><td></td></tr>
+        </table>
+      </div>
+
+      <!-- OVERSIGHT_ROUTING -->
+      <div class="entity" id="routing">
+        <div class="entity-head" style="background:var(--coral-lt);border-bottom:1px solid var(--coral-bd)">
+          <span class="entity-name">OVERSIGHT_ROUTING</span>
+          <span class="entity-badge vtag-d">Delivery view</span>
+        </div>
+        <div class="entity-desc">Human Oversight Gateway routing snapshot per portfolio per period. Captures the split between auto-resolved, supervised, and escalated AI actions. Also stores the pending escalation queue count.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>portfolio_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>routing_auto_pct</td><td>decimal(5,2)</td><td>% of AI actions auto-resolved (policy-clear)</td></tr>
+          <tr><td>routing_supervised_pct</td><td>decimal(5,2)</td><td>% routed to human for sampling / review</td></tr>
+          <tr><td>routing_escalated_pct</td><td>decimal(5,2)</td><td>% requiring material human decision</td></tr>
+          <tr><td>pending_escalations</td><td>int</td><td>Current queue depth of unresolved escalations</td></tr>
+          <tr><td>avg_escalation_age_hours</td><td>decimal(8,2)</td><td>Mean age of open escalations</td></tr>
+          <tr><td>period_date</td><td>date</td><td></td></tr>
+        </table>
+      </div>
+
+      <!-- ESCALATION_LOG -->
+      <div class="entity" id="escalation">
+        <div class="entity-head" style="background:var(--red-lt);border-bottom:1px solid var(--red-bd)">
+          <span class="entity-name">ESCALATION_LOG</span>
+          <span class="entity-badge vtag-d">Delivery view</span>
+        </div>
+        <div class="entity-desc">Individual AI-to-human handoff events. Captures why the AI escalated, what the human did, and whether the AI's recommendation was correct. The feedback loop that improves routing policy over time. Source: ITSM webhook + telephony webhook.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>initiative_id <span class="fk">FK</span></td><td>uuid</td><td>→ AI_INITIATIVE.id</td></tr>
+          <tr><td>ai_operation_id <span class="fk">FK</span></td><td>uuid</td><td>→ AI_SERVICE_OPERATION.id</td></tr>
+          <tr><td>escalation_reason</td><td>varchar(60)</td><td>LOW_CONFIDENCE | POLICY_BLOCK | COMPLEXITY | CUSTOMER_REQUEST | SAFETY_TRIGGER</td></tr>
+          <tr><td>confidence_at_escalation</td><td>decimal(5,4)</td><td>AI confidence score at point of escalation</td></tr>
+          <tr><td>ai_recommendation</td><td>text</td><td>What the AI suggested before handing off</td></tr>
+          <tr><td>human_action</td><td>varchar(30)</td><td>FOLLOWED_AI | OVERRODE_AI | ESCALATED_FURTHER | CLOSED</td></tr>
+          <tr><td>ai_was_correct</td><td>boolean</td><td>Null = not assessed. True/False = retrospective review</td></tr>
+          <tr><td>resolution_time_minutes</td><td>decimal(8,2)</td><td>Time from escalation to resolution</td></tr>
+          <tr><td>channel</td><td>varchar(20)</td><td>VOICE | TICKET | CHAT | CR | RCA</td></tr>
+          <tr><td>escalated_at</td><td>timestamptz</td><td></td></tr>
+          <tr><td>resolved_at</td><td>timestamptz</td><td></td></tr>
+        </table>
+      </div>
+
+      <!-- AI_SERVICE_OPERATION -->
+      <div class="entity" id="aiop">
+        <div class="entity-head" style="background:var(--coral-lt);border-bottom:1px solid var(--coral-bd)">
+          <span class="entity-name">AI_SERVICE_OPERATION</span>
+          <span class="entity-badge vtag-d">Delivery view · operational AI</span>
+        </div>
+        <div class="entity-desc">One record per live AI-assisted interaction (voice call, ticket, RCA, change request). The operational data backbone for the Delivery view. Source: ITSM webhook, telephony webhook. Enables containment rate, auto-resolution rate, handle-time KPIs, and degraded-mode queue impact in the reliability layer.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>initiative_id <span class="fk">FK</span></td><td>uuid</td><td>→ AI_INITIATIVE.id</td></tr>
+          <tr><td>channel</td><td>varchar(20)</td><td>VOICE | TICKET | CR | RCA | CHAT</td></tr>
+          <tr><td>mode</td><td>varchar(20)</td><td>AUTONOMOUS | ASSISTED | HYBRID | ESCALATED</td></tr>
+          <tr><td>outcome</td><td>varchar(20)</td><td>RESOLVED | ESCALATED | FAILED | ABANDONED</td></tr>
+          <tr><td>ai_resolved</td><td>boolean</td><td>True = fully resolved without human intervention</td></tr>
+          <tr><td>resolution_time_minutes</td><td>decimal(8,2)</td><td></td></tr>
+          <tr><td>confidence_score</td><td>decimal(5,4)</td><td>AI confidence at resolution (0.0–1.0)</td></tr>
+          <tr><td>human_overridden</td><td>boolean</td><td>Human modified or rejected AI output</td></tr>
+          <tr><td>hallucination_flagged</td><td>boolean</td><td>Output flagged by quality check or human reviewer</td></tr>
+          <tr><td>risk_tier</td><td>varchar(10)</td><td>HIGH | MEDIUM | LOW. Determines oversight requirements</td></tr>
+          <tr><td>degraded_mode_flag</td><td>boolean</td><td>True when the interaction was served under constrained routing, cached retrieval, or safe fallback because a dependency degraded</td></tr>
+          <tr><td>queue_delay_ms</td><td>int</td><td>Incremental queueing delay attributable to degraded-mode handling for this interaction</td></tr>
+          <tr><td>kb_lookup_count</td><td>int</td><td>Number of knowledge base queries made during operation</td></tr>
+          <tr><td>csat_score</td><td>decimal(3,2)</td><td>Null if not collected for this channel</td></tr>
+          <tr><td>operated_at</td><td>timestamptz</td><td></td></tr>
+        </table>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ PLATFORM ENTITIES ══ -->
+  <section class="sec" id="prompt">
+    <div class="sec-header"><span class="sec-num">07</span><span class="sec-title">Platform entities — LLM governance</span></div>
+    <div class="entities">
+
+      <!-- PROMPT_REGISTRY -->
+      <div class="entity" id="prompt">
+        <div class="entity-head" style="background:var(--purple-lt);border-bottom:1px solid var(--purple-bd)">
+          <span class="entity-name">PROMPT_REGISTRY</span>
+          <span class="entity-badge vtag-b">Both views · LLM governance</span>
+        </div>
+        <div class="entity-desc">Every prompt used by the cockpit's scoring engine, narrative generator, and operational agents is a versioned, auditable record here. Treating prompts as managed artefacts — not scattered code strings — is the foundation of prompt debt reduction and prompt-security coverage. Source: developer commits + curator approvals.</div>
+        <table class="fields">
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+          <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+          <tr><td>prompt_name</td><td>varchar(100)</td><td>Human-readable identifier. e.g. "aii_dimension_narrator_v3"</td></tr>
+          <tr><td>operation_type</td><td>varchar(60)</td><td>CLASSIFICATION | TAGGING | EXTRACTION | SUMMARISATION | NARRATIVE | RCA | SCENARIO_MODEL | INTENT_DETECT | TICKET_CATEGORISE</td></tr>
+          <tr><td>model_tier</td><td>varchar(5)</td><td>T1 | T2 | T3. Which tier this prompt is designed for</td></tr>
+          <tr><td>prompt_text</td><td>text</td><td>Full prompt template. May contain {variable} placeholders</td></tr>
+          <tr><td>system_message</td><td>text</td><td>System message if separate from user prompt</td></tr>
+          <tr><td>version</td><td>int</td><td>Monotonically increasing. New row per version</td></tr>
+          <tr><td>is_active</td><td>boolean</td><td>Only one version per prompt_name can be active</td></tr>
+          <tr><td>approved_by</td><td>varchar(100)</td><td>Email of approver. Governance requirement</td></tr>
+          <tr><td>approved_at</td><td>timestamptz</td><td></td></tr>
+          <tr><td>injection_tested</td><td>boolean</td><td>Prompt injection testing completed</td></tr>
+          <tr><td>test_coverage_pct</td><td>decimal(5,2)</td><td>% of test cases passing</td></tr>
+          <tr><td>security_owner</td><td>varchar(100)</td><td>Named owner for prompt-security remediation</td></tr>
+          <tr><td>red_team_last_run</td><td>timestamptz</td><td>Most recent injection / abuse battery execution</td></tr>
+          <tr><td>open_findings_count</td><td>int</td><td>Current unresolved prompt-security findings</td></tr>
+          <tr><td>critical_findings_count</td><td>int</td><td>Subset of findings severe enough to gate autonomous use</td></tr>
+          <tr><td>remediation_sla_hours</td><td>int</td><td>Committed closure SLA for open prompt-security findings</td></tr>
+          <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+          <tr><td>deprecated_at</td><td>timestamptz</td><td>Null if active or not yet deprecated</td></tr>
+        </table>
+      </div>
+
+      <!-- LLM_OPERATION_LOG -->
+      <div class="entity full" id="llmlog">
+        <div class="entity-head" style="background:var(--purple-lt);border-bottom:1px solid var(--purple-bd)">
+          <span class="entity-name">LLM_OPERATION_LOG</span>
+          <span class="entity-badge vtag-b">Both views · cost &amp; audit</span>
+        </div>
+        <div class="entity-desc">Every LLM call the platform makes — scoring, narrative generation, agent operations, manual CxO queries — is logged here. Enables cost attribution by operation type, tier, initiative, prompt-security telemetry such as blocked injection attempts, retrieval-quality telemetry such as citations, hit rate, freshness, and no-answer behavior, plus resilience telemetry such as provider incidents, degraded-mode failover, and recovery behavior. Feeds the Tech Debt "prompt debt" metric. The most granular audit trail in the system.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr">
+          <table class="fields" style="border-right:1px solid var(--surf3)">
+            <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+            <tr><td>id <span class="pk">PK</span></td><td>uuid</td><td></td></tr>
+            <tr><td>org_id <span class="fk">FK</span></td><td>uuid</td><td></td></tr>
+            <tr><td>prompt_id <span class="fk">FK</span></td><td>uuid</td><td>→ PROMPT_REGISTRY.id. Null for ad-hoc queries</td></tr>
+            <tr><td>operation_type</td><td>varchar(60)</td><td>Matches PROMPT_REGISTRY.operation_type</td></tr>
+            <tr><td>model_used</td><td>varchar(50)</td><td>e.g. gpt-4o-mini, gpt-4.1, o3</td></tr>
+            <tr><td>model_tier</td><td>varchar(5)</td><td>T1 | T2 | T3</td></tr>
+          </table>
+          <table class="fields">
+            <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+            <tr><td>related_entity_type</td><td>varchar(40)</td><td>Which entity triggered this call</td></tr>
+            <tr><td>related_entity_id</td><td>uuid</td><td>ID of the triggering entity</td></tr>
+            <tr><td>input_tokens</td><td>int</td><td></td></tr>
+            <tr><td>output_tokens</td><td>int</td><td></td></tr>
+            <tr><td>cost_gbp</td><td>decimal(10,6)</td><td>Computed from tokens × model rate</td></tr>
+            <tr><td>latency_ms</td><td>int</td><td></td></tr>
+            <tr><td>provider_name</td><td>varchar(80)</td><td>Primary provider or runtime cluster serving the call</td></tr>
+            <tr><td>fallback_used</td><td>boolean</td><td>Whether the call completed through an alternate route</td></tr>
+            <tr><td>fallback_provider</td><td>varchar(80)</td><td>Alternate provider, cache, or safe mode used during failover</td></tr>
+            <tr><td>degraded_mode_flag</td><td>boolean</td><td>True when the call ran under constrained routing or resilience mode due to provider/dependency degradation</td></tr>
+            <tr><td>provider_incident_ref</td><td>varchar(120)</td><td>Incident identifier linking the call to an upstream provider or orchestration event</td></tr>
+            <tr><td>refusal_reason</td><td>varchar(80)</td><td>Null when completed. Else policy/safety/task-fit reason</td></tr>
+            <tr><td>safety_flag</td><td>boolean</td><td>True when the call triggered a safety or policy event</td></tr>
+            <tr><td>retrieved_doc_count</td><td>int</td><td>How many documents or passages were returned by the retrieval layer</td></tr>
+            <tr><td>citation_count</td><td>int</td><td>How many approved source citations were attached to the answer</td></tr>
+            <tr><td>retrieval_hit_flag</td><td>boolean</td><td>True when the returned evidence set contained at least one adjudicated relevant source</td></tr>
+            <tr><td>no_answer_flag</td><td>boolean</td><td>True when the route declined because relevant evidence was not confidently found</td></tr>
+            <tr><td>stale_content_flag</td><td>boolean</td><td>True when the retrieved content fell outside the route freshness allowance</td></tr>
+            <tr><td>retrieved_content_age_minutes</td><td>int</td><td>Age of the newest cited or served content at answer time</td></tr>
+            <tr><td>injection_attempt_flag</td><td>boolean</td><td>True when the request matched a prompt-injection or tool-abuse pattern</td></tr>
+            <tr><td>blocked_pre_execution</td><td>boolean</td><td>True when the request was stopped before model or tool execution</td></tr>
+            <tr><td>security_disposition</td><td>varchar(40)</td><td>BLOCKED | QUARANTINED | REVIEWED | ESCALATED</td></tr>
+            <tr><td>recovery_sla_breach_flag</td><td>boolean</td><td>True when the associated degraded or provider incident recovered outside the committed resilience window</td></tr>
+            <tr><td>status</td><td>varchar(20)</td><td>SUCCESS | FAILED | TIMEOUT | RATE_LIMITED</td></tr>
+            <tr><td>executed_at</td><td>timestamptz</td><td></td></tr>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ RELATIONSHIPS ══ -->
+  <section class="sec" id="rels">
+    <div class="sec-header"><span class="sec-num">08</span><span class="sec-title">Entity relationships</span></div>
+      <div class="callout callout-amber">All entities carry org_id — every relationship is implicitly scoped to an organisation. The cardinality notations below assume a single org context. ||—o{ = one-to-many. ||—|| = one-to-one per period. The aligned model adds a shared measurement layer, a finance-grade value layer, a traceability / action layer, and an explicit viewer-access layer under the existing cockpit entities; the guided Ask layer and saved views are intentionally composed from those same entities rather than modeled as second sources of truth.</div>
+    <div class="rels">
+      <div class="rel-row"><span class="rel-entity">ORGANISATION</span><span class="rel-card">||—o{</span><span class="rel-entity">AII_SCORE</span><span class="rel-note">One AII score per organisation per quarter</span></div>
+      <div class="rel-row"><span class="rel-entity">AII_SCORE</span><span class="rel-card">||—|{</span><span class="rel-entity">DIMENSION_SCORE</span><span class="rel-note">Exactly 9 dimension rows per AII score (one per dimension)</span></div>
+      <div class="rel-row"><span class="rel-entity">METRIC_DEFINITION</span><span class="rel-card">||—o{</span><span class="rel-entity">METRIC_OBSERVATION</span><span class="rel-note">One metric definition can have many observations across periods and slices</span></div>
+      <div class="rel-row"><span class="rel-entity">SEGMENT_SLICE</span><span class="rel-card">||—o{</span><span class="rel-entity">METRIC_OBSERVATION</span><span class="rel-note">Observations are filter-aware through normalized slices</span></div>
+      <div class="rel-row"><span class="rel-entity">ORGANISATION</span><span class="rel-card">||—o{</span><span class="rel-entity">ACCESS_SCOPE</span><span class="rel-note">One organisation can define many viewer-role access policies across cockpit views</span></div>
+      <div class="rel-row"><span class="rel-entity">ORGANISATION</span><span class="rel-card">||—o{</span><span class="rel-entity">AI_INITIATIVE</span><span class="rel-note">Many initiatives per org</span></div>
+      <div class="rel-row"><span class="rel-entity">PORTFOLIO</span><span class="rel-card">||—o{</span><span class="rel-entity">AI_INITIATIVE</span><span class="rel-note">One portfolio groups many initiatives (Delivery view)</span></div>
+      <div class="rel-row"><span class="rel-entity">AI_INITIATIVE</span><span class="rel-card">||—o{</span><span class="rel-entity">VALUE_REALIZATION</span><span class="rel-note">One initiative can have many forecast / realized value records over time and by slice</span></div>
+      <div class="rel-row"><span class="rel-entity">VALUE_REALIZATION</span><span class="rel-card">||—o{</span><span class="rel-entity">FINANCE_VALIDATION</span><span class="rel-note">Finance may validate, challenge, or partially approve a value record</span></div>
+      <div class="rel-row"><span class="rel-entity">SEGMENT_SLICE</span><span class="rel-card">||—o{</span><span class="rel-entity">VALUE_REALIZATION</span><span class="rel-note">Value records can be rolled up through the same slices used by the UI filters</span></div>
+      <div class="rel-row"><span class="rel-entity">ORGANISATION</span><span class="rel-card">||—o{</span><span class="rel-entity">PORTFOLIO</span><span class="rel-note">Multiple delivery portfolios per org</span></div>
+      <div class="rel-row"><span class="rel-entity">PORTFOLIO</span><span class="rel-card">||—o{</span><span class="rel-entity">DELIVERY_KPI</span><span class="rel-note">6 KPI records per portfolio per period</span></div>
+      <div class="rel-row"><span class="rel-entity">PORTFOLIO</span><span class="rel-card">||—o{</span><span class="rel-entity">SWIMLANE_METRIC</span><span class="rel-note">3 swimlane records per portfolio per period</span></div>
+      <div class="rel-row"><span class="rel-entity">PORTFOLIO</span><span class="rel-card">||—o{</span><span class="rel-entity">OVERSIGHT_ROUTING</span><span class="rel-note">One routing snapshot per portfolio per period</span></div>
+      <div class="rel-row"><span class="rel-entity">AI_INITIATIVE</span><span class="rel-card">||—o{</span><span class="rel-entity">GOVERNANCE_RECORD</span><span class="rel-note">Many risk/policy records per initiative</span></div>
+      <div class="rel-row"><span class="rel-entity">AI_INITIATIVE / METRIC_OBSERVATION / GOVERNANCE_RECORD / ACCESS_SCOPE</span><span class="rel-card">||—o{</span><span class="rel-entity">EVIDENCE_PACK</span><span class="rel-note">Any important object can point to traceable evidence</span></div>
+      <div class="rel-row"><span class="rel-entity">AI_INITIATIVE</span><span class="rel-card">||—o{</span><span class="rel-entity">TECH_DEBT_SCORE</span><span class="rel-note">Per-initiative heatmap rows. Also org-level aggregate row</span></div>
+      <div class="rel-row"><span class="rel-entity">AI_INITIATIVE</span><span class="rel-card">||—o{</span><span class="rel-entity">AI_SERVICE_OPERATION</span><span class="rel-note">Many live interactions per operational AI initiative</span></div>
+      <div class="rel-row"><span class="rel-entity">AI_SERVICE_OPERATION</span><span class="rel-card">||—o{</span><span class="rel-entity">ESCALATION_LOG</span><span class="rel-note">Some operations trigger escalation records</span></div>
+      <div class="rel-row"><span class="rel-entity">PORTFOLIO / AI_INITIATIVE</span><span class="rel-card">||—o{</span><span class="rel-entity">EXECUTIVE_ACTION</span><span class="rel-note">Actions can be enterprise-wide, portfolio-wide, or initiative-specific</span></div>
+      <div class="rel-row"><span class="rel-entity">EXECUTIVE_ACTION</span><span class="rel-card">||—o{</span><span class="rel-entity">ROADMAP_MILESTONE</span><span class="rel-note">Milestones can be tied to one or more executive actions</span></div>
+      <div class="rel-row"><span class="rel-entity">ORGANISATION</span><span class="rel-card">||—o{</span><span class="rel-entity">MODEL_ASSET</span><span class="rel-note">Model inventory per org</span></div>
+      <div class="rel-row"><span class="rel-entity">ORGANISATION</span><span class="rel-card">||—o{</span><span class="rel-entity">WORKFORCE_METRIC</span><span class="rel-note">One row per function area per period</span></div>
+      <div class="rel-row"><span class="rel-entity">ORGANISATION</span><span class="rel-card">||—o{</span><span class="rel-entity">SLA_XLA_RECORD</span><span class="rel-note">One row per channel per period</span></div>
+      <div class="rel-row"><span class="rel-entity">ORGANISATION</span><span class="rel-card">||—o{</span><span class="rel-entity">TECH_DEBT_SCORE</span><span class="rel-note">Org-level aggregate row (initiative_id = null)</span></div>
+      <div class="rel-row"><span class="rel-entity">ORGANISATION</span><span class="rel-card">||—o{</span><span class="rel-entity">RAI_PILLAR_SCORE</span><span class="rel-note">6 pillar rows per org per period</span></div>
+      <div class="rel-row"><span class="rel-entity">ORGANISATION</span><span class="rel-card">||—o{</span><span class="rel-entity">BENCHMARK</span><span class="rel-note">9 dimension benchmark rows per org per period</span></div>
+      <div class="rel-row"><span class="rel-entity">ORGANISATION</span><span class="rel-card">||—o{</span><span class="rel-entity">DATA_SOURCE_LOG</span><span class="rel-note">One row per sync event</span></div>
+      <div class="rel-row"><span class="rel-entity">ORGANISATION</span><span class="rel-card">||—o{</span><span class="rel-entity">LLM_OPERATION_LOG</span><span class="rel-note">All LLM calls scoped to org</span></div>
+      <div class="rel-row"><span class="rel-entity">PROMPT_REGISTRY</span><span class="rel-card">||—o{</span><span class="rel-entity">LLM_OPERATION_LOG</span><span class="rel-note">Each operation references the prompt that drove it</span></div>
+      <div class="rel-row"><span class="rel-entity">PROMPT_REGISTRY</span><span class="rel-card">||—o{</span><span class="rel-entity">SCORE_NARRATIVE</span><span class="rel-note">Narratives reference the prompt version that generated them</span></div>
+      <div class="rel-row"><span class="rel-entity">AII_SCORE / DIMENSION_SCORE / DELIVERY_KPI</span><span class="rel-card">||—o{</span><span class="rel-entity">SCORE_NARRATIVE</span><span class="rel-note">Polymorphic: any scoreable entity can have narratives</span></div>
+    </div>
+
+    <!-- Schema summary table -->
+    <div style="margin-top:28px">
+      <div class="sec-header" style="margin-bottom:14px"><span class="sec-num">Summary</span><span class="sec-title">All 27 entities at a glance</span></div>
+      <table style="width:100%;border-collapse:collapse;font-size:.78rem;background:var(--surf);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden">
+        <thead>
+          <tr style="background:var(--ink)">
+            <th style="text-align:left;padding:8px 12px;color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.07em">Entity</th>
+            <th style="text-align:left;padding:8px 12px;color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.07em">View</th>
+            <th style="text-align:left;padding:8px 12px;color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.07em">Primary source</th>
+            <th style="text-align:left;padding:8px 12px;color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.07em">Refresh cadence</th>
+            <th style="text-align:left;padding:8px 12px;color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.07em">Key usage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- shared -->
+          <tr style="background:var(--surf2)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">ORGANISATION</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">Manual setup</td><td style="color:var(--ink3)">On change</td><td style="color:var(--ink3)">Root tenant record</td></tr>
+          <tr><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">AII_SCORE</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">Scoring engine</td><td style="color:var(--ink3)">Quarterly</td><td style="color:var(--ink3)">North Star — headline 0–100 score</td></tr>
+          <tr style="background:var(--surf2)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">DIMENSION_SCORE</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">Scoring engine</td><td style="color:var(--ink3)">Quarterly</td><td style="color:var(--ink3)">9 dimension sub-scores, bench vs sector</td></tr>
+          <tr><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">AI_INITIATIVE</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">Project tracker</td><td style="color:var(--ink3)">Daily</td><td style="color:var(--ink3)">Use case portfolio, value, stage, policy tier</td></tr>
+          <tr style="background:var(--surf2)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">METRIC_DEFINITION</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">Product + data governance</td><td style="color:var(--ink3)">On change</td><td style="color:var(--ink3)">Metric dictionary, formulas, owners, refresh rules, and guided explainability grounding</td></tr>
+          <tr><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">SEGMENT_SLICE</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">Warehouse / model layer</td><td style="color:var(--ink3)">On slice change</td><td style="color:var(--ink3)">Persistent filter context across both views and saved role presets</td></tr>
+          <tr style="background:var(--surf2)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">ACCESS_SCOPE</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">Identity policy registry + governance</td><td style="color:var(--ink3)">Quarterly or on role change</td><td style="color:var(--ink3)">Viewer-role scope, masking rules, export policy, guided-answer safety, and saved-view guardrails</td></tr>
+          <tr style="background:var(--surf2)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">METRIC_OBSERVATION</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">Derived from source telemetry</td><td style="color:var(--ink3)">Daily to quarterly</td><td style="color:var(--ink3)">Canonical measured values behind explainable KPIs</td></tr>
+          <tr><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">VALUE_REALIZATION</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">FinOps ledger + portfolio tracker</td><td style="color:var(--ink3)">Monthly</td><td style="color:var(--ink3)">Forecast, realized, spend, ROI, payback by initiative</td></tr>
+          <tr style="background:var(--surf2)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">FINANCE_VALIDATION</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">Finance review workflow</td><td style="color:var(--ink3)">On review</td><td style="color:var(--ink3)">Whether value is finance-validated or challenged</td></tr>
+          <tr style="background:var(--surf2)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">GOVERNANCE_RECORD</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">GRC platform + manual</td><td style="color:var(--ink3)">Daily</td><td style="color:var(--ink3)">Risk register, policy controls, risk-class segmentation, and framework-control mapping</td></tr>
+          <tr><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">MODEL_ASSET</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">MLOps platform</td><td style="color:var(--ink3)">Hourly</td><td style="color:var(--ink3)">Model inventory, drift, runtime health, fallback/refusal, cost/token</td></tr>
+          <tr style="background:var(--surf2)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">EVIDENCE_PACK</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">Audit evidence hub</td><td style="color:var(--ink3)">On change</td><td style="color:var(--ink3)">Traceable evidence for metrics, initiatives, controls, actions, and guided-answer proof links</td></tr>
+          <tr style="background:var(--surf2)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">DATA_SOURCE_LOG</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">Platform internal</td><td style="color:var(--ink3)">Per sync</td><td style="color:var(--ink3)">Data freshness trust signal in cockpit header</td></tr>
+          <tr><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">SCORE_NARRATIVE</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">LLM T2 (scoring engine)</td><td style="color:var(--ink3)">On score run</td><td style="color:var(--ink3)">Plain-language insight panels in both views</td></tr>
+          <tr style="background:var(--surf2)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">EXECUTIVE_ACTION</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">Operating rhythm / action center</td><td style="color:var(--ink3)">Daily</td><td style="color:var(--ink3)">Owned remediation work linked to signals and evidence</td></tr>
+          <tr><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">ROADMAP_MILESTONE</td><td><span class="view-tag vtag-b">Both</span></td><td style="color:var(--ink3)">Operating rhythm / planning</td><td style="color:var(--ink3)">Weekly</td><td style="color:var(--ink3)">Structured 30/60/90 milestones with owners and outcomes</td></tr>
+          <!-- strategic -->
+          <tr style="background:var(--blue-lt)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">WORKFORCE_METRIC</td><td><span class="view-tag vtag-s">Strategic</span></td><td style="color:var(--ink3)">HR platform + assessment workflow + M365</td><td style="color:var(--ink3)">Daily</td><td style="color:var(--ink3)">Training coverage, certification, safe-use validation, and capability heatmap</td></tr>
+          <tr style="background:var(--blue-lt)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">SLA_XLA_RECORD</td><td><span class="view-tag vtag-s">Strategic</span></td><td style="color:var(--ink3)">ITSM + telephony + surveys</td><td style="color:var(--ink3)">Daily</td><td style="color:var(--ink3)">MTTR, CSAT, NPS, BPLA, FCR metrics</td></tr>
+          <tr style="background:var(--blue-lt)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">TECH_DEBT_SCORE</td><td><span class="view-tag vtag-s">Strategic</span></td><td style="color:var(--ink3)">GRC + MLOps + manual</td><td style="color:var(--ink3)">Quarterly</td><td style="color:var(--ink3)">Debt index (lower=better), per-initiative heatmap</td></tr>
+          <tr style="background:var(--blue-lt)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">RAI_PILLAR_SCORE</td><td><span class="view-tag vtag-s">Strategic</span></td><td style="color:var(--ink3)">GRC + manual audit</td><td style="color:var(--ink3)">Quarterly</td><td style="color:var(--ink3)">6-pillar RAI dashboard, regulatory readiness</td></tr>
+          <tr style="background:var(--blue-lt)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">BENCHMARK</td><td><span class="view-tag vtag-s">Strategic</span></td><td style="color:var(--ink3)">External survey data</td><td style="color:var(--ink3)">Quarterly</td><td style="color:var(--ink3)">Peer comparison, sector avg, sector leader</td></tr>
+          <!-- delivery -->
+          <tr style="background:var(--coral-lt)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">PORTFOLIO</td><td><span class="view-tag vtag-d">Delivery</span></td><td style="color:var(--ink3)">Project tracker + manual</td><td style="color:var(--ink3)">On change</td><td style="color:var(--ink3)">Portfolio grouping (Enterprise/Digital/RunOps)</td></tr>
+          <tr style="background:var(--coral-lt)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">DELIVERY_KPI</td><td><span class="view-tag vtag-d">Delivery</span></td><td style="color:var(--ink3)">Project tracker + Finance ERP</td><td style="color:var(--ink3)">Daily</td><td style="color:var(--ink3)">6 headline KPIs with baseline/pilot/target</td></tr>
+          <tr style="background:var(--coral-lt)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">SWIMLANE_METRIC</td><td><span class="view-tag vtag-d">Delivery</span></td><td style="color:var(--ink3)">ITSM + project tracker</td><td style="color:var(--ink3)">Daily</td><td style="color:var(--ink3)">Plan/Build/Run value + risk metrics</td></tr>
+          <tr style="background:var(--coral-lt)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">OVERSIGHT_ROUTING</td><td><span class="view-tag vtag-d">Delivery</span></td><td style="color:var(--ink3)">ITSM + telephony events</td><td style="color:var(--ink3)">Real-time → daily agg</td><td style="color:var(--ink3)">Auto/supervised/escalated routing split</td></tr>
+          <tr style="background:var(--coral-lt)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">ESCALATION_LOG</td><td><span class="view-tag vtag-d">Delivery</span></td><td style="color:var(--ink3)">ITSM + telephony webhooks</td><td style="color:var(--ink3)">Real-time</td><td style="color:var(--ink3)">Per-escalation AI→human handoff detail</td></tr>
+          <tr style="background:var(--coral-lt)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">AI_SERVICE_OPERATION</td><td><span class="view-tag vtag-d">Delivery</span></td><td style="color:var(--ink3)">ITSM + telephony webhooks</td><td style="color:var(--ink3)">Real-time</td><td style="color:var(--ink3)">Per-interaction operational AI event log including degraded-mode queue impact</td></tr>
+          <!-- platform -->
+          <tr style="background:var(--purple-lt)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">PROMPT_REGISTRY</td><td><span class="view-tag vtag-b">Platform</span></td><td style="color:var(--ink3)">Developer / curator</td><td style="color:var(--ink3)">On deploy</td><td style="color:var(--ink3)">Versioned prompts, approval trail, injection test status, remediation ownership</td></tr>
+          <tr style="background:var(--purple-lt)"><td style="padding:7px 12px;font-family:var(--mono);font-size:.72rem;font-weight:600">LLM_OPERATION_LOG</td><td><span class="view-tag vtag-b">Platform</span></td><td style="color:var(--ink3)">Platform internal</td><td style="color:var(--ink3)">Per call</td><td style="color:var(--ink3)">Token cost, latency, degraded-mode failover, provider incident linkage, attack telemetry, and retrieval quality signals</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:24px;padding:12px 16px;background:var(--surf2);border-radius:var(--r);border:1px solid var(--line);font-size:.76rem;color:var(--ink3);line-height:1.7">
+      <strong style="color:var(--ink)">Design decisions</strong> · Every entity carries <code style="background:var(--surf3);padding:1px 5px;border-radius:4px">org_id</code> for multi-tenancy. · Every time-series entity has <code style="background:var(--surf3);padding:1px 5px;border-radius:4px">period_date</code> for trend tracking. · The <strong>Strategic</strong> and <strong>Delivery</strong> views read from the same underlying tables — the toggle changes which fields and aggregations are surfaced. · The guided Ask layer intentionally reuses <code style="background:var(--surf3);padding:1px 5px;border-radius:4px">METRIC_DEFINITION</code>, <code style="background:var(--surf3);padding:1px 5px;border-radius:4px">METRIC_OBSERVATION</code>, <code style="background:var(--surf3);padding:1px 5px;border-radius:4px">EVIDENCE_PACK</code>, <code style="background:var(--surf3);padding:1px 5px;border-radius:4px">EXECUTIVE_ACTION</code>, <code style="background:var(--surf3);padding:1px 5px;border-radius:4px">SEGMENT_SLICE</code>, and <code style="background:var(--surf3);padding:1px 5px;border-radius:4px">ACCESS_SCOPE</code> rather than creating a separate chat-only store. · The saved-view layer intentionally reuses <code style="background:var(--surf3);padding:1px 5px;border-radius:4px">SEGMENT_SLICE</code>, <code style="background:var(--surf3);padding:1px 5px;border-radius:4px">ACCESS_SCOPE</code>, and <code style="background:var(--surf3);padding:1px 5px;border-radius:4px">PORTFOLIO</code> rather than creating a separate preset entity in the current prototype. · <code style="background:var(--surf3);padding:1px 5px;border-radius:4px">SCORE_NARRATIVE</code> uses a polymorphic pattern so any scoreable entity can have plain-language explanations without separate tables. · <code style="background:var(--surf3);padding:1px 5px;border-radius:4px">LLM_OPERATION_LOG</code> is append-only and should be partitioned by executed_at month in PostgreSQL for cost.
+    </div>
+  </section>
+
+  <div style="border-top:1px solid var(--line);padding-top:16px;display:flex;justify-content:space-between;font-size:.72rem;color:var(--ink4)">
+    <span>Meridian Group · AI Institutionalisation Cockpit · Data Model v3.1 · Confidential</span>
+    <span>27 entities · 9+ source systems · 6 data flow zones · Updated 16 Apr 2026</span>
+  </div>
+</main>
+</div>
+
+<script>
+// Sidebar active link highlight on scroll
+var links = document.querySelectorAll('.sb-link');
+var sections = document.querySelectorAll('section.sec, .entity');
+window.addEventListener('scroll', function() {
+  var pos = window.scrollY + 120;
+  sections.forEach(function(s) {
+    if (s.id && s.getBoundingClientRect().top + window.scrollY <= pos) {
+      links.forEach(function(l) { l.classList.remove('active'); });
+      var match = document.querySelector('.sb-link[href="#' + s.id + '"]');
+      if (match) match.classList.add('active');
+    }
+  });
+});
+</script>
+</body>
+</html>

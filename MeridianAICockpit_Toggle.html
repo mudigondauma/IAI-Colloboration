@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Meridian — AI Enterprise Cockpit</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --ink:#0d1f35;--inkm:#3a506b;--inks:#6e87a0;--inkf:#a8bcce;
+  --page:#f0f4f9;--sur:#fff;--sur2:#f7f9fc;--sur3:#eef2f7;
+  --ln:#dce4ef;--ln2:#c8d4e3;
+  --bl:#1a55a3;--blm:#2d6ec8;--bll:#e8f0fb;--blb:#b8d0f4;
+  --tl:#0e7c6b;--tll:#e2f5f0;
+  --gn:#1a7a4a;--gnl:#e4f5ec;
+  --am:#9a6500;--aml:#fdf3e0;
+  --rd:#b52e2e;--rdl:#fce9e9;
+  --gd:#b56a00;
+  --sh:0 3px 14px rgba(13,31,53,.07);
+  --rsm:9px;--rmd:15px;--rlg:20px;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --disp:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--page);color:var(--ink)}
+button,select{font:inherit;cursor:pointer}
+
+/* topbar */
+.tb{background:var(--ink);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:400}
+.tb-logo{font-family:var(--disp);font-size:15px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.tb-sep{width:1px;height:16px;background:rgba(255,255,255,.2)}
+.tb-ctx{font-size:.72rem;color:rgba(255,255,255,.45)}
+.tb-r{display:flex;align-items:center;gap:10px}
+.tb-date{font-size:.68rem;color:rgba(255,255,255,.32)}
+
+/* toggle pill */
+.tog-wrap{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:3px 5px 3px 12px}
+.tog-lbl{font-size:.68rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.08em;text-transform:uppercase}
+.tog-pills{display:flex;gap:2px;background:rgba(0,0,0,.2);border-radius:999px;padding:3px}
+.tog-btn{border:none;border-radius:999px;padding:5px 16px;font-size:.72rem;font-weight:700;letter-spacing:.02em;color:rgba(255,255,255,.5);background:transparent;transition:all .18s}
+.tog-btn.on{background:#fff;color:var(--ink)}
+
+/* north star */
+.ns{background:linear-gradient(90deg,#0d1f35,#162d4a);padding:10px 22px;display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid rgba(255,255,255,.06)}
+.ns::-webkit-scrollbar{display:none}
+.nsi{display:flex;align-items:center;gap:9px;padding:0 16px;border-right:1px solid rgba(255,255,255,.1);flex-shrink:0}
+.nsi:first-child{padding-left:0}
+.nsi:last-child{border:none}
+.nsl{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.36)}
+.nsv{font-family:var(--disp);font-size:1.2rem;font-weight:800;color:#fff;letter-spacing:-.03em}
+.nsbg{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:999px}
+.nsu{background:rgba(26,122,74,.28);color:#5dd89a}
+.nsig{display:flex;align-items:center;gap:5px;font-size:.67rem;font-weight:700;padding:3px 8px;border-radius:999px}
+.sr{background:rgba(181,46,46,.25);color:#f08080}
+.sa{background:rgba(154,101,0,.28);color:#f5c060}
+.sg{background:rgba(26,122,74,.22);color:#5dd89a}
+.sd{width:5px;height:5px;border-radius:50%}
+
+/* views */
+.vw{display:none}
+.vw.on{display:block}
+
+/* subnav */
+.snv{background:var(--sur);border-bottom:1px solid var(--ln);padding:0 18px;display:flex;overflow-x:auto;position:sticky;top:52px;z-index:300;scrollbar-width:none}
+.snv::-webkit-scrollbar{display:none}
+.snb{border:none;background:none;padding:9px 11px;font-size:.71rem;font-weight:600;color:var(--inks);border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .15s;font-family:var(--sans)}
+.snb:hover{color:var(--bl)}
+.snb.on{color:var(--bl);font-weight:700;border-bottom-color:var(--bl)}
+
+/* body */
+.bw{max-width:1160px;margin:0 auto;padding:6px 22px 56px}
+
+/* section divider */
+.sdv{display:flex;align-items:baseline;gap:9px;border-bottom:2px solid var(--bll);padding-bottom:7px;margin:24px 0 13px}
+.sdn{font-size:.65rem;font-weight:700;color:var(--blm);letter-spacing:.1em;font-family:var(--disp)}
+.sdt{font-size:.9rem;font-weight:700;color:var(--ink);letter-spacing:-.02em;font-family:var(--disp)}
+
+/* cards */
+.c{background:var(--sur);border:1px solid var(--ln);border-radius:var(--rmd);padding:15px 18px;box-shadow:var(--sh)}
+.cb{background:var(--bll);border:1px solid var(--blb);border-radius:var(--rmd);padding:15px 18px}
+.cd{background:var(--ink);border-radius:var(--rmd);padding:15px 18px}
+.cam{background:var(--aml);border:1px solid #efc870;border-radius:var(--rmd);padding:15px 18px}
+.cw{background:var(--sur);border:1px solid #f0b0b0;border-radius:var(--rmd);padding:15px 18px}
+.lbl{font-size:.73rem;font-weight:700;color:var(--ink);margin-bottom:9px;font-family:var(--disp)}
+
+/* grids */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;margin-bottom:13px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:13px}
+.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;margin-bottom:13px}
+@media(max-width:880px){.g6{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
+
+/* metric card */
+.mt{background:var(--sur2);border:1px solid var(--ln);border-radius:var(--rsm);padding:12px 14px}
+.mv{font-family:var(--disp);font-size:1.55rem;font-weight:800;color:var(--ink);letter-spacing:-.03em;line-height:1}
+.ml{font-size:.73rem;color:var(--inkm);margin-top:3px}
+.md{font-size:.68rem;font-weight:600;margin-top:5px}
+.up{color:var(--gn)}.dn{color:var(--rd)}.nt{color:var(--inks)}
+
+/* rag */
+.rg{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.rg-g{background:var(--gnl);color:var(--gn)}
+.rg-a{background:var(--aml);color:var(--am)}
+.rg-r{background:var(--rdl);color:var(--rd)}
+.rg-b{background:var(--bll);color:var(--bl)}
+.rg-h{background:var(--gnl);color:var(--gn)}
+
+/* progress */
+.pb{height:6px;background:var(--sur3);border-radius:3px;overflow:hidden}
+.pf{height:100%;border-radius:3px}
+
+/* rows */
+.ri{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--ln);font-size:.82rem}
+.ri:last-child{border-bottom:none}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:.76rem}
+th{text-align:left;padding:6px 7px;font-weight:700;color:var(--inks);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--ln)}
+td{padding:7px 7px;border-bottom:1px solid var(--ln);vertical-align:middle}
+tr:nth-child(even) td{background:var(--sur2)}
+
+/* heatmap */
+.hc{border-radius:4px;padding:4px 2px;text-align:center;font-size:.65rem;font-weight:700}
+.hh{background:var(--gnl);color:var(--gn)}
+.hm{background:var(--aml);color:var(--am)}
+.hl{background:var(--rdl);color:var(--rd)}
+
+/* note */
+.note{background:var(--sur2);border-left:3px solid var(--blm);border-radius:0 var(--rsm) var(--rsm) 0;padding:8px 12px;font-size:.76rem;color:var(--inkm);line-height:1.55;margin-bottom:13px}
+
+/* bridge */
+.bridge{background:linear-gradient(90deg,var(--bll),var(--tll));border:1px solid var(--blb);border-radius:var(--rmd);padding:13px 16px;margin-bottom:13px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.bri{text-align:center;flex:1;min-width:80px}
+.brv{font-family:var(--disp);font-size:1.35rem;font-weight:800;color:var(--ink)}
+.brl{font-size:.67rem;color:var(--inkm);margin-top:1px}
+.brs{width:1px;height:36px;background:var(--blb)}
+
+/* footer */
+.ft{border-top:1px solid var(--ln);padding-top:11px;display:flex;justify-content:space-between;font-size:.65rem;color:var(--inkf);flex-wrap:wrap;gap:6px;margin-top:6px}
+
+/* CIO specific */
+.mb{display:flex;background:var(--sur3);border:1px solid var(--ln);border-radius:var(--rsm);overflow:hidden;margin-bottom:16px;width:fit-content}
+.mbt{border:none;background:none;padding:5px 16px;font-size:.72rem;font-weight:600;color:var(--inks);transition:all .15s}
+.mbt.on{background:var(--bl);color:#fff}
+.sl{background:var(--sur);border:1px solid var(--ln);border-radius:var(--rmd);padding:15px;box-shadow:var(--sh)}
+.slt{font-family:var(--disp);font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--bl);margin-bottom:11px}
+.slv{font-family:var(--disp);font-size:1.45rem;font-weight:800;letter-spacing:-.03em}
+.slint{font-size:.74rem;color:var(--inkm);line-height:1.5;padding:8px;background:var(--sur2);border-radius:var(--rsm);margin-top:9px;border-left:3px solid var(--blm)}
+.kb{margin-bottom:9px}
+.kbt{display:flex;justify-content:space-between;font-size:.74rem;margin-bottom:3px}
+.bt{height:9px;background:var(--sur3);border-radius:5px;overflow:hidden;position:relative}
+.bb{position:absolute;height:100%;background:var(--ln2);border-radius:5px}
+.bp{position:absolute;height:100%;background:linear-gradient(90deg,var(--bl),var(--blm));border-radius:5px}
+.btar{position:absolute;top:-2px;width:2px;height:13px;background:var(--blm);opacity:.5;border-radius:1px}
+.rn{display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:var(--rsm);margin-bottom:6px}
+.rna{background:rgba(26,122,74,.1);border:1px solid rgba(26,122,74,.18)}
+.rns{background:rgba(154,101,0,.08);border:1px solid rgba(154,101,0,.15)}
+.rne{background:rgba(26,85,163,.08);border:1px solid rgba(26,85,163,.15)}
+.pi{padding:9px 0;border-bottom:1px solid var(--ln)}
+.pi:last-child{border-bottom:none}
+.tr{display:grid;grid-template-columns:82px 1fr 72px;align-items:center;gap:9px;margin-bottom:9px}
+.trl{font-size:.73rem;font-weight:600;color:var(--inkm)}
+.tt{height:9px;background:var(--sur3);border-radius:5px;position:relative}
+.tb2{position:absolute;height:100%;background:var(--ln2);border-radius:5px}
+.tc{position:absolute;height:100%;background:var(--bl);border-radius:5px}
+.ttm{position:absolute;top:-2px;width:2px;height:13px;background:var(--blm);opacity:.5;border-radius:1px}
+.tv{font-size:.7rem;text-align:right;color:var(--inkm)}
+.tv strong{display:block;font-family:var(--disp);font-size:.9rem;font-weight:700;color:var(--ink)}
+.rms{background:var(--sur);border:1px solid var(--ln);border-radius:var(--rmd);padding:15px}
+.rmw{display:inline-flex;padding:3px 9px;border-radius:999px;background:var(--bll);color:var(--bl);font-size:.67rem;font-weight:700;margin-bottom:7px}
+.rms h3{font-family:var(--disp);font-size:.9rem;font-weight:700;margin-bottom:7px;letter-spacing:-.02em}
+.rms ul{padding-left:14px;color:var(--inkm);font-size:.76rem;line-height:1.5}
+.rms li+li{margin-top:6px}
+.gc{display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:var(--rsm);border:1px solid var(--ln);background:var(--sur2);margin-bottom:6px}
+.gcd{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.gcn{font-family:var(--disp);font-size:1.05rem;font-weight:800;margin-left:auto}
+.ci{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.ci:last-child{border-bottom:none}
+.ci strong{display:block;color:#e8f0fb;font-size:.8rem}
+.ci span{color:#7a9cc4;font-size:.72rem;line-height:1.4}
+.tier{font-size:.68rem;font-weight:700;padding:2px 6px;border-radius:999px}
+.t1{background:var(--bll);color:var(--bl)}
+.t2{background:var(--tll);color:var(--tl)}
+.t3{background:var(--aml);color:var(--am)}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="tb">
+  <div style="display:flex;align-items:center;gap:12px">
+    <span class="tb-logo">Meridian</span>
+    <span class="tb-sep"></span>
+    <span class="tb-ctx">AI Enterprise Cockpit · Q1–Q2 2026</span>
+  </div>
+  <div class="tb-r">
+    <div class="tog-wrap">
+      <span class="tog-lbl">View</span>
+      <div class="tog-pills">
+        <button class="tog-btn on" id="t-strategic" onclick="show('strategic')">&#9670; Strategic</button>
+        <button class="tog-btn" id="t-delivery" onclick="show('delivery')">&#9671; Delivery</button>
+      </div>
+    </div>
+    <span class="tb-date">08 Apr 2026</span>
+  </div>
+</div>
+
+<!-- NORTH STAR (always visible) -->
+<div class="ns">
+  <div class="nsi"><div class="nsl">AII Score</div><div style="display:flex;align-items:center;gap:6px"><div class="nsv">67</div><span class="nsbg nsu">+4 pts</span></div></div>
+  <div class="nsi"><div class="nsl">Flow Index</div><div style="display:flex;align-items:center;gap:6px"><div class="nsv">79</div><span class="nsbg nsu">↑ vs 67</span></div></div>
+  <div class="nsi"><div class="nsl">Portfolio ROI</div><div style="display:flex;align-items:center;gap:6px"><div class="nsv">3.7×</div><span class="nsbg nsu">£18.4M</span></div></div>
+  <div class="nsi"><div class="nsl">RAI Index</div><div style="display:flex;align-items:center;gap:6px"><div class="nsv">62</div><span class="nsbg nsu">+5 pts</span></div></div>
+  <div class="nsi" style="border:none">
+    <div class="nsl" style="margin-right:8px">Signals</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <span class="nsig sr"><span class="sd" style="background:#f08080"></span>Shadow AI</span>
+      <span class="nsig sr"><span class="sd" style="background:#f08080"></span>Prompt debt</span>
+      <span class="nsig sa"><span class="sd" style="background:#f5c060"></span>Forecast drift</span>
+      <span class="nsig sg"><span class="sd" style="background:#5dd89a"></span>SLA improving</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     STRATEGIC VIEW
+════════════════════════════════════════ -->
+<div id="vw-strategic" class="vw on">
+  <nav class="snv" id="snv-s">
+    <button class="snb on" onclick="snav(this,'s-aii')">AII Index</button>
+    <button class="snb" onclick="snav(this,'s-bridge')">Delivery Bridge</button>
+    <button class="snb" onclick="snav(this,'s-portfolio')">Portfolio</button>
+    <button class="snb" onclick="snav(this,'s-workforce')">Workforce</button>
+    <button class="snb" onclick="snav(this,'s-governance')">Governance</button>
+    <button class="snb" onclick="snav(this,'s-techdebt')">Tech Debt</button>
+    <button class="snb" onclick="snav(this,'s-rai')">Responsible AI</button>
+    <button class="snb" onclick="snav(this,'s-benchmark')">Benchmarks</button>
+  </nav>
+  <div class="bw">
+
+    <!-- AII -->
+    <div id="s-aii">
+      <div class="sdv"><span class="sdn">01</span><span class="sdt">AI Institutionalisation Index</span></div>
+      <div style="display:grid;grid-template-columns:185px 1fr 255px;gap:13px;margin-bottom:13px">
+        <div class="cb" style="display:flex;flex-direction:column;gap:11px">
+          <div><div style="font-size:.6rem;font-weight:700;color:var(--bl);letter-spacing:.1em;margin-bottom:3px">COMPOSITE SCORE</div>
+            <div style="font-family:var(--disp);font-size:3.4rem;font-weight:800;color:var(--ink);line-height:1;letter-spacing:-.04em">67</div>
+            <div style="font-size:.72rem;color:var(--bl);margin-top:2px">out of 100 · +4 pts this quarter</div></div>
+          <div><div class="pb"><div class="pf" style="width:67%;background:var(--bl)"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:.6rem;color:var(--bl);margin-top:2px"><span>0</span><span>Scaling 55</span><span>Native 76+</span></div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px">
+            <div style="background:#fff;border:1px solid var(--blb);border-radius:7px;padding:7px 3px;text-align:center"><div style="font-family:var(--disp);font-size:1.1rem;font-weight:800">71</div><div style="font-size:.6rem;color:var(--bl)">Strategy</div></div>
+            <div style="background:#fff;border:1px solid var(--blb);border-radius:7px;padding:7px 3px;text-align:center"><div style="font-family:var(--disp);font-size:1.1rem;font-weight:800">63</div><div style="font-size:.6rem;color:var(--bl)">Ops</div></div>
+            <div style="background:#fff;border:1px solid var(--blb);border-radius:7px;padding:7px 3px;text-align:center"><div style="font-family:var(--disp);font-size:1.1rem;font-weight:800">58</div><div style="font-size:.6rem;color:var(--bl)">People</div></div>
+          </div>
+        </div>
+        <div class="c"><div class="lbl">Dimension scores vs sector average</div><div id="dim-bars"></div>
+          <div style="display:flex;gap:12px;margin-top:7px;font-size:.67rem;color:var(--inks)">
+            <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:3px;background:var(--bl);border-radius:2px;display:inline-block"></span>Meridian</span>
+            <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:3px;background:var(--ln2);border-radius:2px;display:inline-block"></span>Sector avg</span>
+          </div>
+        </div>
+        <div class="c"><div class="lbl">Top signals</div><div id="top-signals"></div></div>
+      </div>
+    </div>
+
+    <!-- Bridge -->
+    <div id="s-bridge">
+      <div class="sdv"><span class="sdn">02</span><span class="sdt">Delivery engine summary</span></div>
+      <div class="note">These metrics come from the <strong>Delivery View</strong> — same underlying data, different lens. £1.31M of the £5.0M total AI spend is delivery-specific; £3.69M covers operational AI.</div>
+      <div class="bridge">
+        <div class="bri"><div class="brv">79</div><div class="brl">Flow Index</div></div>
+        <div class="brs"></div>
+        <div class="bri"><div class="brv">96%</div><div class="brl">Quality Guardrail</div></div>
+        <div class="brs"></div>
+        <div class="bri"><div class="brv">63%</div><div class="brl">AI Coverage</div></div>
+        <div class="brs"></div>
+        <div class="bri"><div class="brv">£1.31M</div><div class="brl">Delivery run-rate</div></div>
+        <div class="brs"></div>
+        <div class="bri"><div class="brv">£3.69M</div><div class="brl">Operational AI</div></div>
+        <div class="brs"></div>
+        <div class="bri"><div class="brv">£5.0M</div><div class="brl">Total AI spend</div></div>
+        <button onclick="show('delivery')" style="background:var(--bl);color:#fff;border:none;border-radius:var(--rsm);padding:7px 16px;font-size:.74rem;font-weight:700;margin-left:auto">Delivery View →</button>
+      </div>
+    </div>
+
+    <!-- Portfolio -->
+    <div id="s-portfolio">
+      <div class="sdv"><span class="sdn">03</span><span class="sdt">Use case portfolio & value realisation</span></div>
+      <div class="g4">
+        <div class="mt"><div class="mv">24</div><div class="ml">Active initiatives</div><div class="md up">↑ 6 from last quarter</div></div>
+        <div class="mt"><div class="mv">£18.4M</div><div class="ml">Value delivered (ann.)</div><div class="md up">↑ 31% QoQ</div></div>
+        <div class="mt"><div class="mv">9/24</div><div class="ml">In production</div><div class="md nt">37% of portfolio</div></div>
+        <div class="mt"><div class="mv">£2.1M</div><div class="ml">Stalled value at risk</div><div class="md dn">↑ 3 stalled</div></div>
+      </div>
+      <div class="c" style="margin-bottom:13px;overflow-x:auto">
+        <table><thead><tr><th>Use case</th><th>Function</th><th>Stage</th><th>Value</th><th style="width:90px">Maturity</th><th>Status</th><th>LLM tier</th></tr></thead>
+        <tbody id="port-rows"></tbody></table>
+        <div style="font-size:.65rem;color:var(--inkf);margin-top:7px">7 of 24 · T1=GPT-4o-mini · T2=GPT-4.1 · T3=o-series</div>
+      </div>
+    </div>
+
+    <!-- Workforce -->
+    <div id="s-workforce">
+      <div class="sdv"><span class="sdn">04</span><span class="sdt">Workforce capability & literacy</span></div>
+      <div class="g2">
+        <div class="c"><div class="lbl">AI literacy heatmap</div><div id="heatmap"></div>
+          <div style="display:flex;gap:10px;margin-top:7px;font-size:.65rem">
+            <span style="color:var(--gn)">■ High ≥70%</span><span style="color:var(--am)">■ Med 40–69%</span><span style="color:var(--rd)">■ Low &lt;40%</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="c"><div class="lbl">Training pipeline</div><div id="training"></div></div>
+          <div class="c"><div class="lbl">AI sentiment & leadership alignment</div>
+            <div style="display:flex;height:7px;border-radius:4px;overflow:hidden;margin-bottom:5px">
+              <div style="width:52%;background:var(--tl)"></div><div style="width:28%;background:var(--ln2)"></div><div style="width:20%;background:var(--rd)"></div>
+            </div>
+            <div style="display:flex;gap:12px;font-size:.67rem;color:var(--inkm);margin-bottom:8px"><span>Positive 52%</span><span>Neutral 28%</span><span>Resistant 20%</span></div>
+            <div id="alignment"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Governance -->
+    <div id="s-governance">
+      <div class="sdv"><span class="sdn">05</span><span class="sdt">Governance & risk</span></div>
+      <div class="g4">
+        <div class="mt"><div class="mv">31</div><div class="ml">Models in inventory</div><div class="md up">↑ 5 this quarter</div></div>
+        <div class="mt"><div class="mv">74%</div><div class="ml">Governance coverage</div><div class="md dn">8 ungoverned</div></div>
+        <div class="mt"><div class="mv">6</div><div class="ml">Shadow AI signals</div><div class="md dn">Requires action</div></div>
+        <div class="mt"><div class="mv">82%</div><div class="ml">EU AI Act readiness</div><div class="md up">↑ from 61%</div></div>
+      </div>
+      <div class="c"><div class="lbl">Risk register</div><div id="risk-rows"></div></div>
+    </div>
+
+    <!-- Tech Debt -->
+    <div id="s-techdebt">
+      <div class="sdv"><span class="sdn">06</span><span class="sdt">AI Technical Debt</span></div>
+      <div style="display:grid;grid-template-columns:175px 1fr;gap:13px;margin-bottom:13px">
+        <div class="cam" style="display:flex;flex-direction:column;gap:9px">
+          <div style="font-size:.6rem;font-weight:700;color:var(--am);letter-spacing:.1em">DEBT INDEX</div>
+          <div style="font-family:var(--disp);font-size:3.2rem;font-weight:800;color:#5a3500;line-height:1;letter-spacing:-.04em">38</div>
+          <div style="font-size:.72rem;color:var(--am)">out of 100 · lower is better</div>
+          <div style="height:7px;background:#f0c870;border-radius:3px;overflow:hidden"><div style="height:100%;width:38%;background:#5a3500;border-radius:3px"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.58rem;color:var(--am)"><span>Low 0–25</span><span>Med 26–55</span><span>High 56+</span></div>
+          <div style="background:#fff;border:1px solid #f0c870;border-radius:7px;padding:7px;font-size:.71rem;color:var(--am)"><strong style="color:#5a3500">Medium</strong> · Prompt &amp; Org debt critical. Trend: ↑ worsening.</div>
+        </div>
+        <div class="g2" style="margin-bottom:0" id="debt-cards"></div>
+      </div>
+      <div style="font-size:.74rem;color:var(--rd);background:var(--rdl);padding:8px 12px;border-radius:var(--rsm);margin-bottom:13px">⚠ 52% of system prompts undocumented · 7/9 use cases not pen-tested for injection · CTO action required 15 Apr 2026</div>
+      <div class="c"><div class="lbl">Debt heatmap by initiative</div><div id="debt-heatmap" style="overflow-x:auto"></div></div>
+    </div>
+
+    <!-- RAI -->
+    <div id="s-rai">
+      <div class="sdv"><span class="sdn">07</span><span class="sdt">Responsible AI Dashboard</span></div>
+      <div class="g2">
+        <div class="cb">
+          <div style="font-size:.6rem;font-weight:700;color:var(--bl);letter-spacing:.1em;margin-bottom:3px">RAI INDEX</div>
+          <div style="font-family:var(--disp);font-size:2.9rem;font-weight:800;color:var(--ink);line-height:1;letter-spacing:-.04em">62</div>
+          <div style="font-size:.72rem;color:var(--bl);margin-top:2px;margin-bottom:7px">out of 100 · +5 pts QoQ</div>
+          <div class="pb" style="margin-bottom:9px"><div class="pf" style="width:62%;background:var(--bl)"></div></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
+            <div style="background:#fff;border:1px solid var(--blb);border-radius:7px;padding:7px 3px;text-align:center"><div style="font-family:var(--disp);font-size:1.05rem;font-weight:800">58</div><div style="font-size:.6rem;color:var(--bl)">Fairness</div></div>
+            <div style="background:#fff;border:1px solid var(--blb);border-radius:7px;padding:7px 3px;text-align:center"><div style="font-family:var(--disp);font-size:1.05rem;font-weight:800">71</div><div style="font-size:.6rem;color:var(--bl)">Reliability</div></div>
+            <div style="background:#fff;border:1px solid var(--blb);border-radius:7px;padding:7px 3px;text-align:center"><div style="font-family:var(--disp);font-size:1.05rem;font-weight:800">64</div><div style="font-size:.6rem;color:var(--bl)">Privacy</div></div>
+            <div style="background:#fff;border:1px solid var(--blb);border-radius:7px;padding:7px 3px;text-align:center"><div style="font-family:var(--disp);font-size:1.05rem;font-weight:800">54</div><div style="font-size:.6rem;color:var(--bl)">Inclusive</div></div>
+            <div style="background:#fff;border:1px solid var(--blb);border-radius:7px;padding:7px 3px;text-align:center"><div style="font-family:var(--disp);font-size:1.05rem;font-weight:800">61</div><div style="font-size:.6rem;color:var(--bl)">Transparent</div></div>
+            <div style="background:#fff;border:1px solid var(--blb);border-radius:7px;padding:7px 3px;text-align:center"><div style="font-family:var(--disp);font-size:1.05rem;font-weight:800">63</div><div style="font-size:.6rem;color:var(--bl)">Accountable</div></div>
+          </div>
+        </div>
+        <div id="rai-pillars" style="display:flex;flex-direction:column;gap:7px"></div>
+      </div>
+      <div class="g2">
+        <div class="c"><div class="lbl">Regulatory readiness</div><div id="rai-reg"></div></div>
+        <div class="cb"><div class="lbl" style="color:var(--bl)">Q2 2026 targets</div><div id="q2-targets"></div></div>
+      </div>
+    </div>
+
+    <!-- Benchmarks -->
+    <div id="s-benchmark">
+      <div class="sdv"><span class="sdn">08</span><span class="sdt">Competitive benchmarking</span></div>
+      <div class="g2">
+        <div class="c"><div class="lbl">Meridian vs sector — all dimensions</div><div id="bench-bars"></div>
+          <div style="display:flex;gap:12px;margin-top:7px;font-size:.67rem;color:var(--inks)">
+            <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:3px;background:var(--bl);border-radius:2px;display:inline-block"></span>Meridian</span>
+            <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:3px;background:var(--ln2);border-radius:2px;display:inline-block"></span>Sector avg</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="c"><div class="lbl">Where Meridian leads</div><p style="font-size:.8rem;color:var(--inkm);line-height:1.6">Technology (+8 pts), strategic alignment (+9 pts), SLA/XLA (+12 pts), and operational AI (+13 pts) are genuine advantages. ROI is 3.7× vs sector avg 2.8×.</p></div>
+          <div class="cw"><div class="lbl">Where to close the gap</div><p style="font-size:.8rem;color:var(--inkm);line-height:1.6">Governance &amp; risk (−8 pts) and culture adoption (−1 pt, trending down) require priority Q2 investment.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ft"><span>Meridian Group · Strategic View · Q1 2026 · CxO &amp; Board — Confidential</span><span>Data as of 08 Apr 2026 · Next refresh 08 Jul 2026</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     DELIVERY VIEW
+════════════════════════════════════════ -->
+<div id="vw-delivery" class="vw">
+  <nav class="snv" id="snv-d">
+    <button class="snb on" onclick="snav(this,'d-kpis')">KPIs</button>
+    <button class="snb" onclick="snav(this,'d-swimlanes')">Swimlanes</button>
+    <button class="snb" onclick="snav(this,'d-oversight')">Oversight</button>
+    <button class="snb" onclick="snav(this,'d-trends')">Trends</button>
+    <button class="snb" onclick="snav(this,'d-economics')">Economics</button>
+    <button class="snb" onclick="snav(this,'d-governance')">Governance</button>
+    <button class="snb" onclick="snav(this,'d-actions')">Actions</button>
+    <button class="snb" onclick="snav(this,'d-roadmap')">Roadmap</button>
+  </nav>
+  <div class="bw">
+
+    <!-- KPIs -->
+    <div id="d-kpis">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px;margin-bottom:13px">
+        <div>
+          <div style="font-family:var(--disp);font-size:1.4rem;font-weight:800;letter-spacing:-.03em">Delivery Engine View</div>
+          <div style="font-size:.76rem;color:var(--inkm);margin-top:2px">27 delivery trains · 4,800 engineers, analysts &amp; service leads</div>
+        </div>
+        <div class="mb">
+          <button class="mbt" id="mbt-b" onclick="setMode('baseline')">Baseline</button>
+          <button class="mbt on" id="mbt-p" onclick="setMode('pilot')">Pilot</button>
+        </div>
+      </div>
+      <!-- AII bridge for CIO -->
+      <div class="bridge" style="margin-bottom:13px">
+        <div class="bri"><div class="brv">67</div><div class="brl">AII Score</div></div>
+        <div class="brs"></div>
+        <div style="flex:2;font-size:.74rem;color:var(--inkm);line-height:1.55">Delivery dimensions feed the enterprise AII. <strong style="color:var(--ink)">Flow Index (79)</strong>, <strong style="color:var(--ink)">Quality (96%)</strong>, and <strong style="color:var(--ink)">AI Coverage (63%)</strong> are live inputs into the composite score.</div>
+        <div class="brs"></div>
+        <button onclick="show('strategic')" style="background:var(--bl);color:#fff;border:none;border-radius:var(--rsm);padding:7px 14px;font-size:.72rem;font-weight:700;white-space:nowrap">Strategic View →</button>
+      </div>
+      <div class="sdv"><span class="sdn">01</span><span id="kpi-mode-title" class="sdt">Executive KPIs — AI-assisted pilot</span></div>
+      <div class="c" style="margin-bottom:13px">
+        <div style="display:flex;gap:12px;font-size:.67rem;color:var(--inks);margin-bottom:11px">
+          <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:3px;background:var(--ln2);border-radius:2px;display:inline-block"></span>Baseline</span>
+          <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:3px;background:var(--bl);border-radius:2px;display:inline-block"></span>Pilot</span>
+          <span style="display:flex;align-items:center;gap:3px"><span style="width:2px;height:11px;background:var(--blm);opacity:.5;display:inline-block"></span>Target</span>
+        </div>
+        <div id="kpi-bars"></div>
+      </div>
+    </div>
+
+    <!-- Swimlanes -->
+    <div id="d-swimlanes">
+      <div class="sdv"><span class="sdn">02</span><span class="sdt">Workflow swimlanes</span></div>
+      <div class="g3" id="swimlanes"></div>
+    </div>
+
+    <!-- Oversight -->
+    <div id="d-oversight">
+      <div class="sdv"><span class="sdn">03</span><span class="sdt">Human Oversight Gateway</span></div>
+      <div class="g2" style="margin-bottom:13px">
+        <div class="c"><div class="lbl">Policy-based routing</div>
+          <div class="rn rna"><div style="width:8px;height:8px;border-radius:50%;background:var(--gn)"></div><span style="color:var(--gn);font-size:.8rem;font-weight:600">Auto-resolved (policy-clear)</span><span style="margin-left:auto;font-family:var(--disp);font-size:1rem;font-weight:800">72%</span></div>
+          <div class="rn rns"><div style="width:8px;height:8px;border-radius:50%;background:var(--gd)"></div><span style="color:var(--gd);font-size:.8rem;font-weight:600">Supervised (human sampling)</span><span style="margin-left:auto;font-family:var(--disp);font-size:1rem;font-weight:800">21%</span></div>
+          <div class="rn rne"><div style="width:8px;height:8px;border-radius:50%;background:var(--bl)"></div><span style="color:var(--bl);font-size:.8rem;font-weight:600">Escalated (material review)</span><span style="margin-left:auto;font-family:var(--disp);font-size:1rem;font-weight:800">7%</span></div>
+        </div>
+        <div class="c"><div class="lbl">Pending escalations</div>
+          <div class="pi"><div style="font-size:.8rem;font-weight:600">Expand reasoning-model access for 4 planning teams</div><div style="font-size:.7rem;color:var(--inks);margin-top:2px">Enterprise Architecture · 12 Apr · <span class="rg rg-a">medium</span></div></div>
+          <div class="pi"><div style="font-size:.8rem;font-weight:600">Exception renewal: Legacy runbook automation — Ops Tower 3</div><div style="font-size:.7rem;color:var(--inks);margin-top:2px">Service Operations · 14 Apr · <span class="rg rg-r">high</span></div></div>
+          <div class="pi"><div style="font-size:.8rem;font-weight:600">New use-case: Supplier contract review copilot</div><div style="font-size:.7rem;color:var(--inks);margin-top:2px">Legal & Procurement · 16 Apr · <span class="rg rg-a">medium</span></div></div>
+          <div class="pi" style="border:none"><div style="font-size:.8rem;font-weight:600">Risk review: High-frequency incident triage auto-close rule</div><div style="font-size:.7rem;color:var(--inks);margin-top:2px">CISO · 19 Apr · <span class="rg rg-r">high</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trends -->
+    <div id="d-trends">
+      <div class="sdv"><span class="sdn">04</span><span class="sdt">Trends — baseline vs current vs target</span></div>
+      <div class="c" style="margin-bottom:13px"><div id="trend-bars"></div></div>
+    </div>
+
+    <!-- Economics -->
+    <div id="d-economics">
+      <div class="sdv"><span class="sdn">05</span><span class="sdt">Economics — spend mix and efficiency</span></div>
+      <div class="g2" style="margin-bottom:13px">
+        <div class="c"><div class="lbl">Cost by workflow</div><div id="econ-bars"></div></div>
+        <div class="c"><div class="lbl">Model mix</div>
+          <div style="display:flex;height:11px;border-radius:5px;overflow:hidden;margin-bottom:9px">
+            <div style="width:34%;background:#1a55a3"></div><div style="width:29%;background:#0e7c6b"></div><div style="width:21%;background:#88acd8"></div><div style="width:16%;background:#c3d3e8"></div>
+          </div>
+          <div id="model-mix"></div>
+          <div style="border-top:1px solid var(--ln);margin-top:8px;padding-top:8px">
+            <div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:.74rem;margin-bottom:3px"><span style="color:var(--inkm)">Cost per assisted outcome</span><span style="font-weight:700">£14.8</span></div><div class="pb"><div class="pf" style="width:78%;background:var(--bl)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:.74rem;margin-bottom:3px"><span style="color:var(--inkm)">Model concentration risk</span><span style="font-weight:700">44%</span></div><div class="pb"><div class="pf" style="width:44%;background:var(--gd)"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Governance -->
+    <div id="d-governance">
+      <div class="sdv"><span class="sdn">06</span><span class="sdt">Governance console</span></div>
+      <div class="g2" style="margin-bottom:13px">
+        <div class="c"><div class="lbl">Use case classification</div><div id="gov-cases"></div></div>
+        <div class="cd"><div class="lbl" style="color:#8fa4c3;margin-bottom:9px">Policy controls</div><div id="gov-controls"></div></div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div id="d-actions">
+      <div class="sdv"><span class="sdn">07</span><span class="sdt">Top 5 executive actions</span></div>
+      <div class="c" style="margin-bottom:13px">
+        <table>
+          <thead><tr><th>Action</th><th>Owner</th><th>Due</th><th>Impact</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Expand green-list for planning copilots across tier-2 demand intake</strong><br><small style="color:var(--inks)">Planning / Refinement priority</small></td><td>Enterprise Architecture</td><td>18 Apr</td><td><span style="background:var(--bll);color:var(--bl);padding:3px 9px;border-radius:999px;font-size:.7rem;font-weight:700">Unlock +12 pts coverage</span></td></tr>
+            <tr><td><strong>Require evidence-pack auto-attach on AI-assisted pull requests</strong><br><small style="color:var(--inks)">Build / Test priority</small></td><td>Quality Engineering</td><td>22 Apr</td><td><span style="background:var(--bll);color:var(--bl);padding:3px 9px;border-radius:999px;font-size:.7rem;font-weight:700">Lift audit 3 pts</span></td></tr>
+            <tr><td><strong>Shift routine test generation to efficient model tier</strong><br><small style="color:var(--inks)">Build / Test priority</small></td><td>FinOps</td><td>26 Apr</td><td><span style="background:var(--bll);color:var(--bl);padding:3px 9px;border-radius:999px;font-size:.7rem;font-weight:700">Save £110K annual</span></td></tr>
+            <tr><td><strong>Scale supervised incident triage to all P2 and P3 queues</strong><br><small style="color:var(--inks)">Run / Support priority</small></td><td>Service Operations</td><td>30 Apr</td><td><span style="background:var(--bll);color:var(--bl);padding:3px 9px;border-radius:999px;font-size:.7rem;font-weight:700">Cut MTTR 1.1hrs</span></td></tr>
+            <tr><td><strong>Close amber use-case review backlog — monthly CIO risk forum</strong><br><small style="color:var(--inks)">Cross-workflow priority</small></td><td>Risk &amp; Compliance</td><td>03 May</td><td><span style="background:var(--bll);color:var(--bl);padding:3px 9px;border-radius:999px;font-size:.7rem;font-weight:700">Remove 6 exceptions</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Roadmap -->
+    <div id="d-roadmap">
+      <div class="sdv"><span class="sdn">08</span><span class="sdt">30 / 60 / 90 day roadmap</span></div>
+      <div class="g3" style="margin-bottom:13px">
+        <div class="rms"><span class="rmw">30 days</span><h3>Stabilize the operating baseline</h3><ul><li>Standardize approved assistant patterns for planning, code review, incident triage.</li><li>Automate evidence capture for AI-assisted work in the engineering toolchain.</li><li>Publish a shared cost guardrail with workflow-level budgets.</li></ul></div>
+        <div class="rms"><span class="rmw">60 days</span><h3>Scale safe adoption</h3><ul><li>Extend green use cases into adjacent service and platform teams.</li><li>Roll out model-routing by task type to lower completion spend.</li><li>Reduce amber approval time with pre-cleared control templates.</li></ul></div>
+        <div class="rms"><span class="rmw">90 days</span><h3>Move to portfolio governance</h3><ul><li>Embed AI metrics into the standard CIO monthly operating review.</li><li>Tie product funding gates to evidence completeness and guardrail performance.</li><li>Set target state for enterprise AI delivery run-rate and realized savings.</li></ul></div>
+      </div>
+    </div>
+
+    <div class="ft"><span>Meridian Group · Delivery Engine View · Q2 2026 · CIO distribution</span><span>Sources: Jira Align · GitHub Enterprise · ServiceNow · FinOps AI ledger · Control Tower</span></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════ ALL DATA ═══════════ */
+var DIMS=[['Strategic alignment',71,62],['Portfolio & ROI',68,59],['Governance & risk',63,71],['Workforce',60,55],['Technology',74,66],['Culture',51,52],['Operational AI',61,48],['SLA/XLA',66,54],['Responsible AI',62,57]];
+
+var KPIS=[
+  {label:'Net Productivity Gain',b:0,p:18,t:22,fmt:'pct',up:true},
+  {label:'AI Workflow Coverage',b:24,p:63,t:75,fmt:'pct',up:true},
+  {label:'Delivery Flow Index',b:67,p:79,t:84,fmt:'idx',up:true},
+  {label:'Quality Guardrail',b:91,p:96,t:97,fmt:'pct',up:true},
+  {label:'Governance Compliance',b:92,p:98,t:99,fmt:'pct',up:true},
+  {label:'AI Run-Rate Cost',b:1.24,p:1.31,t:1.18,fmt:'cM',up:false}
+];
+
+var LANES=[
+  {title:'Planning / Refinement',vl:'Decision latency',vb:9.5,vp:6.8,vf:'days',vdown:true,rl:'Requirements quality',rb:87,rp:93,rf:'pct',ib:'Planning is document-heavy with delayed approval cycles.',ip:'Assisted refinement compressing approval time and improving scope quality.'},
+  {title:'Build / Test / Review',vl:'PR cycle time',vb:31,vp:23,vf:'hrs',vdown:true,rl:'Critical rework rate',rb:11.2,rp:7.1,rf:'pct',ib:'Review queues hold back engineering flow.',ip:'Review acceleration is material — cost discipline still needs executive pressure.'},
+  {title:'Run / Support',vl:'Mean time to resolve',vb:7.2,vp:5.1,vf:'hrs',vdown:true,rl:'Change failure rate',rb:9.1,rp:6.4,rf:'pct',ib:'Manual triage and fragmented runbooks keep recovery inconsistent.',ip:'Assisted triage improving recovery speed with fewer unstable changes.'}
+];
+
+var TRENDS=[
+  {title:'Adoption',b:24,c:63,t:75,f:'pct'},
+  {title:'Flow',b:67,c:79,t:84,f:'idx'},
+  {title:'Quality',b:91,c:96,t:97,f:'pct'},
+  {title:'Cost (£M)',b:1.24,c:1.31,t:1.18,f:'cM'}
+];
+
+var ECON=[
+  {label:'Planning / Refinement',b:260,p:290},
+  {label:'Build / Test / Review',b:630,p:710},
+  {label:'Run / Support',b:350,p:310}
+];
+
+var GOVCASE=[
+  {label:'Green use cases',detail:'Standard copilots & bounded automation',b:14,p:26,col:'var(--gn)'},
+  {label:'Amber use cases',detail:'Supervised workflows awaiting approval',b:10,p:8,col:'var(--gd)'},
+  {label:'Red use cases',detail:'Restricted or under exception review',b:6,p:2,col:'var(--rd)'}
+];
+
+var CTRL=[
+  {name:'Model Usage Policy',detail:'Enterprise GPT-4 reasoning tier limits enforced.',s:'g',l:'Compliant'},
+  {name:'Data Privacy Controls',detail:'PII masking active across delivery assistants.',s:'g',l:'Enforced'},
+  {name:'Prompt Injection Guard',detail:'3 suspicious patterns quarantined in review queues.',s:'a',l:'Review Req'},
+  {name:'Output Quality Threshold',detail:'Hallucination score below 0.1% on approved workflows.',s:'g',l:'Passing'},
+  {name:'Cost Budget Alerts',detail:'Q2 AI budget at 82% utilization.',s:'a',l:'Warning'},
+  {name:'Audit Logging',detail:'All agent actions in immutable cold storage.',s:'g',l:'Active'}
+];
+
+var MODE = 'pilot';
+
+/* ═══════════ UTILS ═══════════ */
+function fv(v,f){
+  if(f==='pct') return v+'%';
+  if(f==='idx') return ''+v;
+  if(f==='days') return v+'d';
+  if(f==='hrs') return v+'h';
+  if(f==='cM') return '£'+v+'M';
+  if(f==='cK') return '£'+v+'K';
+  return ''+v;
+}
+
+function rag(s){
+  var m={g:{c:'var(--gn)',bg:'var(--gnl)',t:'On track'},h:{c:'var(--gn)',bg:'var(--gnl)',t:'Healthy'},a:{c:'var(--am)',bg:'var(--aml)',t:'Amber'},r:{c:'var(--rd)',bg:'var(--rdl)',t:'Critical'},b:{c:'var(--bl)',bg:'var(--bll)',t:'Scaling'}};
+  var x=m[s]||m.g;
+  return '<span class="rg" style="background:'+x.bg+';color:'+x.c+'">'+x.t+'</span>';
+}
+
+function pb(pct,col){
+  return '<div class="pb"><div class="pf" style="width:'+Math.min(pct,100)+'%;background:'+col+'"></div></div>';
+}
+
+function mr(l,v,pct,col){
+  return '<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:.74rem;margin-bottom:2px"><span style="color:var(--inkm)">'+l+'</span><span style="font-weight:700">'+v+'</span></div>'+pb(pct,col)+'</div>';
+}
+
+function tier(t){
+  var c=t.indexOf('T3')>=0?'t3':t.indexOf('T2')>=0?'t2':'t1';
+  return '<span class="tier '+c+'">'+t+'</span>';
+}
+
+/* ═══════════ NAV ═══════════ */
+function show(v){
+  document.getElementById('vw-strategic').className='vw'+(v==='strategic'?' on':'');
+  document.getElementById('vw-delivery').className='vw'+(v==='delivery'?' on':'');
+  document.getElementById('t-strategic').className='tog-btn'+(v==='strategic'?' on':'');
+  document.getElementById('t-delivery').className='tog-btn'+(v==='delivery'?' on':'');
+  window.scrollTo(0,0);
+}
+
+function snav(el,id){
+  var nav=el.closest('.snv');
+  nav.querySelectorAll('.snb').forEach(function(b){b.className='snb';});
+  el.className='snb on';
+  var t=document.getElementById(id);
+  if(t){var y=t.getBoundingClientRect().top+window.scrollY-110;window.scrollTo({top:y,behavior:'smooth'});}
+}
+
+/* ═══════════ RENDER STRATEGIC (once) ═══════════ */
+function renderStrategic(){
+  /* dimension bars */
+  var dh='';
+  DIMS.forEach(function(d){
+    var us=d[1],peer=d[2];
+    dh+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;font-size:.73rem">'
+      +'<span style="width:140px;color:var(--inkm);flex-shrink:0">'+d[0]+'</span>'
+      +'<div style="flex:1;position:relative;height:6px;background:var(--sur3);border-radius:3px;overflow:hidden">'
+        +'<div style="position:absolute;top:0;height:100%;width:'+peer+'%;background:var(--ln2);border-radius:3px"></div>'
+        +'<div style="position:absolute;top:0;height:100%;width:'+us+'%;background:'+(us>=peer?'var(--bl)':'var(--rd)')+';border-radius:3px"></div>'
+      +'</div>'
+      +'<span style="width:50px;text-align:right;font-size:.68rem;font-weight:700;color:'+(us>=peer?'var(--gn)':'var(--rd)')+'">'+us+' vs '+peer+'</span>'
+    +'</div>';
+  });
+  document.getElementById('dim-bars').innerHTML=dh;
+  document.getElementById('bench-bars').innerHTML=dh;
+
+  /* signals */
+  var sigs=[
+    {dot:'var(--rd)',t:'Shadow AI in Finance',d:'3 unapproved tools active',s:'r'},
+    {dot:'var(--gd)',t:'Prompt injection risk',d:'7/9 use cases untested — critical',s:'r'},
+    {dot:'var(--gd)',t:'Demand forecasting drift',d:'APAC & LATAM degrading',s:'a'},
+    {dot:'var(--gd)',t:'Ethics board quorum gap',d:'2 consecutive quarters missed',s:'a'},
+    {dot:'var(--tl)',t:'SLA breach rate improving',d:'↓ from 8.2% to 3.1% QoQ',s:'h'}
+  ];
+  var sh='';
+  sigs.forEach(function(r,i){
+    sh+='<div style="display:flex;align-items:flex-start;gap:8px;padding:9px 0;'+(i<4?'border-bottom:1px solid var(--ln)':'')+'">'
+      +'<div style="width:6px;height:6px;border-radius:50%;background:'+r.dot+';margin-top:3px;flex-shrink:0"></div>'
+      +'<div style="flex:1"><div style="font-size:.8rem;font-weight:600">'+r.t+'</div>'
+        +'<div style="font-size:.72rem;color:var(--inkm);margin-top:1px">'+r.d+'</div></div>'
+      +rag(r.s)+'</div>';
+  });
+  document.getElementById('top-signals').innerHTML=sh;
+
+  /* portfolio */
+  var port=[
+    ['Voice AI service desk','Ops','Production','£3.8M',82,'h','T1+T2'],
+    ['Ticket auto-resolution','Eng','Production','£2.6M',78,'h','T1+T2'],
+    ['RCA & change request AI','Eng','Scaling','£2.2M',61,'a','T3'],
+    ['Customer intent prediction','Comm','Production','£4.2M',88,'h','T2'],
+    ['Contract review automation','Legal','Production','£2.8M',82,'h','T2+T3'],
+    ['Financial anomaly detection','Finance','Pilot','£2.0M',38,'a','T2'],
+    ['Claims triage & routing','Ops','Stalled','£1.1M',22,'r','T1']
+  ];
+  var ph='';
+  port.forEach(function(p){
+    ph+='<tr><td style="font-weight:600">'+p[0]+'</td><td style="color:var(--inkm)">'+p[1]+'</td>'
+      +'<td style="color:var(--inkm)">'+p[2]+'</td><td style="font-weight:700">'+p[3]+'</td>'
+      +'<td>'+pb(p[4],p[4]>70?'var(--tl)':p[4]>40?'var(--gd)':'var(--rd)')+'</td>'
+      +'<td>'+rag(p[5])+'</td><td>'+tier(p[6])+'</td></tr>';
+  });
+  document.getElementById('port-rows').innerHTML=ph;
+
+  /* heatmap */
+  var hmFns=[['Commercial',[85,78,54,41,18]],['Finance',[79,62,48,29,12]],['HR',[91,83,61,44,9]],['Technology',[97,94,88,76,71]],['Operations',[68,49,31,22,7]],['Legal',[72,55,38,81,11]]];
+  var hh='<div style="display:grid;grid-template-columns:90px repeat(5,1fr);gap:3px;font-size:.65rem">'
+    +'<div></div>'+['Aware','Prompt','Integrate','Govern','Build'].map(function(h){return '<div style="font-size:.6rem;font-weight:700;color:var(--inks);text-align:center;padding:2px">'+h+'</div>';}).join('');
+  hmFns.forEach(function(fn){
+    hh+='<div style="font-size:.69rem;color:var(--ink);padding:2px;display:flex;align-items:center">'+fn[0]+'</div>';
+    fn[1].forEach(function(v){var c=v>=70?'hh':v>=40?'hm':'hl';hh+='<div class="hc '+c+'">'+v+'%</div>';});
+  });
+  hh+='</div>';
+  document.getElementById('heatmap').innerHTML=hh;
+
+  /* training */
+  document.getElementById('training').innerHTML=
+    mr('Foundations (2,100)','78%',78,'var(--tl)')+mr('Applied AI (840)','54%',54,'var(--gd)')+mr('Leadership (310)','41%',41,'var(--rd)');
+  document.getElementById('alignment').innerHTML=
+    mr('CxO alignment','88%',88,'var(--tl)')+mr('Senior leadership','74%',74,'var(--tl)')+mr('Middle management','52%',52,'var(--gd)');
+
+  /* risk rows */
+  var risks=[
+    {s:'r',t:'Shadow AI in Finance — 3 unapproved tools',d:'Data residency & IP exposure. Financial modelling outside approved stack.',o:'CFO + CISO · Due 30 Apr 2026'},
+    {s:'r',t:'Prompt injection — 7/9 use cases untested',d:'Critical prompt debt. No input validation in production.',o:'CTO · Due 15 Apr 2026'},
+    {s:'a',t:'Demand forecasting drift — APAC & LATAM',d:'Model performance degrading. Retraining pipeline not triggered.',o:'CTO · Due 15 Apr 2026'},
+    {s:'a',t:'Ethics board quorum — 2 quarters not met',d:'High-risk model approvals backlogged.',o:'Chief Ethics Officer · Due 01 May 2026'},
+    {s:'h',t:'Customer-facing AI disclosures — compliant',d:'All touchpoints auditable. March 2026 audit passed.',o:'CLO · Next review Jun 2026'}
+  ];
+  var rh='';
+  risks.forEach(function(r,i){
+    rh+='<div style="display:flex;gap:9px;padding:9px 0;'+(i<4?'border-bottom:1px solid var(--ln)':'')+'">'
+      +'<div style="width:6px;height:6px;border-radius:50%;background:'+(r.s==='r'?'var(--rd)':r.s==='a'?'var(--gd)':'var(--tl)')+';margin-top:3px;flex-shrink:0"></div>'
+      +'<div style="flex:1"><div style="font-size:.81rem;font-weight:600">'+r.t+'</div>'
+        +'<div style="font-size:.72rem;color:var(--inkm);margin-top:2px;line-height:1.5">'+r.d+'</div>'
+        +'<div style="font-size:.65rem;color:var(--inkf);margin-top:2px">'+r.o+'</div></div>'
+      +rag(r.s)+'</div>';
+  });
+  document.getElementById('risk-rows').innerHTML=rh;
+
+  /* tech debt cards */
+  var debt=[
+    {n:'Data-related debt',s:'a',col:'var(--gd)',items:[['Data quality score','61/100',61],['Source vetting','68%',68],['Bias assessments','4/9',44],['Drift detection','71%',71],['Anonymisation','83%',83]]},
+    {n:'Model-related debt',s:'a',col:'var(--gd)',items:[['Version control','74%',74],['Rollback capability','6/9',67],['Eval metrics','52%',52],['Pen testing','3/9',33]]},
+    {n:'Prompt-related debt',s:'r',col:'var(--rd)',items:[['Documented prompts','48%',48],['Input validation','39%',39],['Injection tested','2/9',22],['Guardrails active','44%',44]]},
+    {n:'Organisational debt',s:'a',col:'var(--gd)',items:[['Governance policy','74%',74],['Ownership assigned','81%',81],['Red team exercises','1 of 4',25],['Incident response','72%',72]]}
+  ];
+  var dh2='';
+  debt.forEach(function(dc){
+    dh2+='<div class="c"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">'
+      +'<div style="font-family:var(--disp);font-size:.85rem;font-weight:700">'+dc.n+'</div>'+rag(dc.s)+'</div>'
+      +dc.items.map(function(it){return mr(it[0],it[1],it[2],dc.col);}).join('')+'</div>';
+  });
+  document.getElementById('debt-cards').innerHTML=dh2;
+
+  /* debt heatmap */
+  var dhI=['Voice AI SD','Ticket Auto','RCA & CR AI','Intent Pred','Contract Rev','Financial AD','Claims Triage','Mkt Content'];
+  var dhM=[['l','m','r','m'],['m','m','r','m'],['r','m','r','r'],['l','m','m','l'],['m','l','m','l'],['r','m','r','m'],['r','r','r','r'],['l','l','m','l']];
+  var dhC={l:{bg:'var(--gnl)',fg:'var(--gn)',t:'Low'},m:{bg:'var(--aml)',fg:'var(--am)',t:'Med'},r:{bg:'var(--rdl)',fg:'var(--rd)',t:'High'}};
+  var dhh='<table><thead><tr><th>Initiative</th><th style="text-align:center">Data</th><th style="text-align:center">Model</th><th style="text-align:center">Prompt</th><th style="text-align:center">Org</th><th style="text-align:center">Overall</th></tr></thead><tbody>';
+  dhI.forEach(function(init,i){
+    var row=dhM[i];
+    var hc=row.filter(function(x){return x==='r';}).length;
+    var ov=hc>=3?'r':hc>=1?'m':'l';
+    dhh+='<tr><td style="font-weight:600">'+init+'</td>';
+    row.forEach(function(c){var s=dhC[c];dhh+='<td style="text-align:center"><span style="background:'+s.bg+';color:'+s.fg+';font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:999px">'+s.t+'</span></td>';});
+    var os=dhC[ov];dhh+='<td style="text-align:center"><span style="background:'+os.bg+';color:'+os.fg+';font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:999px">'+os.t+'</span></td></tr>';
+  });
+  dhh+='</tbody></table>';
+  document.getElementById('debt-heatmap').innerHTML=dhh;
+
+  /* RAI pillars */
+  var rp=[
+    {n:'Fairness',s:58,r:'a',d:'APAC/LATAM demand forecasting bias unresolved.'},
+    {n:'Reliability & Safety',s:71,r:'h',d:'99.2% uptime · 3 high-risk hallucination incidents.'},
+    {n:'Privacy & Security',s:64,r:'a',d:'Shadow AI in Finance is the primary open risk.'},
+    {n:'Inclusiveness',s:54,r:'a',d:'Accessibility tested on only 3/9 use cases.'},
+    {n:'Transparency',s:61,r:'a',d:'61% explainability coverage · AI disclosed 100%.'},
+    {n:'Accountability',s:63,r:'a',d:'81% have named owner · ethics board quorum missing.'}
+  ];
+  var rh2='';
+  rp.forEach(function(p){
+    rh2+='<div style="background:var(--sur2);border:1px solid var(--ln);border-radius:var(--rsm);padding:11px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+        +'<div style="font-family:var(--disp);font-size:.85rem;font-weight:700">'+p.n+'</div>'
+        +'<div style="display:flex;align-items:center;gap:5px"><span style="font-family:var(--disp);font-size:1.1rem;font-weight:800">'+p.s+'</span>'+rag(p.r)+'</div>'
+      +'</div>'
+      +'<div style="font-size:.72rem;color:var(--inkm);margin-bottom:5px">'+p.d+'</div>'
+      +pb(p.s,'var(--bl)')+'</div>';
+  });
+  document.getElementById('rai-pillars').innerHTML=rh2;
+
+  /* regulatory */
+  var reg=[['EU AI Act',82,'a'],['GDPR',91,'h'],['ISO 42001',47,'r'],['UK AI Safety',68,'a'],['NIST AI RMF',61,'a'],['SOC 2 Type II',88,'h']];
+  var regh='';
+  reg.forEach(function(r,i){
+    regh+='<div style="padding:8px 0;'+(i<5?'border-bottom:1px solid var(--ln)':'')+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">'
+        +'<span style="font-size:.8rem;font-weight:600">'+r[0]+'</span>'
+        +'<div style="display:flex;align-items:center;gap:6px"><span style="font-weight:700">'+r[1]+'%</span>'+rag(r[2])+'</div>'
+      +'</div>'+pb(r[1],r[2]==='h'?'var(--gn)':r[2]==='a'?'var(--gd)':'var(--rd)')+'</div>';
+  });
+  document.getElementById('rai-reg').innerHTML=regh;
+
+  /* Q2 targets */
+  var q2=[['Composite AII','67','73+'],['Governance coverage','74%','90%+'],['Tech Debt Index','38','<30'],['RAI Index','62','70+'],['SLA breach rate','3.1%','<2%'],['AI Coverage','63%','75%']];
+  var q2h='';
+  q2.forEach(function(q,i){
+    q2h+='<div style="display:flex;justify-content:space-between;font-size:.73rem;padding:5px 0;'+(i<5?'border-bottom:1px solid rgba(26,85,163,.15)':'')+'">'
+      +'<span style="color:var(--bl)">'+q[0]+'</span>'
+      +'<span><span style="color:var(--inks)">'+q[1]+'</span><span style="color:var(--ink);font-weight:700;margin-left:7px">→ '+q[2]+'</span></span></div>';
+  });
+  document.getElementById('q2-targets').innerHTML=q2h;
+}
+
+/* ═══════════ RENDER DELIVERY (mode-aware) ═══════════ */
+function renderDelivery(){
+  var m=MODE;
+  document.getElementById('mbt-b').className='mbt'+(m==='baseline'?' on':'');
+  document.getElementById('mbt-p').className='mbt'+(m==='pilot'?' on':'');
+  document.getElementById('kpi-mode-title').textContent='Executive KPIs — '+(m==='pilot'?'AI-assisted pilot':'Baseline reference');
+
+  /* KPI bars */
+  var kh='';
+  KPIS.forEach(function(k){
+    var val=m==='pilot'?k.p:k.b;
+    var mx=Math.max(k.t,k.p,k.b,1);
+    var pw=(val/mx*100).toFixed(1);
+    var bw=(k.b/mx*100).toFixed(1);
+    var tw=(k.t/mx*100).toFixed(1);
+    kh+='<div class="kb">'
+      +'<div class="kbt"><span style="color:var(--inkm)">'+k.label+'</span>'
+        +'<span style="display:flex;gap:9px;font-size:.7rem"><span style="color:var(--inkf)">B: '+fv(k.b,k.fmt)+'</span><span style="font-weight:700">Now: '+fv(val,k.fmt)+'</span><span style="color:var(--bl)">Tgt: '+fv(k.t,k.fmt)+'</span></span>'
+      +'</div>'
+      +'<div class="bt"><div class="bb" style="width:'+bw+'%"></div><div class="bp" style="width:'+pw+'%"></div>'
+        +'<div class="btar" style="left:'+tw+'%"></div></div>'
+    +'</div>';
+  });
+  document.getElementById('kpi-bars').innerHTML=kh;
+
+  /* Swimlanes */
+  var slh='';
+  LANES.forEach(function(sl){
+    var vv=m==='pilot'?sl.vp:sl.vb;
+    var rv=m==='pilot'?sl.rp:sl.rb;
+    var vd=sl.vdown?(vv<sl.vb?'↓ from '+fv(sl.vb,sl.vf):'↑'):'↑ from '+fv(sl.vb,sl.vf);
+    var rg=sl.vdown?(rv<sl.rb?'h':'a'):'h';
+    slh+='<div class="sl"><div class="slt">'+sl.title+'</div>'
+      +'<div style="margin-bottom:9px"><div style="font-size:.72rem;color:var(--inkm);margin-bottom:2px">'+sl.vl+'</div>'
+        +'<div style="display:flex;align-items:baseline;gap:5px"><span class="slv">'+fv(vv,sl.vf)+'</span>'
+          +'<span style="font-size:.74rem;font-weight:700;color:var(--gn)">'+vd+'</span></div></div>'
+      +'<div style="margin-bottom:7px"><div style="font-size:.72rem;color:var(--inkm);margin-bottom:2px">'+sl.rl+'</div>'
+        +'<div style="display:flex;align-items:center;gap:6px"><span style="font-family:var(--disp);font-size:1.3rem;font-weight:800">'+fv(rv,sl.rf)+'</span>'+rag(rg)+'</div></div>'
+      +'<div class="slint">'+(m==='pilot'?sl.ip:sl.ib)+'</div>'
+    +'</div>';
+  });
+  document.getElementById('swimlanes').innerHTML=slh;
+
+  /* Trends */
+  var th='';
+  TRENDS.forEach(function(t){
+    var mx=Math.max(t.b,t.c,t.t,1);
+    var bw=(t.b/mx*100).toFixed(1),cw=(t.c/mx*100).toFixed(1),tw=(t.t/mx*100).toFixed(1);
+    th+='<div class="tr"><div class="trl">'+t.title+'</div>'
+      +'<div class="tt"><div class="tb2" style="width:'+bw+'%"></div><div class="tc" style="width:'+cw+'%"></div><div class="ttm" style="left:'+tw+'%"></div></div>'
+      +'<div class="tv"><strong>'+fv(t.c,t.f)+'</strong>tgt '+fv(t.t,t.f)+'</div>'
+    +'</div>';
+  });
+  document.getElementById('trend-bars').innerHTML=th;
+
+  /* Economics */
+  var mx2=Math.max.apply(null,ECON.map(function(i){return m==='pilot'?i.p:i.b;}));
+  var eh='';
+  ECON.forEach(function(item){
+    var v=m==='pilot'?item.p:item.b;
+    var w=(v/mx2*100).toFixed(1);
+    eh+='<div class="kb"><div class="kbt"><span style="color:var(--inkm)">'+item.label+'</span><span style="font-weight:700">£'+v+'K</span></div>'
+      +'<div class="bt"><div class="bp" style="width:'+w+'%"></div></div></div>';
+  });
+  document.getElementById('econ-bars').innerHTML=eh;
+
+  /* Model mix */
+  var mix=[{l:'Reasoning tier',s:34,c:'#1a55a3'},{l:'Fast completion',s:29,c:'#0e7c6b'},{l:'Embedding/retrieval',s:21,c:'#88acd8'},{l:'Policy & safety',s:16,c:'#c3d3e8'}];
+  var mh='';
+  mix.forEach(function(x){mh+='<div style="display:flex;justify-content:space-between;font-size:.74rem;padding:4px 0;color:var(--inkm)"><span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:'+x.c+';display:inline-block"></span>'+x.l+'</span><span style="font-weight:700;color:var(--ink)">'+x.s+'%</span></div>';});
+  document.getElementById('model-mix').innerHTML=mh;
+
+  /* Gov cases */
+  var gh='';
+  GOVCASE.forEach(function(uc){
+    var v=m==='pilot'?uc.p:uc.b;
+    gh+='<div class="gc"><div class="gcd" style="background:'+uc.col+'"></div>'
+      +'<div><div style="font-size:.8rem;font-weight:600">'+uc.label+'</div><div style="font-size:.72rem;color:var(--inkm)">'+uc.detail+'</div></div>'
+      +'<div class="gcn">'+v+'</div></div>';
+  });
+  document.getElementById('gov-cases').innerHTML=gh;
+
+  /* Controls */
+  var ctrh='';
+  CTRL.forEach(function(c){
+    ctrh+='<div class="ci"><div style="flex:1"><strong>'+c.name+'</strong><span>'+c.detail+'</span></div>'
+      +'<span class="rg '+(c.s==='g'?'rg-g':c.s==='a'?'rg-a':'rg-r')+'">'+c.l+'</span></div>';
+  });
+  document.getElementById('gov-controls').innerHTML=ctrh;
+}
+
+function setMode(m){
+  MODE=m;
+  renderDelivery();
+}
+
+/* ═══════════ INIT ═══════════ */
+renderStrategic();
+renderDelivery();
+</script>
+</body>
+</html>

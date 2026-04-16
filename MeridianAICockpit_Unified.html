@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Meridian — AI Enterprise Cockpit</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN SYSTEM
+═══════════════════════════════════════════════ */
+:root {
+  --ink:       #0d1f35;
+  --ink-mid:   #3a506b;
+  --ink-soft:  #6e87a0;
+  --ink-faint: #a8bcce;
+  --page:      #f0f4f9;
+  --surface:   #ffffff;
+  --surf2:     #f7f9fc;
+  --surf3:     #eef2f7;
+  --line:      #dce4ef;
+  --line2:     #c8d4e3;
+  --blue:      #1a55a3;
+  --blue-mid:  #2d6ec8;
+  --blue-lt:   #e8f0fb;
+  --blue-bd:   #b8d0f4;
+  --teal:      #0e7c6b;
+  --teal-lt:   #e2f5f0;
+  --amber:     #9a6500;
+  --amber-lt:  #fdf3e0;
+  --red:       #b52e2e;
+  --red-lt:    #fce9e9;
+  --green:     #1a7a4a;
+  --green-lt:  #e4f5ec;
+  --gold:      #c8891a;
+  --shadow:    0 4px 18px rgba(13,31,53,.07);
+  --shadow-lg: 0 12px 40px rgba(13,31,53,.10);
+  --r-sm:  10px;
+  --r-md:  16px;
+  --r-lg:  22px;
+  --r-xl:  30px;
+  --sans:  'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --display: 'Syne', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--page);color:var(--ink);min-height:100vh;overflow-x:hidden}
+button,select{font:inherit;cursor:pointer}
+
+/* ═══════════════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════════════ */
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+
+/* ═══════════════════════════════════════════════
+   LANDING PAGE
+═══════════════════════════════════════════════ */
+#landing{
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, #c5d9f5 0%, transparent 60%),
+              linear-gradient(180deg, #e8eef7 0%, var(--page) 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 20px;min-height:100vh;
+}
+.landing-header{text-align:center;margin-bottom:56px}
+.landing-logo{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--blue);margin-bottom:28px
+}
+.landing-logo-mark{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--blue) 0%,var(--blue-mid) 100%);
+  display:flex;align-items:center;justify-content:center;
+}
+.landing-logo-mark svg{fill:white;width:18px;height:18px}
+.landing-title{
+  font-family:var(--display);font-size:clamp(2.4rem,5vw,3.6rem);
+  font-weight:800;letter-spacing:-.04em;color:var(--ink);line-height:1.05;margin-bottom:14px
+}
+.landing-title span{color:var(--blue)}
+.landing-sub{
+  font-size:1.05rem;color:var(--ink-mid);line-height:1.55;
+  max-width:560px;margin:0 auto
+}
+.role-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(280px,340px));
+  gap:16px;margin-bottom:40px
+}
+@media(max-width:720px){.role-grid{grid-template-columns:1fr}}
+.role-card{
+  background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r-lg);
+  padding:28px 28px 24px;cursor:pointer;
+  transition:border-color .2s,box-shadow .2s,transform .18s;
+  text-align:left;appearance:none;
+  box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.role-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--role-color,var(--blue)) 0%,transparent 60%);
+  opacity:0;transition:opacity .2s
+}
+.role-card:hover{
+  border-color:var(--role-color,var(--blue));
+  box-shadow:0 8px 32px rgba(13,31,53,.14);transform:translateY(-2px)
+}
+.role-card:hover::before{opacity:.04}
+.role-card:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.role-card__badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:4px 10px;border-radius:999px;margin-bottom:14px;
+  background:color-mix(in srgb, var(--role-color,var(--blue)) 12%, transparent);
+  color:var(--role-color,var(--blue))
+}
+.role-card__title{
+  font-family:var(--display);font-size:1.3rem;font-weight:700;
+  letter-spacing:-.02em;color:var(--ink);margin-bottom:8px
+}
+.role-card__sub{font-size:.88rem;color:var(--ink-mid);line-height:1.5;margin-bottom:16px}
+.role-card__metrics{display:flex;flex-wrap:wrap;gap:6px}
+.role-card__metric{
+  font-size:.75rem;font-weight:600;padding:3px 9px;border-radius:999px;
+  background:var(--surf3);color:var(--ink-soft);border:1px solid var(--line)
+}
+.role-card__arrow{
+  position:absolute;bottom:24px;right:24px;
+  width:32px;height:32px;border-radius:50%;
+  background:color-mix(in srgb, var(--role-color,var(--blue)) 12%, transparent);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--role-color,var(--blue));font-size:1rem;
+  transition:background .2s,transform .2s
+}
+.role-card:hover .role-card__arrow{
+  background:var(--role-color,var(--blue));color:white;transform:translateX(3px)
+}
+.landing-note{font-size:.8rem;color:var(--ink-faint);text-align:center}
+.landing-note a{color:var(--blue);text-decoration:none}
+
+/* ═══════════════════════════════════════════════
+   SHARED TOPBAR
+═══════════════════════════════════════════════ */
+.topbar{
+  background:var(--ink);color:#fff;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:52px;position:sticky;top:0;z-index:200
+}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.topbar-logo{
+  font-family:var(--display);font-size:15px;font-weight:700;letter-spacing:-.01em;color:#fff
+}
+.topbar-sep{width:1px;height:18px;background:rgba(255,255,255,.18)}
+.topbar-context{font-size:.78rem;color:rgba(255,255,255,.5);letter-spacing:.02em}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.role-pill{
+  display:flex;align-items:center;gap:6px;
+  font-size:.73rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:4px 12px;border-radius:999px;
+  background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.15)
+}
+.role-dot{width:7px;height:7px;border-radius:50%;background:var(--role-dot,#60b5f5)}
+.topbar-back{
+  appearance:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);
+  color:rgba(255,255,255,.7);border-radius:var(--r-sm);padding:5px 14px;
+  font-size:.78rem;font-weight:600;transition:background .15s,color .15s
+}
+.topbar-back:hover{background:rgba(255,255,255,.15);color:#fff}
+.topbar-date{font-size:.73rem;color:rgba(255,255,255,.38)}
+
+/* ═══════════════════════════════════════════════
+   SHARED NORTH STAR STRIP
+═══════════════════════════════════════════════ */
+.north-star{
+  background:linear-gradient(90deg,#0d1f35 0%,#1a3a5c 100%);
+  padding:12px 24px;display:flex;align-items:center;gap:0;
+  overflow-x:auto;scrollbar-width:none;border-bottom:1px solid rgba(255,255,255,.06)
+}
+.north-star::-webkit-scrollbar{display:none}
+.ns-item{
+  display:flex;align-items:center;gap:10px;padding:0 20px;
+  border-right:1px solid rgba(255,255,255,.1);flex-shrink:0
+}
+.ns-item:first-child{padding-left:0}
+.ns-item:last-child{border-right:none}
+.ns-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.ns-value{font-family:var(--display);font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:-.03em}
+.ns-delta{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px}
+.ns-up{background:rgba(26,122,74,.25);color:#5dd89a}
+.ns-dn{background:rgba(181,46,46,.2);color:#f08080}
+.ns-nt{background:rgba(255,255,255,.08);color:rgba(255,255,255,.45)}
+.ns-signal{
+  display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;
+  font-size:.73rem;font-weight:600;
+}
+.ns-signal-r{background:rgba(181,46,46,.2);color:#f08080}
+.ns-signal-a{background:rgba(154,101,0,.25);color:#f5c060}
+.ns-signal-g{background:rgba(26,122,74,.2);color:#5dd89a}
+.ns-dot{width:6px;height:6px;border-radius:50%}
+
+/* ═══════════════════════════════════════════════
+   COCKPIT LAYOUT
+═══════════════════════════════════════════════ */
+.cockpit-body{max-width:1200px;margin:0 auto;padding:8px 24px 60px}
+.section-divider{
+  display:flex;align-items:baseline;gap:10px;
+  border-bottom:2px solid var(--blue-lt);padding-bottom:8px;
+  margin-bottom:16px;margin-top:28px
+}
+.sec-n{font-size:11px;font-weight:700;color:var(--blue-mid);letter-spacing:.08em;font-family:var(--display)}
+.sec-t{font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.02em;font-family:var(--display)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:18px 20px;box-shadow:var(--shadow)}
+.card-blue{background:var(--blue-lt);border:1px solid var(--blue-bd);border-radius:var(--r-md);padding:18px 20px}
+.card-dark{background:var(--ink);border-radius:var(--r-md);padding:18px 20px}
+.card-amber{background:var(--amber-lt);border:1px solid #f0c870;border-radius:var(--r-md);padding:18px 20px}
+.card-red{background:var(--surface);border:1px solid #f0b0b0;border-radius:var(--r-md);padding:18px 20px}
+.lbl{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:10px;font-family:var(--display);letter-spacing:.01em}
+.sublbl{font-size:11px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:900px){
+  .g6{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:1fr 1fr}
+  .g2{grid-template-columns:1fr}
+}
+.met-card{background:var(--surf2);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px 16px}
+.met-val{font-family:var(--display);font-size:1.7rem;font-weight:800;color:var(--ink);letter-spacing:-.03em;line-height:1}
+.met-lbl{font-size:.78rem;color:var(--ink-mid);margin-top:4px;line-height:1.35}
+.met-trend{font-size:.72rem;margin-top:6px;font-weight:600}
+.trend-up{color:var(--green)}.trend-dn{color:var(--red)}.trend-nt{color:var(--ink-soft)}
+.rag{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.rag-g{background:var(--green-lt);color:var(--green)}
+.rag-a{background:var(--amber-lt);color:var(--amber)}
+.rag-r{background:var(--red-lt);color:var(--red)}
+.rag-b{background:var(--blue-lt);color:var(--blue)}
+.prog{height:6px;background:var(--surf3);border-radius:3px;overflow:hidden;margin-top:3px}
+.pf{height:100%;border-radius:3px}
+.row-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:.87rem}
+.row-item:last-child{border-bottom:none}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{text-align:left;padding:7px 8px;font-weight:700;color:var(--ink-soft);font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--line)}
+td{padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:nth-child(even) td{background:var(--surf2)}
+
+/* ── Heatmap ── */
+.hm-h{background:var(--green-lt);color:var(--green);border-radius:5px;padding:4px 2px;text-align:center;font-size:.72rem;font-weight:700}
+.hm-m{background:var(--amber-lt);color:var(--amber);border-radius:5px;padding:4px 2px;text-align:center;font-size:.72rem;font-weight:700}
+.hm-l{background:var(--red-lt);color:var(--red);border-radius:5px;padding:4px 2px;text-align:center;font-size:.72rem;font-weight:700}
+
+/* ── CIO SPECIFIC ── */
+.swimlane{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:18px;box-shadow:var(--shadow)}
+.swimlane__title{font-family:var(--display);font-size:.85rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);margin-bottom:14px}
+.swimlane__metric{margin-bottom:12px}
+.swimlane__metric-label{font-size:.78rem;color:var(--ink-mid);margin-bottom:4px}
+.swimlane__metric-value{font-family:var(--display);font-size:1.6rem;font-weight:800;letter-spacing:-.03em;color:var(--ink)}
+.swimlane__metric-delta{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:700;margin-left:8px}
+.swimlane__interp{font-size:.8rem;color:var(--ink-mid);line-height:1.5;padding:10px;background:var(--surf2);border-radius:var(--r-sm);margin-top:10px;border-left:3px solid var(--blue-mid)}
+.kpi-bar{margin-bottom:8px}
+.kpi-bar__top{display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:3px}
+.kpi-bar__label{color:var(--ink-mid)}
+.kpi-bar__vals{display:flex;gap:10px;font-weight:700}
+.kpi-bar__baseline{color:var(--ink-faint)}
+.kpi-bar__pilot{color:var(--ink)}
+.kpi-bar__target{color:var(--blue)}
+.bar-track{height:10px;background:var(--surf3);border-radius:5px;overflow:hidden;position:relative}
+.bar-baseline{position:absolute;height:100%;background:var(--line2);border-radius:5px}
+.bar-pilot{position:absolute;height:100%;background:linear-gradient(90deg,var(--blue) 0%,var(--blue-mid) 100%);border-radius:5px}
+.baseline-toggle{display:flex;gap:0;background:var(--surf3);border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
+.toggle-btn{background:none;border:none;padding:6px 16px;font-size:.78rem;font-weight:600;color:var(--ink-soft);transition:all .15s}
+.toggle-btn.active{background:var(--blue);color:white}
+.governance-chip{
+  display:flex;align-items:center;gap:8px;padding:10px 14px;
+  border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surf2);margin-bottom:8px
+}
+.governance-chip__dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.governance-chip__label{font-size:.84rem;font-weight:600;color:var(--ink)}
+.governance-chip__detail{font-size:.78rem;color:var(--ink-mid)}
+.governance-chip__count{font-family:var(--display);font-size:1.2rem;font-weight:800;margin-left:auto}
+.control-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.control-item:last-child{border-bottom:none}
+.control-item__copy strong{display:block;color:#e8f0fb;font-size:.84rem}
+.control-item__copy span{color:#7a9cc4;font-size:.78rem;line-height:1.4}
+.routing-map{padding:16px}
+.route-node{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;
+  border-radius:var(--r-sm);margin-bottom:8px;
+}
+.route-node--auto{background:rgba(26,122,74,.12);border:1px solid rgba(26,122,74,.2)}
+.route-node--review{background:rgba(154,101,0,.1);border:1px solid rgba(154,101,0,.2)}
+.route-node--gate{background:rgba(26,85,163,.1);border:1px solid rgba(26,85,163,.2)}
+.route-label{font-size:.82rem;font-weight:600}
+.route-count{margin-left:auto;font-family:var(--display);font-size:1.1rem;font-weight:800}
+.pending-item{padding:12px 0;border-bottom:1px solid var(--line)}
+.pending-item:last-child{border-bottom:none}
+.pending-item__title{font-size:.84rem;font-weight:600;color:var(--ink);margin-bottom:4px}
+.pending-item__meta{font-size:.75rem;color:var(--ink-soft)}
+.trend-bars{display:grid;gap:14px}
+.trend-row{display:grid;grid-template-columns:90px 1fr 80px;align-items:center;gap:12px}
+.trend-label{font-size:.78rem;font-weight:600;color:var(--ink-mid)}
+.trend-track{height:10px;background:var(--surf3);border-radius:5px;overflow:visible;position:relative}
+.trend-b{position:absolute;height:100%;background:var(--line2);border-radius:5px}
+.trend-c{position:absolute;height:100%;background:var(--blue);border-radius:5px}
+.trend-t-marker{position:absolute;top:-3px;width:2px;height:16px;background:var(--blue-mid);border-radius:1px;opacity:.5}
+.trend-vals{font-size:.75rem;text-align:right;color:var(--ink-mid)}
+.trend-vals strong{display:block;font-size:.9rem;color:var(--ink);font-family:var(--display);font-weight:700}
+.action-row{display:grid;grid-template-columns:1fr auto auto auto;align-items:start;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.action-row:last-child{border-bottom:none}
+.action-title{font-size:.84rem;font-weight:600;color:var(--ink)}
+.action-sub{font-size:.75rem;color:var(--ink-soft);margin-top:3px}
+.action-owner{font-size:.78rem;color:var(--ink-mid)}
+.action-due{font-size:.78rem;color:var(--ink-mid);white-space:nowrap}
+.impact-badge{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--blue-lt);color:var(--blue);white-space:nowrap}
+.roadmap-step{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:18px}
+.roadmap-window{display:inline-flex;padding:3px 10px;border-radius:999px;background:var(--blue-lt);color:var(--blue);font-size:.73rem;font-weight:700;margin-bottom:10px}
+.roadmap-step h3{font-family:var(--display);font-size:1rem;font-weight:700;letter-spacing:-.02em;margin-bottom:10px}
+.roadmap-step ul{padding-left:16px;color:var(--ink-mid);font-size:.82rem;line-height:1.5}
+.roadmap-step li+li{margin-top:8px}
+
+/* ── Mode toggle ── */
+.mode-toggle{display:flex;gap:0;background:var(--surf3);border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;margin-bottom:20px}
+.mode-btn{background:none;border:none;padding:7px 18px;font-size:.78rem;font-weight:600;color:var(--ink-soft);transition:all .15s;cursor:pointer}
+.mode-btn.active{background:var(--blue);color:white}
+
+/* ── CEO nav ── */
+.cockpit-nav{background:var(--surface);border-bottom:1px solid var(--line);padding:0 20px;display:flex;gap:0;overflow-x:auto;position:sticky;top:52px;z-index:100;scrollbar-width:none}
+.cockpit-nav::-webkit-scrollbar{display:none}
+.cnav-btn{background:none;border:none;padding:10px 13px;font-size:.74rem;font-weight:600;color:var(--ink-soft);border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .15s;font-family:var(--sans)}
+.cnav-btn:hover{color:var(--blue)}
+.cnav-btn.active{color:var(--blue);font-weight:700;border-bottom-color:var(--blue)}
+
+/* ── Misc ── */
+.note-box{background:var(--surf2);border-left:3px solid var(--blue-mid);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:10px 14px;font-size:.82rem;color:var(--ink-mid);line-height:1.6;margin-bottom:14px}
+.footer-bar{border-top:1px solid var(--line);padding-top:14px;display:flex;justify-content:space-between;font-size:.73rem;color:var(--ink-faint);flex-wrap:wrap;gap:8px;margin-top:8px}
+
+/* ── Tier badge ── */
+.tier{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px}
+.t1{background:var(--blue-lt);color:var(--blue)}
+.t2{background:var(--teal-lt);color:var(--teal)}
+.t3{background:var(--amber-lt);color:var(--amber)}
+
+/* ── Radar placeholder ── */
+.radar-wrap{position:relative;height:200px}
+
+@media(max-width:700px){
+  .cockpit-body{padding:6px 12px 40px}
+  .north-star{padding:10px 12px}
+  .topbar{padding:0 14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     LANDING PAGE
+════════════════════════════════════════════════ -->
+<div id="landing" class="screen active">
+  <div class="landing-header">
+    <div class="landing-logo">
+      <div class="landing-logo-mark">
+        <svg viewBox="0 0 18 18"><path d="M2 14 L9 4 L16 14 L9 11Z" opacity=".9"/></svg>
+      </div>
+      Meridian Group
+    </div>
+    <h1 class="landing-title">AI Enterprise<br/><span>Cockpit</span></h1>
+    <p class="landing-sub">One platform. Two perspectives. All from the same data. Choose your role to enter your view.</p>
+  </div>
+
+  <div class="role-grid">
+    <button class="role-card" style="--role-color:#1a55a3" onclick="enterView('ceo')">
+      <div class="role-card__badge">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="3" r="2.5"/><path d="M1 11c0-2.76 2.24-5 5-5s5 2.24 5 5"/></svg>
+        CEO · CFO · Board
+      </div>
+      <div class="role-card__title">Institutionalisation View</div>
+      <div class="role-card__sub">How deeply is AI embedded across Meridian's strategy, operations, people, governance, and culture? Enterprise-wide maturity, value, risk, and competitive position.</div>
+      <div class="role-card__metrics">
+        <span class="role-card__metric">AII Score</span>
+        <span class="role-card__metric">Portfolio ROI</span>
+        <span class="role-card__metric">Responsible AI</span>
+        <span class="role-card__metric">Tech Debt</span>
+        <span class="role-card__metric">Benchmarks</span>
+      </div>
+      <div class="role-card__arrow">→</div>
+    </button>
+
+    <button class="role-card" style="--role-color:#0e7c6b" onclick="enterView('cio')">
+      <div class="role-card__badge" style="--role-color:#0e7c6b">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><rect x="1" y="1" width="4" height="10" rx="1"/><rect x="7" y="4" width="4" height="7" rx="1"/></svg>
+        CIO · Engineering · Delivery
+      </div>
+      <div class="role-card__title">Delivery Engine View</div>
+      <div class="role-card__sub">Is AI actually improving how Meridian builds and runs software? Delivery flow, quality guardrails, human oversight, cost efficiency, and 30/60/90 roadmap.</div>
+      <div class="role-card__metrics">
+        <span class="role-card__metric">Flow Index</span>
+        <span class="role-card__metric">Quality Guardrail</span>
+        <span class="role-card__metric">AI Coverage</span>
+        <span class="role-card__metric">Cost</span>
+        <span class="role-card__metric">Oversight</span>
+      </div>
+      <div class="role-card__arrow" style="--role-color:#0e7c6b">→</div>
+    </button>
+
+    <button class="role-card" style="--role-color:#9a3080" onclick="enterView('ciso')">
+      <div class="role-card__badge" style="--role-color:#9a3080">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 1L1 3.5v3C1 9.5 3.2 11.7 6 12c2.8-.3 5-2.5 5-5.5v-3L6 1z"/></svg>
+        CISO · Risk · Compliance
+      </div>
+      <div class="role-card__title">Risk &amp; Governance View</div>
+      <div class="role-card__sub">Where are the AI risk exposures? Shadow AI, model drift, prompt debt, Responsible AI gaps, regulatory readiness, and human oversight controls — all in one place.</div>
+      <div class="role-card__metrics">
+        <span class="role-card__metric">Shadow AI</span>
+        <span class="role-card__metric">Prompt Debt</span>
+        <span class="role-card__metric">RAI Index</span>
+        <span class="role-card__metric">Regulatory</span>
+        <span class="role-card__metric">Controls</span>
+      </div>
+      <div class="role-card__arrow" style="--role-color:#9a3080">→</div>
+    </button>
+
+    <button class="role-card" style="--role-color:#b56a00" onclick="enterView('coo')">
+      <div class="role-card__badge" style="--role-color:#b56a00">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 3.5v2.5l2 1"/></svg>
+        COO · Operations · Service
+      </div>
+      <div class="role-card__title">Operations &amp; Service View</div>
+      <div class="role-card__sub">How are AI agents performing in live operations? Voice AI, ticket resolution, RCA, IAC Assist, SLA/XLA/BPLA — the operational pulse of Meridian's AI programme.</div>
+      <div class="role-card__metrics">
+        <span class="role-card__metric">MTTR</span>
+        <span class="role-card__metric">NPS vs human</span>
+        <span class="role-card__metric">Agent health</span>
+        <span class="role-card__metric">SLA breach</span>
+        <span class="role-card__metric">BPLA</span>
+      </div>
+      <div class="role-card__arrow" style="--role-color:#b56a00">→</div>
+    </button>
+  </div>
+
+  <p class="landing-note">All views draw from the same shared data model · Q1 2026 · Last refresh 08 Apr 2026, 08:30 BST</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     CEO VIEW
+════════════════════════════════════════════════ -->
+<div id="ceo-view" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">Meridian</span>
+      <span class="topbar-sep"></span>
+      <span class="topbar-context">AI Enterprise Cockpit</span>
+    </div>
+    <div class="topbar-right">
+      <div class="role-pill" style="--role-dot:#60b5f5">
+        <div class="role-dot"></div> CEO · CFO · Board
+      </div>
+      <button class="topbar-back" onclick="goHome()">← All views</button>
+      <span class="topbar-date">Q1 2026 · 08 Apr</span>
+    </div>
+  </div>
+  <div class="north-star" id="ceo-ns"></div>
+  <div class="cockpit-nav" id="ceo-nav"></div>
+  <div class="cockpit-body" id="ceo-body"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     CIO VIEW
+════════════════════════════════════════════════ -->
+<div id="cio-view" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">Meridian</span>
+      <span class="topbar-sep"></span>
+      <span class="topbar-context">AI Enterprise Cockpit</span>
+    </div>
+    <div class="topbar-right">
+      <div class="role-pill" style="--role-dot:#5dd8c0">
+        <div class="role-dot"></div> CIO · Delivery Engine
+      </div>
+      <button class="topbar-back" onclick="goHome()">← All views</button>
+      <span class="topbar-date">Q2 2026 · 07 Apr</span>
+    </div>
+  </div>
+  <div class="north-star" id="cio-ns"></div>
+  <div class="cockpit-body" id="cio-body"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     CISO VIEW
+════════════════════════════════════════════════ -->
+<div id="ciso-view" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">Meridian</span>
+      <span class="topbar-sep"></span>
+      <span class="topbar-context">AI Enterprise Cockpit</span>
+    </div>
+    <div class="topbar-right">
+      <div class="role-pill" style="--role-dot:#d89ae0">
+        <div class="role-dot"></div> CISO · Risk &amp; Governance
+      </div>
+      <button class="topbar-back" onclick="goHome()">← All views</button>
+      <span class="topbar-date">Q1 2026 · 08 Apr</span>
+    </div>
+  </div>
+  <div class="north-star" id="ciso-ns"></div>
+  <div class="cockpit-body" id="ciso-body"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     COO VIEW
+════════════════════════════════════════════════ -->
+<div id="coo-view" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">Meridian</span>
+      <span class="topbar-sep"></span>
+      <span class="topbar-context">AI Enterprise Cockpit</span>
+    </div>
+    <div class="topbar-right">
+      <div class="role-pill" style="--role-dot:#f5c060">
+        <div class="role-dot"></div> COO · Operations
+      </div>
+      <button class="topbar-back" onclick="goHome()">← All views</button>
+      <span class="topbar-date">Q1 2026 · 08 Apr</span>
+    </div>
+  </div>
+  <div class="north-star" id="coo-ns"></div>
+  <div class="cockpit-body" id="coo-body"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+/* ═══════════════════════════════════════════════
+   SHARED DATA MODEL
+   Single source of truth — both cockpits draw here
+═══════════════════════════════════════════════ */
+const D = {
+  org: 'Meridian Group',
+  period: 'Q1 2026',
+  /* ── AII ── */
+  aii: { score:67, strategy:71, operations:63, people:58, qoq:'+4' },
+  /* ── Delivery (from CIO cockpit) ── */
+  delivery: {
+    flowIndex:79, flowTarget:84, flowBaseline:67,
+    qualityGuardrail:96, qualityTarget:97, qualityBaseline:91,
+    aiCoverage:63, aiCoverageTarget:75, aiCoverageBaseline:24,
+    productivityGain:18, productivityTarget:22,
+    runRateCost:1.31, runRateCostTarget:1.18,
+    mttr:5.1, mttrBaseline:7.2,
+    changeFailureRate:6.4, changeFailureBaseline:9.1,
+    prCycleTime:23, prCycleBaseline:31,
+    decisionLatency:6.8, decisionLatencyBaseline:9.5
+  },
+  /* ── Operations (from CEO cockpit) ── */
+  ops: {
+    voiceContainment:73, ticketAuto:61, avgHandleTime:4.2,
+    alertNoise:50, hallucinations:3,
+    mttrAI:4.2, mttrHuman:11.3,
+    slaBreach:3.1, mtta:1.8,
+    npsAI:42, npsHuman:38, csat:4.3, fcr:82
+  },
+  /* ── Finance ── */
+  finance: {
+    totalSpend:5.0, deliverySpend:1.31, opSpend:3.69,
+    valueDelivered:18.4, roiMultiple:3.7, costPerOutcome:0.38
+  },
+  /* ── Governance ── */
+  governance: {
+    modelsInv:31, govCoverage:74, shadowAI:6, euAiAct:82,
+    greenUseCases:26, amberUseCases:8, redUseCases:2,
+    policyExceptions:5, overrideRate:9, auditEvidence:97,
+    debtIndex:38,
+    promptDocumented:48, inputValidation:39, injectionTested:22
+  },
+  /* ── RAI ── */
+  rai: { index:62, fairness:58, reliability:71, privacy:64, inclusiveness:54, transparency:61, accountability:63 },
+  /* ── Workforce ── */
+  workforce: {
+    champCertified:47, champCoverage:'6/7',
+    trainingFound:78, trainingApplied:54, trainingLeadership:41
+  },
+  /* ── Competitive ── */
+  benchmark: {
+    dims:[
+      ['Strategic alignment',71,62],['Portfolio & ROI',68,59],['Governance & risk',63,71],
+      ['Workforce',60,55],['Technology',74,66],['Culture',51,52],
+      ['Operational AI',61,48],['SLA/XLA',66,54],['Responsible AI',62,57]
+    ]
+  }
+};
+
+/* ═══════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════ */
+function rag(s){
+  const m={g:{bg:'var(--green-lt)',fg:'var(--green)',t:'On track'},a:{bg:'var(--amber-lt)',fg:'var(--amber)',t:'Amber'},r:{bg:'var(--red-lt)',fg:'var(--red)',t:'Critical'},b:{bg:'var(--blue-lt)',fg:'var(--blue)',t:'Scaling'},h:{bg:'var(--green-lt)',fg:'var(--green)',t:'Healthy'}};
+  const x=m[s]||m.g;
+  return '<span class="rag" style="background:'+x.bg+';color:'+x.fg+'">'+x.t+'</span>';
+}
+function pb(pct,col){return '<div class="prog"><div class="pf" style="width:'+Math.min(pct,100)+'%;background:'+col+'"></div></div>';}
+function mr(l,v,pct,col){return '<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:3px"><span style="color:var(--ink-mid)">'+l+'</span><span style="font-weight:700">'+v+'</span></div>'+pb(pct,col)+'</div>';}
+function mc(v,l,t,up){return '<div class="met-card"><div class="met-val">'+v+'</div><div class="met-lbl">'+l+'</div>'+(t?'<div class="met-trend '+(up===true?'trend-up':up===false?'trend-dn':'trend-nt')+'">'+t+'</div>':'')+'</div>';}
+function div(n,t){return '<div class="section-divider"><span class="sec-n">'+n+'</span><span class="sec-t">'+t+'</span></div>';}
+function tier(t){var isT3=t.indexOf('T3')>=0,isT2=t.indexOf('T2')>=0&&!isT3;return '<span class="tier '+(isT3?'t3':isT2?'t2':'t1')+'">'+t+'</span>';}
+
+/* ═══════════════════════════════════════════════
+   SHARED NORTH STAR STRIP (same on all views)
+═══════════════════════════════════════════════ */
+function buildNS(){
+  return '<div class="ns-item"><div class="ns-label">AII Score</div><div style="display:flex;align-items:center;gap:8px"><div class="ns-value">67</div><span class="ns-delta ns-up">+4 pts QoQ</span></div></div>'
+    +'<div class="ns-item"><div class="ns-label">Flow Index</div><div style="display:flex;align-items:center;gap:8px"><div class="ns-value">79</div><span class="ns-delta ns-up">↑ vs 67 base</span></div></div>'
+    +'<div class="ns-item"><div class="ns-label">Portfolio ROI</div><div style="display:flex;align-items:center;gap:8px"><div class="ns-value">3.7×</div><span class="ns-delta ns-up">£18.4M value</span></div></div>'
+    +'<div class="ns-item"><div class="ns-label">RAI Index</div><div style="display:flex;align-items:center;gap:8px"><div class="ns-value">62</div><span class="ns-delta ns-up">+5 pts QoQ</span></div></div>'
+    +'<div class="ns-item"><div class="ns-label">Top signals</div>'
+    +'<div style="display:flex;gap:6px;align-items:center">'
+    +'<span class="ns-signal ns-signal-r"><span class="ns-dot" style="background:#f08080"></span>Shadow AI — Finance</span>'
+    +'<span class="ns-signal ns-signal-r"><span class="ns-dot" style="background:#f08080"></span>Prompt debt critical</span>'
+    +'<span class="ns-signal ns-signal-a"><span class="ns-dot" style="background:#f5c060"></span>Forecasting drift</span>'
+    +'<span class="ns-signal ns-signal-g"><span class="ns-dot" style="background:#5dd89a"></span>SLA improving</span>'
+    +'</div></div>';
+}
+['ceo','cio','ciso','coo'].forEach(function(r){
+  var el=document.getElementById(r+'-ns');
+  if(el) el.innerHTML=buildNS();
+});
+
+/* ═══════════════════════════════════════════════
+   SCREEN SWITCHING
+═══════════════════════════════════════════════ */
+function enterView(role){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(role+'-view').classList.add('active');
+  window.scrollTo(0,0);
+  if(role==='ceo' && !document.getElementById('ceo-body').innerHTML){buildCEO();}
+  if(role==='cio' && !document.getElementById('cio-body').innerHTML){buildCIO();}
+  if(role==='ciso'&& !document.getElementById('ciso-body').innerHTML){buildCISO();}
+  if(role==='coo' && !document.getElementById('coo-body').innerHTML){buildCOO();}
+}
+function goHome(){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById('landing').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ═══════════════════════════════════════════════
+   CEO VIEW — INSTITUTIONALISATION
+═══════════════════════════════════════════════ */
+var ceoNav=[{id:'aii',t:'AII Index'},{id:'portfolio',t:'Portfolio'},{id:'operational',t:'Operational AI'},{id:'sla',t:'SLA/XLA'},{id:'governance',t:'Governance'},{id:'workforce',t:'Workforce'},{id:'technology',t:'Technology'},{id:'culture',t:'Culture'},{id:'techdebt',t:'Tech Debt'},{id:'rai',t:'Responsible AI'},{id:'benchmark',t:'Benchmarks'}];
+
+function buildCEO(){
+  var nav=document.getElementById('ceo-nav');
+  nav.innerHTML=ceoNav.map(function(n,i){
+    return '<button class="cnav-btn'+(i===0?' active':'')+'" onclick="ceoScroll(this,\'ceo-'+n.id+'\')">'+n.t+'</button>';
+  }).join('');
+
+  var dims=D.benchmark.dims;
+  var dimHtml=dims.map(function(d){
+    var us=d[1],peer=d[2];
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:.78rem">'
+      +'<span style="width:150px;color:var(--ink-mid);flex-shrink:0">'+d[0]+'</span>'
+      +'<div style="flex:1;position:relative;height:6px;background:var(--surf3);border-radius:3px;overflow:hidden">'
+      +'<div style="position:absolute;top:0;height:100%;width:'+peer+'%;background:var(--line2);border-radius:3px"></div>'
+      +'<div style="position:absolute;top:0;height:100%;width:'+us+'%;background:'+(us>=peer?'var(--blue)':'var(--red)')+';border-radius:3px"></div>'
+      +'</div>'
+      +'<span style="width:54px;text-align:right;font-size:.72rem;font-weight:700;color:'+(us>=peer?'var(--green)':'var(--red)')+'">'+us+' vs '+peer+'</span>'
+      +'</div>';
+  }).join('');
+
+  var portRows=[
+    ['Voice AI service desk','Ops','Production','£3.8M',82,'h','T1+T2'],
+    ['Ticket auto-resolution','Eng','Production','£2.6M',78,'h','T1+T2'],
+    ['RCA & change request AI','Eng','Scaling','£2.2M',61,'a','T3'],
+    ['Customer intent prediction','Comm','Production','£4.2M',88,'h','T2'],
+    ['Contract review automation','Legal','Production','£2.8M',82,'h','T2+T3'],
+    ['Financial anomaly detection','Finance','Pilot','£2.0M',38,'a','T2'],
+    ['Claims triage & routing','Ops','Stalled','£1.1M',22,'r','T1'],
+  ];
+
+  var portHtml=portRows.map(function(p){
+    return '<tr><td style="font-weight:600">'+p[0]+'</td><td style="color:var(--ink-mid)">'+p[1]+'</td>'
+      +'<td style="color:var(--ink-mid)">'+p[2]+'</td><td style="font-weight:700">'+p[3]+'</td>'
+      +'<td>'+pb(p[4],p[4]>70?'var(--teal)':p[4]>40?'var(--gold)':'var(--red)')+'</td>'
+      +'<td>'+rag(p[5])+'</td><td>'+tier(p[6])+'</td></tr>';
+  }).join('');
+
+  var hmFns=[['Commercial',[85,78,54,41,18]],['Finance',[79,62,48,29,12]],['HR',[91,83,61,44,9]],['Technology',[97,94,88,76,71]],['Operations',[68,49,31,22,7]],['Legal',[72,55,38,81,11]]];
+  var hmHtml='<div style="display:grid;grid-template-columns:100px repeat(5,1fr);gap:3px;font-size:.72rem">'
+    +'<div></div>'+['Aware','Prompt','Integrate','Govern','Build'].map(function(h){return '<div style="font-size:.65rem;font-weight:700;color:var(--ink-soft);padding:3px;text-align:center">'+h+'</div>';}).join('');
+  hmFns.forEach(function(fn){
+    hmHtml+='<div style="font-size:.75rem;color:var(--ink);padding:3px;display:flex;align-items:center">'+fn[0]+'</div>';
+    fn[1].forEach(function(v){var cls=v>=70?'hm-h':v>=40?'hm-m':'hm-l';hmHtml+='<div class="'+cls+'">'+v+'%</div>';});
+  });
+  hmHtml+='</div>';
+
+  var riskItems=[
+    {sev:'r',title:'Shadow AI in Finance — 3 unapproved tools',desc:'Data residency & IP exposure.',owner:'CFO+CISO · Due 30 Apr'},
+    {sev:'r',title:'Prompt injection — 7/9 use cases untested',desc:'Critical prompt debt.',owner:'CTO · Due 15 Apr'},
+    {sev:'a',title:'Demand forecasting drift — APAC & LATAM',desc:'Retraining pipeline not triggered.',owner:'CTO · Due 15 Apr'},
+    {sev:'a',title:'Ethics board quorum — 2 quarters not met',desc:'High-risk approvals backlogged.',owner:'Ethics Officer · Due 01 May'},
+    {sev:'h',title:'Customer-facing AI disclosures — compliant',desc:'All touchpoints auditable.',owner:'CLO · Next review Jun'},
+  ];
+  var riskHtml=riskItems.map(function(r,i){
+    return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;'+(i<4?'border-bottom:1px solid var(--line)':'')+'">'
+      +'<div style="width:7px;height:7px;border-radius:50%;background:'+(r.sev==='r'?'var(--red)':r.sev==='a'?'var(--gold)':'var(--teal)')+';margin-top:3px;flex-shrink:0"></div>'
+      +'<div style="flex:1"><div style="font-size:.84rem;font-weight:600">'+r.title+'</div>'
+      +'<div style="font-size:.76rem;color:var(--ink-mid);margin-top:2px">'+r.desc+'</div>'
+      +'<div style="font-size:.72rem;color:var(--ink-faint);margin-top:2px">'+r.owner+'</div></div>'
+      +rag(r.sev)+'</div>';
+  }).join('');
+
+  /* debt heatmap */
+  var dhInits=['Voice AI SD','Ticket Auto','RCA & CR AI','Intent Pred','Contract Rev','Financial AD','Claims Triage','Mkt Content'];
+  var dhMatrix=[['l','m','r','m'],['m','m','r','m'],['r','m','r','r'],['l','m','m','l'],['m','l','m','l'],['r','m','r','m'],['r','r','r','r'],['l','l','m','l']];
+  var dhCols={l:{bg:'var(--green-lt)',fg:'var(--green)',t:'Low'},m:{bg:'var(--amber-lt)',fg:'var(--amber)',t:'Med'},r:{bg:'var(--red-lt)',fg:'var(--red)',t:'High'}};
+  var debtHm='<table><thead><tr><th>Initiative</th><th style="text-align:center">Data</th><th style="text-align:center">Model</th><th style="text-align:center">Prompt</th><th style="text-align:center">Org</th><th style="text-align:center">Overall</th></tr></thead><tbody>';
+  dhInits.forEach(function(init,i){
+    var row=dhMatrix[i];
+    var hc=row.filter(function(x){return x==='r';}).length;
+    var ov=hc>=3?'r':hc>=1?'m':'l';
+    debtHm+='<tr><td style="font-weight:600">'+init+'</td>';
+    row.forEach(function(c){var s=dhCols[c];debtHm+='<td style="text-align:center"><span style="background:'+s.bg+';color:'+s.fg+';font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:999px">'+s.t+'</span></td>';});
+    var os=dhCols[ov];debtHm+='<td style="text-align:center"><span style="background:'+os.bg+';color:'+os.fg+';font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:999px">'+os.t+'</span></td></tr>';
+  });
+  debtHm+='</tbody></table>';
+
+  /* rai pillars */
+  var raiPillars=[
+    {n:'Fairness',s:58,r:'a',d:'APAC/LATAM bias unresolved. Bias assessments: 44%.'},
+    {n:'Reliability & Safety',s:71,r:'g',d:'Uptime 99.2% but 3 high-risk hallucination incidents.'},
+    {n:'Privacy & Security',s:64,r:'a',d:'Shadow AI in Finance is the primary open risk.'},
+    {n:'Inclusiveness',s:54,r:'a',d:'Accessibility tested on only 3/9 use cases.'},
+    {n:'Transparency',s:61,r:'a',d:'61% explainability coverage. AI disclosed at 100%.'},
+    {n:'Accountability',s:63,r:'a',d:'81% have named owner. Ethics quorum not met.'},
+  ];
+  var raiHtml=raiPillars.map(function(p){
+    return '<div style="background:var(--surf2);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+      +'<div style="font-family:var(--display);font-size:.9rem;font-weight:700">'+p.n+'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px"><span style="font-family:var(--display);font-size:1.2rem;font-weight:800">'+p.s+'</span>'+rag(p.r)+'</div>'
+      +'</div>'
+      +'<div style="font-size:.76rem;color:var(--ink-mid);line-height:1.5">'+p.d+'</div>'
+      +'<div style="margin-top:6px">'+pb(p.s,'var(--blue)')+'</div></div>';
+  }).join('');
+
+  var regData=[['EU AI Act',82,'a'],['GDPR',91,'g'],['ISO 42001',47,'r'],['UK AI Safety',68,'a'],['NIST AI RMF',61,'a'],['SOC 2 Type II',88,'g']];
+  var regHtml=regData.map(function(r,i){
+    return '<div style="padding:9px 0;'+(i<5?'border-bottom:1px solid var(--line)':'')+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">'
+      +'<div style="font-size:.82rem;font-weight:600">'+r[0]+'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px"><span style="font-weight:700">'+r[1]+'%</span>'+rag(r[2]==='g'?'h':r[2])+'</div>'
+      +'</div>'+pb(r[1],r[2]==='g'?'var(--green)':r[2]==='a'?'var(--gold)':'var(--red)')+'</div>';
+  }).join('');
+
+  /* Q2 targets */
+  var q2=[['Composite AII','67','73+'],['Governance coverage','74%','90%+'],['Tech Debt Index','38','<30'],['RAI Index','62','70+'],['SLA breach rate','3.1%','<2%'],['AI Coverage','63%','75%']];
+  var q2Html=q2.map(function(q,i){
+    return '<div style="display:flex;justify-content:space-between;font-size:.78rem;padding:5px 0;'+(i<5?'border-bottom:1px solid rgba(26,85,163,.15)':'')+'">'
+      +'<span style="color:var(--blue)">'+q[0]+'</span>'
+      +'<span><span style="color:var(--ink-soft)">'+q[1]+'</span><span style="color:var(--ink);font-weight:700;margin-left:8px">→ '+q[2]+'</span></span></div>';
+  }).join('');
+
+  /* CIO summary card — reconciliation */
+  var cioSummary='<div class="g4" style="margin-bottom:0">'
+    +mc('79','Delivery Flow Index','↑ from 67 baseline',true)
+    +mc('96%','Quality guardrail','↑ from 91% baseline',true)
+    +mc('63%','AI workflow coverage','↑ from 24% baseline',true)
+    +mc('£1.31M','Delivery AI run-rate','£3.69M operational spend',null)
+    +'</div>';
+
+  document.getElementById('ceo-body').innerHTML=
+    div('01','AI Institutionalisation Index')
+    +'<div style="display:grid;grid-template-columns:200px 1fr 265px;gap:14px;margin-bottom:14px">'
+      +'<div class="card-blue" style="display:flex;flex-direction:column;gap:12px">'
+        +'<div><div style="font-size:.65rem;font-weight:700;color:var(--blue);letter-spacing:.1em;margin-bottom:4px">COMPOSITE SCORE</div>'
+        +'<div style="font-family:var(--display);font-size:3.8rem;font-weight:800;color:var(--ink);line-height:1;letter-spacing:-.04em">67</div>'
+        +'<div style="font-size:.78rem;color:var(--blue);margin-top:4px">out of 100 · +4 pts this quarter</div></div>'
+        +'<div>'+pb(67,'var(--blue)')
+        +'<div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--blue);margin-top:3px"><span>0</span><span>Scaling 55</span><span>Native 76+</span></div></div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'
+          +['71·Strategy','63·Ops','58·People'].map(function(x){var p=x.split('·');return '<div style="background:#fff;border:1px solid var(--blue-bd);border-radius:8px;padding:8px 4px;text-align:center"><div style="font-family:var(--display);font-size:1.2rem;font-weight:800">'+p[0]+'</div><div style="font-size:.65rem;color:var(--blue)">'+p[1]+'</div></div>';}).join('')
+        +'</div>'
+      +'</div>'
+      +'<div class="card"><div class="lbl">Dimension scores vs sector average</div>'+dimHtml
+        +'<div style="display:flex;gap:14px;margin-top:8px;font-size:.72rem;color:var(--ink-soft)">'
+        +'<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:4px;background:var(--blue);border-radius:2px;display:inline-block"></span>Meridian</span>'
+        +'<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:4px;background:var(--line2);border-radius:2px;display:inline-block"></span>Sector avg</span>'
+        +'</div></div>'
+      +'<div class="card"><div class="lbl">Top signals</div>'+riskHtml.slice(0,riskHtml.indexOf('</div></div></div>',200)+18)+'</div>'
+    +'</div>'
+
+    +div('02','Delivery engine summary (CIO view reconciliation)')
+    +'<div class="note-box">These four metrics are drawn from the <strong>CIO Delivery Engine view</strong> — same data, different lens. £1.31M of the £5.0M total AI spend is delivery-specific; £3.69M covers operational AI.</div>'
+    +cioSummary
+
+    +div('03','Use case portfolio & value realisation')
+    +'<div class="g4" style="margin-bottom:14px">'
+      +mc('24','Active initiatives','↑ 6 from last quarter',true)
+      +mc('£18.4M','Value delivered (ann.)','↑ 31% QoQ',true)
+      +mc('9/24','In production','37% of portfolio',null)
+      +mc('£2.1M','Stalled value at risk','↑ 3 stalled use cases',false)
+    +'</div>'
+    +'<div class="card" style="margin-bottom:14px;overflow-x:auto">'
+      +'<table><thead><tr><th>Use case</th><th>Function</th><th>Stage</th><th>Value</th><th style="width:100px">Maturity</th><th>Status</th><th>LLM tier</th></tr></thead>'
+      +'<tbody>'+portHtml+'</tbody></table>'
+      +'<div style="font-size:.72rem;color:var(--ink-faint);margin-top:8px">Showing 7 of 24 · T1=GPT-4o-mini · T2=GPT-4.1 · T3=o-series</div>'
+    +'</div>'
+
+    +div('04','Workforce & culture')
+    +'<div class="g2">'
+      +'<div class="card"><div class="lbl">AI literacy heatmap</div>'+hmHtml
+        +'<div style="display:flex;gap:12px;margin-top:8px;font-size:.72rem">'
+        +'<span style="color:var(--green)">■ High ≥70%</span><span style="color:var(--amber)">■ Med 40–69%</span><span style="color:var(--red)">■ Low &lt;40%</span>'
+        +'</div></div>'
+      +'<div style="display:flex;flex-direction:column;gap:12px">'
+        +'<div class="card"><div class="lbl">Training pipeline</div>'
+          +mr('Foundations (2,100 enrolled)','78%',78,'var(--teal)')
+          +mr('Applied AI (840 enrolled)','54%',54,'var(--gold)')
+          +mr('Leadership & governance (310)','41%',41,'var(--red)')
+        +'</div>'
+        +'<div class="card"><div class="lbl">AI sentiment</div>'
+          +'<div style="display:flex;height:8px;border-radius:4px;overflow:hidden;margin-bottom:6px">'
+          +'<div style="width:52%;background:var(--teal)"></div><div style="width:28%;background:var(--line2)"></div><div style="width:20%;background:var(--red)"></div></div>'
+          +'<div style="display:flex;gap:12px;font-size:.72rem;color:var(--ink-mid);margin-bottom:8px"><span>Positive 52%</span><span>Neutral 28%</span><span>Resistant 20%</span></div>'
+          +mr('CxO alignment','88%',88,'var(--teal)')
+          +mr('Senior leadership','74%',74,'var(--teal)')
+          +mr('Middle management','52%',52,'var(--gold)')
+        +'</div>'
+      +'</div>'
+    +'</div>'
+
+    +div('05','Governance & risk')
+    +'<div class="g4" style="margin-bottom:14px">'
+      +mc('31','Models in inventory','↑ 5 new this quarter',true)
+      +mc('74%','Governance coverage','8 ungoverned models',false)
+      +mc('6','Shadow AI signals','Requires investigation',false)
+      +mc('82%','EU AI Act readiness','↑ from 61%',true)
+    +'</div>'
+    +'<div class="card" style="margin-bottom:14px"><div class="lbl">Risk register</div>'+riskHtml+'</div>'
+
+    +div('06','Technology')
+    +'<div class="g4" style="margin-bottom:0">'
+      +mc('99.2%','Platform uptime','Above SLA target',true)
+      +mc('£0.38','Cost per AI outcome','↓ 22% QoQ',true)
+      +mc('14d','Avg deployment cycle','↓ from 31 days',true)
+      +mc('3.7×','ROI multiple','Sector avg 2.8×',true)
+    +'</div>'
+
+    +div('07','AI Technical Debt')
+    +'<div style="display:grid;grid-template-columns:180px 1fr;gap:14px;margin-bottom:14px">'
+      +'<div class="card-amber" style="display:flex;flex-direction:column;gap:10px">'
+        +'<div style="font-size:.65rem;font-weight:700;color:var(--amber);letter-spacing:.1em">DEBT INDEX</div>'
+        +'<div style="font-family:var(--display);font-size:3.5rem;font-weight:800;color:#5a3500;line-height:1;letter-spacing:-.04em">38</div>'
+        +'<div style="font-size:.76rem;color:var(--amber)">out of 100 · lower is better</div>'
+        +'<div style="height:8px;background:#f0c870;border-radius:4px;overflow:hidden"><div style="height:100%;width:38%;background:#5a3500;border-radius:4px"></div></div>'
+        +'<div style="background:white;border:1px solid #f0c870;border-radius:8px;padding:8px;font-size:.76rem;color:var(--amber)"><strong style="color:#5a3500">Medium</strong> · Prompt &amp; Org debt critical. Trend: worsening.</div>'
+      +'</div>'
+      +'<div class="card"><div class="lbl">Debt heatmap by initiative</div>'+debtHm+'</div>'
+    +'</div>'
+    +'<div style="font-size:.78rem;color:var(--red);background:var(--red-lt);padding:10px 14px;border-radius:var(--r-sm);margin-bottom:14px">&#9888; 52% of system prompts are undocumented. 7/9 use cases have not been pen-tested for prompt injection. Immediate action required by CTO.</div>'
+
+    +div('08','Responsible AI Dashboard')
+    +'<div class="g2">'
+      +'<div class="card-blue"><div style="font-size:.65rem;font-weight:700;color:var(--blue);letter-spacing:.1em;margin-bottom:4px">RAI INDEX</div>'
+        +'<div style="font-family:var(--display);font-size:3.2rem;font-weight:800;color:var(--ink);line-height:1;letter-spacing:-.04em">62</div>'
+        +'<div style="font-size:.76rem;color:var(--blue);margin-top:4px">out of 100 · +5 pts QoQ</div>'
+        +'<div style="margin:10px 0">'+pb(62,'var(--blue)')+'</div>'
+        +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">'
+          +[['58','Fairness'],['71','Reliability'],['64','Privacy'],['54','Inclusive'],['61','Transparent'],['63','Accountable']].map(function(p){
+            return '<div style="background:white;border:1px solid var(--blue-bd);border-radius:8px;padding:8px;text-align:center">'
+              +'<div style="font-family:var(--display);font-size:1.1rem;font-weight:800">'+p[0]+'</div>'
+              +'<div style="font-size:.65rem;color:var(--blue)">'+p[1]+'</div></div>';
+          }).join('')
+        +'</div>'
+      +'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:10px">'+raiHtml+'</div>'
+    +'</div>'
+    +'<div class="g2" style="margin-top:14px">'
+      +'<div class="card"><div class="lbl">Regulatory readiness</div>'+regHtml+'</div>'
+      +'<div class="card-blue"><div class="lbl" style="color:var(--blue)">Q2 2026 targets</div>'+q2Html+'</div>'
+    +'</div>'
+
+    +div('09','Competitive benchmarks')
+    +'<div class="card" style="margin-bottom:14px"><div class="lbl">Meridian vs sector average — all dimensions</div>'+dimHtml+'</div>'
+    +'<div class="g2">'
+      +'<div class="card"><div class="lbl">Where Meridian leads</div><p style="font-size:.84rem;color:var(--ink-mid);line-height:1.6">Technology (+8 pts), strategic alignment (+9 pts), SLA/XLA (+12 pts), and operational AI (+13 pts) are genuine competitive advantages.</p></div>'
+      +'<div class="card-red"><div class="lbl">Where to close the gap</div><p style="font-size:.84rem;color:var(--ink-mid);line-height:1.6">Governance &amp; risk (−8 pts) and culture adoption (−1 pt, trending down) require priority Q2 investment.</p></div>'
+    +'</div>'
+
+    +'<div class="footer-bar"><span>Meridian Group · Enterprise Cockpit · Q1 2026 · Confidential</span><span>Data as of 08 Apr 2026 · Next refresh 08 Jul 2026</span></div>';
+
+  setTimeout(function(){renderCEOCharts();},100);
+}
+
+function renderCEOCharts(){
+  var c1=document.getElementById('ceo-chart-debt');
+  if(c1&&window.Chart){new Chart(c1,{type:'line',data:{labels:["Q2 '25","Q3 '25","Q4 '25","Q1 '26"],datasets:[{data:[28,31,35,38],borderColor:'#9a6500',backgroundColor:'rgba(154,101,0,.1)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#9a6500',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:10}},max:60,min:0}}}});}
+}
+
+function ceoScroll(el,id){
+  document.querySelectorAll('#ceo-nav .cnav-btn').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+  var t=document.getElementById(id);
+  if(t){var y=t.getBoundingClientRect().top+window.scrollY-115;window.scrollTo({top:y,behavior:'smooth'});}
+}
+
+/* ═══════════════════════════════════════════════
+   CIO VIEW — DELIVERY ENGINE
+═══════════════════════════════════════════════ */
+var cioMode='pilot';
+
+function buildCIO(){
+  renderCIO();
+}
+
+function renderCIO(){
+  var m=cioMode;
+  var P=portfolios_cio.enterprise;
+
+  /* KPI bars */
+  var kpiHtml=P.kpis.map(function(k){
+    var val=m==='pilot'?k.pilot:k.baseline;
+    var fmt=formatCIO(val,k.format);
+    var baseF=formatCIO(k.baseline,k.format);
+    var targF=formatCIO(k.target,k.format);
+    var isGood=(k.improve==='up'&&val>=k.pilot)||(k.improve==='down'&&val<=k.pilot);
+    var pctW=Math.min((val/Math.max(k.target,k.pilot,k.baseline,1))*100,100);
+    var bpctW=Math.min((k.baseline/Math.max(k.target,k.pilot,k.baseline,1))*100,100);
+    return '<div class="kpi-bar"><div class="kpi-bar__top"><span class="kpi-bar__label">'+k.label+'</span>'
+      +'<span class="kpi-bar__vals"><span class="kpi-bar__baseline">'+baseF+'</span><span class="kpi-bar__pilot">'+fmt+'</span><span class="kpi-bar__target">'+targF+'</span></span></div>'
+      +'<div class="bar-track"><div class="bar-baseline" style="width:'+bpctW+'%"></div><div class="bar-pilot" style="width:'+pctW+'%"></div></div></div>';
+  }).join('');
+
+  /* swimlanes */
+  var slHtml=P.swimlanes.map(function(sl){
+    var vm=sl.valueMetric,rm=sl.riskMetric;
+    var vv=m==='pilot'?vm.pilot:vm.baseline;
+    var rv=m==='pilot'?rm.pilot:rm.baseline;
+    var vd=vm.improve==='down'?(vv<vm.baseline?'↓ from '+formatCIO(vm.baseline,vm.format):'+'):('↑ from '+formatCIO(vm.baseline,vm.format));
+    return '<div class="swimlane">'
+      +'<div class="swimlane__title">'+sl.title+'</div>'
+      +'<div class="swimlane__metric">'
+        +'<div class="swimlane__metric-label">'+vm.label+'</div>'
+        +'<div style="display:flex;align-items:baseline;gap:4px">'
+          +'<span class="swimlane__metric-value">'+formatCIO(vv,vm.format)+'</span>'
+          +'<span class="swimlane__metric-delta trend-up" style="font-size:.8rem">'+vd+'</span>'
+        +'</div>'
+      +'</div>'
+      +'<div style="margin-bottom:10px">'
+        +'<div class="swimlane__metric-label" style="margin-bottom:4px">'+rm.label+'</div>'
+        +'<div style="display:flex;align-items:center;gap:8px">'
+          +'<span style="font-family:var(--display);font-size:1.3rem;font-weight:700">'+formatCIO(rv,rm.format)+'</span>'
+          +rag(rv>rm.baseline&&rm.improve==='down'?'r':rv<rm.baseline&&rm.improve==='up'?'r':'g')
+        +'</div>'
+      +'</div>'
+      +'<div class="swimlane__interp">'+sl.interpretation[m]+'</div>'
+    +'</div>';
+  }).join('');
+
+  /* governance */
+  var G=P.governance;
+  var gcHtml=G.useCases.map(function(uc){
+    var v=m==='pilot'?uc.pilot:uc.baseline;
+    return '<div class="governance-chip">'
+      +'<div class="governance-chip__dot" style="background:'+(uc.status==='green'?'var(--green)':uc.status==='amber'?'var(--gold)':'var(--red)')+'"></div>'
+      +'<div><div class="governance-chip__label">'+uc.label+'</div><div class="governance-chip__detail">'+uc.detail+'</div></div>'
+      +'<div class="governance-chip__count">'+v+'</div></div>';
+  }).join('');
+
+  /* controls (dark) */
+  var P2=P.governance.controls;
+  var ctrlHtml=P2.map(function(c){
+    return '<div class="control-item">'
+      +'<div class="control-item__copy"><strong>'+c.name+'</strong><span>'+c.detail+'</span></div>'
+      +'<span class="rag '+(c.status==='green'?'rag-g':c.status==='amber'?'rag-a':'rag-r')+'">'+c.label+'</span>'
+    +'</div>';
+  }).join('');
+
+  /* trends */
+  var trHtml=P.trends.map(function(t){
+    var cur=t.current,base=t.baseline,tgt=t.target;
+    var max=Math.max(cur,base,tgt,1);
+    var bw=(base/max*100).toFixed(1),cw=(cur/max*100).toFixed(1),tw=(tgt/max*100).toFixed(1);
+    return '<div class="trend-row">'
+      +'<div class="trend-label">'+t.title+'</div>'
+      +'<div class="trend-track">'
+        +'<div class="trend-b" style="width:'+bw+'%"></div>'
+        +'<div class="trend-c" style="width:'+cw+'%"></div>'
+        +'<div class="trend-t-marker" style="left:'+tw+'%"></div>'
+      +'</div>'
+      +'<div class="trend-vals"><strong>'+formatCIO(cur,t.format)+'</strong>tgt '+formatCIO(tgt,t.format)+'</div>'
+    +'</div>';
+  }).join('');
+
+  /* economics */
+  var eco=P.economics;
+  var maxEco=Math.max.apply(null,eco.byWorkflow.map(function(i){return m==='pilot'?i.pilot:i.baseline;}));
+  var ecoHtml=eco.byWorkflow.map(function(item){
+    var v=m==='pilot'?item.pilot:item.baseline;
+    var w=(v/maxEco*100).toFixed(1);
+    return '<div class="kpi-bar"><div class="kpi-bar__top"><span class="kpi-bar__label">'+item.label+'</span><span style="font-weight:700">'+formatCIO(v,item.format)+'</span></div>'
+      +'<div class="bar-track"><div class="bar-pilot" style="width:'+w+'%"></div></div></div>';
+  }).join('');
+
+  /* actions */
+  var acts=P.actions.slice(0,5);
+  var actHtml=acts.map(function(a){
+    return '<div class="action-row"><div><div class="action-title">'+a.title+'</div><div class="action-sub">Delivery priority</div></div>'
+      +'<div class="action-owner">'+a.owner+'</div>'
+      +'<div class="action-due">'+a.due+'</div>'
+      +'<div><span class="impact-badge">'+a.impact+'</span></div>'
+    +'</div>';
+  }).join('');
+
+  /* roadmap */
+  var rmHtml=P.roadmap.map(function(r){
+    return '<div class="roadmap-step"><span class="roadmap-window">'+r.window+'</span><h3>'+r.title+'</h3>'
+      +'<ul>'+r.items.map(function(i){return '<li>'+i+'</li>';}).join('')+'</ul></div>';
+  }).join('');
+
+  /* oversight routing */
+  var OP=oversightProfiles_cio.enterprise;
+  var routeHtml=[
+    {label:'Auto-resolved (policy-clear)',count:OP.routing.auto,cls:'auto',col:'var(--green)'},
+    {label:'Supervised (human sampling)',count:OP.routing.supervised,cls:'review',col:'var(--gold)'},
+    {label:'Escalated (material review)',count:OP.routing.escalated,cls:'gate',col:'var(--blue)'},
+  ].map(function(r){
+    return '<div class="route-node route-node--'+r.cls+'">'
+      +'<div style="width:10px;height:10px;border-radius:50%;background:'+r.col+'"></div>'
+      +'<div class="route-label" style="color:'+r.col+'">'+r.label+'</div>'
+      +'<div class="route-count">'+r.count+'%</div>'
+    +'</div>';
+  }).join('');
+
+  var pendHtml=OP.pending.slice(0,4).map(function(p){
+    return '<div class="pending-item">'
+      +'<div class="pending-item__title">'+p.title+'</div>'
+      +'<div class="pending-item__meta">'+p.owner+' · '+p.due+' · <span class="rag '+(p.severity==='high'?'rag-r':'rag-a')+'">'+p.severity+'</span></div>'
+    +'</div>';
+  }).join('');
+
+  /* AII strip for CIO */
+  var aiiStrip='<div style="background:var(--blue-lt);border:1px solid var(--blue-bd);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:24px">'
+    +'<div style="display:flex;align-items:center;gap:10px"><div style="font-size:.68rem;font-weight:700;color:var(--blue);letter-spacing:.08em">AII SCORE</div><div style="font-family:var(--display);font-size:2rem;font-weight:800;color:var(--ink)">67</div><span style="background:var(--green-lt);color:var(--green);font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px">+4 pts QoQ</span></div>'
+    +'<div style="width:1px;height:36px;background:var(--blue-bd)"></div>'
+    +'<div style="font-size:.78rem;color:var(--ink-mid)">Delivery dimensions contribute to the enterprise AII. Flow Index (79), Quality Guardrail (96%), and AI Coverage (63%) are live inputs into the composite institutionalisation score.</div>'
+  +'</div>';
+
+  document.getElementById('cio-body').innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;margin-bottom:16px">'
+      +'<div><div style="font-family:var(--display);font-size:1.6rem;font-weight:800;letter-spacing:-.03em">Delivery Engine View</div><div style="font-size:.84rem;color:var(--ink-mid)">27 delivery trains · 4,800 engineers, analysts, and service leads</div></div>'
+      +'<div class="mode-toggle" style="margin-bottom:0">'
+        +'<button class="mode-btn'+(m==='baseline'?' active':'')+'" onclick="cioBl()">Baseline</button>'
+        +'<button class="mode-btn'+(m==='pilot'?' active':'')+'" onclick="cioPilot()">Pilot</button>'
+      +'</div>'
+    +'</div>'
+    +aiiStrip
+    +div('01','Executive KPIs — '+( m==='pilot'?'AI-assisted pilot':'Baseline reference'))
+    +'<div class="card" style="margin-bottom:14px"><div style="display:flex;gap:12px;font-size:.72rem;color:var(--ink-soft);margin-bottom:14px">'
+      +'<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:4px;background:var(--line2);border-radius:2px;display:inline-block"></span>Baseline</span>'
+      +'<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:4px;background:var(--blue);border-radius:2px;display:inline-block"></span>Pilot</span>'
+      +'<span style="display:flex;align-items:center;gap:4px"><span style="width:2px;height:14px;background:var(--blue-mid);border-radius:1px;opacity:.5;display:inline-block"></span>Target</span>'
+    +'</div>'+kpiHtml+'</div>'
+    +div('02','Workflow swimlanes')
+    +'<div class="g3" style="margin-bottom:14px">'+slHtml+'</div>'
+    +div('03','Human Oversight Gateway')
+    +'<div class="g2" style="margin-bottom:14px">'
+      +'<div class="card"><div class="lbl">Policy-based routing</div>'+routeHtml+'</div>'
+      +'<div class="card"><div class="lbl">Pending escalations</div>'+pendHtml+'</div>'
+    +'</div>'
+    +div('04','Trends — baseline vs current vs target')
+    +'<div class="card" style="margin-bottom:14px"><div class="trend-bars">'+trHtml+'</div></div>'
+    +div('05','Economics — spend mix and efficiency')
+    +'<div class="g2" style="margin-bottom:14px">'
+      +'<div class="card"><div class="lbl">Cost by workflow</div>'+ecoHtml+'</div>'
+      +'<div class="card">'
+        +'<div class="lbl">Model mix</div>'
+        +'<div style="display:flex;height:12px;border-radius:6px;overflow:hidden;margin-bottom:10px">'
+          +eco.modelMix.map(function(s){return '<div style="width:'+s.share+'%;background:var(--'+(s.className.replace('mix-segment--one','blue').replace('mix-segment--two','teal').replace('mix-segment--three','blue-lt').replace('mix-segment--four','surf3'))+')"></div>';}).join('')
+        +'</div>'
+        +eco.modelMix.map(function(s,i){var cols=['#1a55a3','#0e7c6b','#88acd8','#c3d3e8'];return '<div style="display:flex;justify-content:space-between;font-size:.78rem;padding:4px 0;color:var(--ink-mid)"><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:'+cols[i]+';display:inline-block"></span>'+s.label+'</span><span style="font-weight:700;color:var(--ink)">'+s.share+'%</span></div>';}).join('')
+        +'<div style="border-top:1px solid var(--line);margin-top:8px;padding-top:8px">'
+          +mr('Cost per assisted outcome','£14.8',78,'var(--blue)')
+          +mr('Model concentration risk','44%',44,'var(--gold)')
+        +'</div>'
+      +'</div>'
+    +'</div>'
+    +div('06','Governance console')
+    +'<div class="g2" style="margin-bottom:14px">'
+      +'<div class="card"><div class="lbl">Use case classification</div>'+gcHtml+'</div>'
+      +'<div class="card-dark"><div class="lbl" style="color:#8fa4c3">Policy controls</div>'+ctrlHtml+'</div>'
+    +'</div>'
+    +div('07','Top 5 executive actions')
+    +'<div class="card" style="margin-bottom:14px">'+actHtml+'</div>'
+    +div('08','30 / 60 / 90 day roadmap')
+    +'<div class="g3" style="margin-bottom:14px">'+rmHtml+'</div>'
+    +'<div class="footer-bar"><span>Meridian Group · Delivery Engine View · Q2 2026 · CIO distribution</span><span>Sources: Jira Align · GitHub Enterprise · ServiceNow · FinOps AI ledger</span></div>';
+}
+
+function cioBl(){cioMode='baseline';renderCIO();}
+function cioPilot(){cioMode='pilot';renderCIO();}
+
+function formatCIO(v,fmt){
+  if(fmt==='percent') return v+'%';
+  if(fmt==='index') return v;
+  if(fmt==='days') return v+'d';
+  if(fmt==='hours') return v+'h';
+  if(fmt==='count') return v;
+  if(fmt==='currencyM') return '£'+v+'M';
+  if(fmt==='currencyK') return '£'+v+'K';
+  if(fmt==='currency') return '£'+v;
+  return v;
+}
+
+/* ═══════════════════════════════════════════════
+   CISO VIEW — RISK & GOVERNANCE
+═══════════════════════════════════════════════ */
+function buildCISO(){
+  var riskItems=[
+    {sev:'r',title:'Shadow AI in Finance — 3 unapproved tools',desc:'Employees using external LLMs for financial modelling outside approved stack. Data residency & IP risk.',owner:'CFO + CISO · Due 30 Apr 2026'},
+    {sev:'r',title:'Prompt injection — 7/9 use cases untested',desc:'Critical prompt debt. No input validation or injection testing in production use cases.',owner:'CTO · Due 15 Apr 2026'},
+    {sev:'r',title:'ISO 42001 — only 47% readiness',desc:'AI management system standard significantly below sector. Audit exposure risk in H2 2026.',owner:'CISO · Due 30 Jun 2026'},
+    {sev:'a',title:'Demand forecasting drift — APAC & LATAM',desc:'Model performance degrading. Retraining pipeline not triggered. Decisions at risk.',owner:'CTO · Due 15 Apr 2026'},
+    {sev:'a',title:'Ethics board quorum — 2 consecutive quarters',desc:'High-risk model approvals backlogged. Governance body not functioning.',owner:'Chief Ethics Officer · Due 01 May 2026'},
+    {sev:'a',title:'Prompt registry approval lag — avg 14 days',desc:'Pressure building to bypass registry for fast deployments.',owner:'CTO + CDO · Due 15 Apr 2026'},
+    {sev:'h',title:'Customer-facing AI disclosures — compliant',desc:'All consumer AI interactions disclosed and auditable. March 2026 audit passed.',owner:'CLO · Next review Jun 2026'},
+  ];
+  var rHtml=riskItems.map(function(r,i){
+    return '<div style="display:flex;align-items:flex-start;gap:10px;padding:11px 0;'+(i<6?'border-bottom:1px solid var(--line)':'')+'">'
+      +'<div style="width:7px;height:7px;border-radius:50%;background:'+(r.sev==='r'?'var(--red)':r.sev==='a'?'var(--gold)':'var(--teal)')+';margin-top:3px;flex-shrink:0"></div>'
+      +'<div style="flex:1"><div style="font-size:.84rem;font-weight:600">'+r.title+'</div>'
+      +'<div style="font-size:.76rem;color:var(--ink-mid);margin-top:2px;line-height:1.5">'+r.desc+'</div>'
+      +'<div style="font-size:.72rem;color:var(--ink-faint);margin-top:2px">'+r.owner+'</div></div>'
+      +rag(r.sev)+'</div>';
+  }).join('');
+
+  var debtCats=[
+    {n:'Data-related debt',r:'a',items:[['Data quality score','61/100',61],['Data source vetting','68%',68],['Bias assessments done','4/9',44],['Drift detection','71%',71],['Anonymisation','83%',83]]},
+    {n:'Model-related debt',r:'a',items:[['Version control coverage','74%',74],['Rollback capability','6/9',67],['Evaluation metrics','52%',52],['Pen testing done','3/9',33]]},
+    {n:'Prompt-related debt',r:'r',items:[['Documented prompts','48%',48],['Input validation','39%',39],['Injection testing','2/9',22],['Guardrails active','44%',44]]},
+    {n:'Organisational debt',r:'a',items:[['Governance policy','74%',74],['Ownership assigned','81%',81],['Red team exercises','1 of 4',25],['Incident response','72%',72]]},
+  ];
+  var debtHtml=debtCats.map(function(dc){
+    return '<div class="card">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+        +'<div style="font-family:var(--display);font-size:.88rem;font-weight:700">'+dc.n+'</div>'+rag(dc.r)
+      +'</div>'
+      +dc.items.map(function(it){return mr(it[0],it[1],it[2],'var('+(dc.r==='r'?'--red':'--gold')+')')}).join('')
+    +'</div>';
+  }).join('');
+
+  var regData=[['EU AI Act','High-risk system compliance',82,'a'],['GDPR / data privacy','AI data processing',91,'g'],['ISO 42001','AI management standard',47,'r'],['UK AI Safety Framework','Voluntary alignment',68,'a'],['NIST AI RMF','Risk management',61,'a'],['SOC 2 Type II','Audit controls',88,'g']];
+  var regHtml=regData.map(function(r,i){
+    return '<div style="padding:10px 0;'+(i<5?'border-bottom:1px solid var(--line)':'')+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+        +'<div><div style="font-size:.84rem;font-weight:600">'+r[0]+'</div><div style="font-size:.75rem;color:var(--ink-mid)">'+r[1]+'</div></div>'
+        +'<div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--display);font-size:1rem;font-weight:800">'+r[2]+'%</span>'+rag(r[3]==='g'?'h':r[3])+'</div>'
+      +'</div>'+pb(r[2],r[3]==='g'?'var(--green)':r[3]==='a'?'var(--gold)':'var(--red)')+'</div>';
+  }).join('');
+
+  var raiPillars=[{n:'Fairness',s:58,r:'a'},{n:'Reliability & Safety',s:71,r:'g'},{n:'Privacy & Security',s:64,r:'a'},{n:'Inclusiveness',s:54,r:'a'},{n:'Transparency',s:61,r:'a'},{n:'Accountability',s:63,r:'a'}];
+  var raiHtml=raiPillars.map(function(p){
+    return '<div style="background:var(--surf2);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+        +'<span style="font-family:var(--display);font-size:.88rem;font-weight:700">'+p.n+'</span>'
+        +'<span style="display:flex;align-items:center;gap:6px"><span style="font-family:var(--display);font-size:1.1rem;font-weight:800">'+p.s+'</span>'+rag(p.r)+'</span>'
+      +'</div>'+pb(p.s,'var(--blue)')+'</div>';
+  }).join('');
+
+  var P=portfolios_cio.enterprise;
+  var gcHtml=P.governance.useCases.map(function(uc){
+    var v=uc.pilot;
+    return '<div class="governance-chip">'
+      +'<div class="governance-chip__dot" style="background:'+(uc.status==='green'?'var(--green)':uc.status==='amber'?'var(--gold)':'var(--red)')+'"></div>'
+      +'<div><div class="governance-chip__label">'+uc.label+'</div><div class="governance-chip__detail">'+uc.detail+'</div></div>'
+      +'<div class="governance-chip__count">'+v+'</div></div>';
+  }).join('');
+
+  var ctrlHtml=P.governance.controls.map(function(c){
+    return '<div class="control-item">'
+      +'<div class="control-item__copy"><strong>'+c.name+'</strong><span>'+c.detail+'</span></div>'
+      +'<span class="rag '+(c.status==='green'?'rag-g':c.status==='amber'?'rag-a':'rag-r')+'">'+c.label+'</span>'
+    +'</div>';
+  }).join('');
+
+  document.getElementById('ciso-body').innerHTML=
+    '<div style="font-family:var(--display);font-size:1.6rem;font-weight:800;letter-spacing:-.03em;margin-top:8px;margin-bottom:16px">Risk &amp; Governance View</div>'
+    +'<div class="g4" style="margin-bottom:14px">'
+      +mc('6','Shadow AI signals','Requires immediate investigation',false)
+      +mc('74%','Governance coverage','8 ungoverned models',false)
+      +mc('38','Tech Debt Index','out of 100 · lower is better',false)
+      +mc('82%','EU AI Act readiness','↑ from 61%',true)
+    +'</div>'
+
+    +div('01','Risk register')
+    +'<div class="card" style="margin-bottom:14px">'+rHtml+'</div>'
+
+    +div('02','AI Technical Debt — four categories')
+    +'<div class="g2" style="margin-bottom:14px">'+debtHtml+'</div>'
+    +'<div style="font-size:.78rem;color:var(--red);background:var(--red-lt);padding:10px 14px;border-radius:var(--r-sm);margin-bottom:14px">&#9888; Prompt-related debt is Critical. 52% of system prompts undocumented, 7/9 use cases uninspected for injection. CTO action required by 15 Apr 2026.</div>'
+
+    +div('03','Responsible AI — six pillars')
+    +'<div class="g2" style="margin-bottom:14px">'
+      +'<div class="card-blue"><div style="font-family:var(--display);font-size:.65rem;font-weight:700;color:var(--blue);letter-spacing:.1em;margin-bottom:4px">RAI INDEX</div>'
+        +'<div style="font-family:var(--display);font-size:2.8rem;font-weight:800;letter-spacing:-.04em">62</div>'
+        +'<div style="font-size:.76rem;color:var(--blue);margin-top:2px;margin-bottom:8px">out of 100 · +5 pts QoQ</div>'
+        +pb(62,'var(--blue)')+'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:8px">'+raiHtml+'</div>'
+    +'</div>'
+
+    +div('04','Regulatory readiness')
+    +'<div class="card" style="margin-bottom:14px">'+regHtml+'</div>'
+
+    +div('05','Use case governance & policy controls')
+    +'<div class="g2" style="margin-bottom:14px">'
+      +'<div class="card"><div class="lbl">Use case classification</div>'+gcHtml+'</div>'
+      +'<div class="card-dark"><div class="lbl" style="color:#8fa4c3">Policy controls — pilot state</div>'+ctrlHtml+'</div>'
+    +'</div>'
+
+    +div('06','Human Oversight Gateway')
+    +'<div class="g2" style="margin-bottom:14px">'
+      +'<div class="card"><div class="lbl">Routing distribution</div>'
+        +'<div class="route-node route-node--auto"><div style="width:10px;height:10px;border-radius:50%;background:var(--green)"></div><div class="route-label" style="color:var(--green)">Auto-resolved (policy-clear)</div><div class="route-count">72%</div></div>'
+        +'<div class="route-node route-node--review"><div style="width:10px;height:10px;border-radius:50%;background:var(--gold)"></div><div class="route-label" style="color:var(--gold)">Supervised (human sampling)</div><div class="route-count">21%</div></div>'
+        +'<div class="route-node route-node--gate"><div style="width:10px;height:10px;border-radius:50%;background:var(--blue)"></div><div class="route-label" style="color:var(--blue)">Escalated (material review)</div><div class="route-count">7%</div></div>'
+      +'</div>'
+      +'<div class="card"><div class="lbl">Governance metrics</div>'
+        +mr('Policy exceptions active','5',50,'var(--gold)')
+        +mr('Human review override rate','9%',91,'var(--green)')
+        +mr('Audit evidence completeness','97%',97,'var(--green)')
+        +mr('Prompt registry compliance','62%',62,'var(--gold)')
+        +mr('Ethics board quorum','0%',0,'var(--red)')
+      +'</div>'
+    +'</div>'
+    +'<div class="footer-bar"><span>Meridian Group · Risk &amp; Governance View · Q1 2026 · CISO distribution</span><span>Data as of 08 Apr 2026</span></div>';
+}
+
+/* ═══════════════════════════════════════════════
+   COO VIEW — OPERATIONS & SERVICE
+═══════════════════════════════════════════════ */
+function buildCOO(){
+  var xlaData=[['Customer effort score (CES)',4.1,5,'var(--blue)',false],['CSAT — AI resolved',4.3,5,'var(--teal)',false],['CSAT — human resolved',4.1,5,'var(--ink-soft)',false],['Agent XLA (AI assist quality)',3.8,5,'var(--gold)',false],['Sentiment at resolution (pos)',74,100,'var(--blue)',false],['Business process cycle (BPLA)',68,100,'var(--teal)',false],['Repeat contact rate',12,100,'var(--red)',true]];
+  var xlaHtml=xlaData.map(function(x){
+    return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:3px">'
+      +'<span style="color:var(--ink-mid)">'+x[0]+'</span><span style="font-weight:700">'+x[1]+(x[2]===100?'%':'/'+x[2])+'</span></div>'
+      +pb(x[4]?(100-x[1]):(x[1]/x[2]*100),x[3])+'</div>';
+  }).join('');
+
+  var slaCh=[['Voice AI — service desk','P1: 2.1m · P2: 4.8m','h'],['Ticket — AI autonomous','P1: 3.4m · P2: 8.2m','h'],['Ticket — AI assisted','P1: 12.1m · P2: 18.4m','h'],['Ticket — human only','P1: 28.3m · P2: 44.1m','a'],['RCA — AI agent','P1: 18.2m · P2: 36.4m','b'],['Change request — AI drafted','P1: 4.2hr · P2: 8.1hr','h'],['Change request — manual','P1: 18.4hr · P2: 36.2hr','a']];
+  var slaHtml=slaCh.map(function(s,i){
+    return '<div style="display:flex;align-items:center;gap:8px;padding:9px 0;'+(i<6?'border-bottom:1px solid var(--line)':'')+'">'
+      +'<div style="flex:1"><div style="font-size:.82rem;font-weight:600">'+s[0]+'</div><div style="font-size:.74rem;color:var(--ink-mid);margin-top:1px">'+s[1]+'</div></div>'+rag(s[2])+'</div>';
+  }).join('');
+
+  var opCh=[['Voice AI service desk','847 calls','h'],['Ticket auto-resolution','1,204 tickets','h'],['IAC Assist','847 templates','b'],['RCA agent','38 RCAs','b'],['Change request agent','162 CRs','b'],['KB Article Generator','312 articles','h'],['Live agent escalations','228 (27%)','h']];
+  var opHtml=opCh.map(function(o,i){
+    return '<div class="row-item" style="'+(i===6?'border-bottom:none':'')+'"><span style="color:var(--ink-mid);font-size:.82rem">'+o[0]+'</span><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:700">'+o[1]+'</span>'+rag(o[2])+'</div></div>';
+  }).join('');
+
+  var models=[['Customer intent prediction','h'],['Demand forecasting model','r'],['Contract review LLM','h'],['Voice AI model','h'],['Ticket resolution model','h'],['IAC Assist model','h'],['Financial anomaly model','a'],['RCA reasoning agent','b']];
+  var mhHtml=models.map(function(m,i){
+    return '<div class="row-item" style="'+(i===7?'border-bottom:none':'')+'font-size:.84rem"><span style="color:var(--ink-mid)">'+m[0]+'</span>'+rag(m[1])+'</div>';
+  }).join('');
+
+  /* Run swimlane from CIO data */
+  var runLane=portfolios_cio.enterprise.swimlanes[2];
+  var runCard='<div class="swimlane">'
+    +'<div class="swimlane__title">Run / Support (from CIO delivery view)</div>'
+    +'<div class="swimlane__metric"><div class="swimlane__metric-label">'+runLane.valueMetric.label+'</div>'
+      +'<div style="display:flex;align-items:baseline;gap:4px"><span class="swimlane__metric-value">'+runLane.valueMetric.pilot+runLane.valueMetric.format.replace('hours','h')+'</span>'
+      +'<span class="swimlane__metric-delta trend-up">↓ from '+runLane.valueMetric.baseline+runLane.valueMetric.format.replace('hours','h')+'</span></div></div>'
+    +'<div style="margin-bottom:10px"><div class="swimlane__metric-label">'+runLane.riskMetric.label+'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--display);font-size:1.3rem;font-weight:700">'+runLane.riskMetric.pilot+'%</span>'+rag('g')+'</div></div>'
+    +'<div class="swimlane__interp">'+runLane.interpretation.pilot+'</div>'
+  +'</div>';
+
+  document.getElementById('coo-body').innerHTML=
+    '<div style="font-family:var(--display);font-size:1.6rem;font-weight:800;letter-spacing:-.03em;margin-top:8px;margin-bottom:16px">Operations &amp; Service View</div>'
+    +'<div class="g4" style="margin-bottom:14px">'
+      +mc('73%','Voice AI containment','↑ 8 pts QoQ · target 80%',true)
+      +mc('61%','Ticket auto-resolution','↑ from 44% last qtr',true)
+      +mc('4.2m','MTTR — AI resolved','↓ from 18.4m last qtr',true)
+      +mc('+42','NPS — AI channel','AI now above human (+38)',true)
+    +'</div>'
+    +'<div class="g4" style="margin-bottom:14px">'
+      +mc('4.3/5','CSAT overall','↑ 0.2 pts QoQ',true)
+      +mc('82%','First contact resolution','↑ from 71%',true)
+      +mc('3.1%','SLA breach rate','↓ from 8.2%',true)
+      +mc('50%','Alert noise shrinkage','At toolkit target',true)
+    +'</div>'
+
+    +div('01','Operational AI agent activity')
+    +'<div class="g2" style="margin-bottom:14px">'
+      +'<div class="card"><div class="lbl">Agent channels — this quarter</div>'+opHtml+'</div>'
+      +'<div class="card"><div class="lbl">Model health</div>'+mhHtml+'</div>'
+    +'</div>'
+
+    +div('02','SLA / XLA / BPLA')
+    +'<div class="note-box"><strong>SLA</strong> = contractual obligations met · <strong>XLA</strong> = how the service was experienced · <strong>BPLA</strong> = impact on end-to-end business process outcomes</div>'
+    +'<div class="g3" style="margin-bottom:14px">'
+      +'<div class="card"><div class="lbl">MTTR trend — AI vs human</div>'
+        +'<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">'
+          +[["Q2 '25",22.1,14.2],["Q3 '25",18.4,13.8],["Q4 '25",11.2,12.9],["Q1 '26",4.2,11.3]].map(function(q){
+            return '<div style="display:flex;align-items:center;gap:8px;font-size:.78rem">'
+              +'<span style="width:45px;color:var(--ink-mid);flex-shrink:0">'+q[0]+'</span>'
+              +'<div style="flex:1;display:flex;flex-direction:column;gap:3px">'
+                +'<div style="display:flex;align-items:center;gap:4px"><span style="width:36px;color:var(--blue);font-weight:700">'+q[1]+'m</span>'+pb(100-q[1]*3,'var(--blue)')+'</div>'
+                +'<div style="display:flex;align-items:center;gap:4px"><span style="width:36px;color:var(--ink-soft)">'+q[2]+'m</span>'+pb(100-q[2]*3,'var(--line2)')+'</div>'
+              +'</div></div>';
+          }).join('')
+        +'</div>'
+        +'<div style="display:flex;gap:12px;margin-top:8px;font-size:.72rem;color:var(--ink-soft)">'
+          +'<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:3px;background:var(--blue);display:inline-block"></span>AI</span>'
+          +'<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:3px;background:var(--line2);display:inline-block"></span>Human</span>'
+        +'</div>'
+      +'</div>'
+      +'<div class="card"><div class="lbl">XLA / BPLA scores</div>'+xlaHtml+'</div>'
+      +'<div class="card"><div class="lbl">SLA by channel</div>'+slaHtml+'</div>'
+    +'</div>'
+
+    +div('03','Run / Support — delivery engine overlay')
+    +'<div class="g2" style="margin-bottom:14px">'+runCard
+      +'<div class="card"><div class="lbl">IAC Assist — Infrastructure as Code agent</div>'
+        +mc('847','IaC templates generated','↑ 312 this quarter',true)
+        +'<div style="margin-top:10px">'
+          +mr('First-pass validation rate','94%',94,'var(--teal)')
+          +mr('Deployment cycle reduction','68%',68,'var(--blue)')
+          +mr('Engineering time saved (ann.)','£1.2M',80,'var(--green)')
+        +'</div>'
+      +'</div>'
+    +'</div>'
+
+    +'<div class="footer-bar"><span>Meridian Group · Operations &amp; Service View · Q1 2026 · COO distribution</span><span>Data as of 08 Apr 2026</span></div>';
+}
+
+/* ═══════════════════════════════════════════════
+   CIO DATA — PORTED FROM COLLEAGUE'S COCKPIT
+═══════════════════════════════════════════════ */
+var portfolios_cio={
+  enterprise:{
+    label:'Enterprise Portfolio',
+    scope:'27 delivery trains | 4,800 engineers, analysts, and service leads',
+    kpis:[
+      {label:'Net Productivity Gain',definition:'Estimated change in assisted delivery output.',baseline:0,pilot:18,target:22,format:'percent',improve:'up'},
+      {label:'AI Workflow Coverage',definition:'Share of delivery workflows with approved AI assist.',baseline:24,pilot:63,target:75,format:'percent',improve:'up'},
+      {label:'Delivery Flow Index',definition:'Composite throughput, cycle time, blocked work, predictability.',baseline:67,pilot:79,target:84,format:'index',improve:'up'},
+      {label:'Quality Guardrail',definition:'Weighted quality score: escaped defects, rework, test reliability.',baseline:91,pilot:96,target:97,format:'percent',improve:'up'},
+      {label:'Governance Compliance',definition:'Share of AI activity inside approved policy controls.',baseline:92,pilot:98,target:99,format:'percent',improve:'up'},
+      {label:'AI Run-Rate Cost',definition:'Annualized AI operating spend — delivery workflows only.',baseline:1.24,pilot:1.31,target:1.18,format:'currencyM',improve:'down'},
+    ],
+    swimlanes:[
+      {id:'planning',title:'Planning / Refinement',
+        valueMetric:{label:'Decision latency',definition:'Median time from intake to approved scope.',baseline:9.5,pilot:6.8,format:'days',improve:'down'},
+        riskMetric:{label:'Requirements quality',definition:'Quality score for backlog items entering build.',baseline:87,pilot:93,format:'percent',improve:'up'},
+        interpretation:{baseline:'Portfolio planning is document-heavy, with delayed approval cycles.',pilot:'Assisted refinement compressing approval time and improving scope quality.'}},
+      {id:'build',title:'Build / Test / Review',
+        valueMetric:{label:'PR cycle time',definition:'Median time from PR open to approved merge.',baseline:31,pilot:23,format:'hours',improve:'down'},
+        riskMetric:{label:'Critical rework rate',definition:'Share of completed work reopened for remediation.',baseline:11.2,pilot:7.1,format:'percent',improve:'down'},
+        interpretation:{baseline:'Review queues and inconsistent evidence capture hold back engineering flow.',pilot:'Review acceleration is material, but cost discipline needs executive pressure.'}},
+      {id:'run',title:'Run / Support',
+        valueMetric:{label:'Mean time to resolve',definition:'Average time to restore service for priority incidents.',baseline:7.2,pilot:5.1,format:'hours',improve:'down'},
+        riskMetric:{label:'Change failure rate',definition:'Share of changes triggering rollback or incident.',baseline:9.1,pilot:6.4,format:'percent',improve:'down'},
+        interpretation:{baseline:'Manual triage and fragmented runbooks keep recovery inconsistent.',pilot:'Assisted triage improving recovery speed with fewer unstable changes.'}}
+    ],
+    trends:[
+      {title:'Adoption',definition:'AI workflow coverage.',baseline:24,current:63,target:75,format:'percent',improve:'up'},
+      {title:'Flow',definition:'Portfolio flow score.',baseline:67,current:79,target:84,format:'index',improve:'up'},
+      {title:'Quality',definition:'Quality guardrail score.',baseline:91,current:96,target:97,format:'percent',improve:'up'},
+      {title:'Cost',definition:'Annualized AI run-rate.',baseline:1.24,current:1.31,target:1.18,format:'currencyM',improve:'down'},
+    ],
+    governance:{
+      useCases:[
+        {label:'Green use cases',detail:'Standard copilots and bounded automation',baseline:14,pilot:26,status:'green'},
+        {label:'Amber use cases',detail:'Supervised workflows awaiting approval',baseline:10,pilot:8,status:'amber'},
+        {label:'Red use cases',detail:'Restricted or under exception review',baseline:6,pilot:2,status:'red'},
+      ],
+      metrics:[
+        {label:'Policy exceptions',definition:'Active exceptions requiring approval.',baseline:14,pilot:5,format:'count',improve:'down'},
+        {label:'Human review override',definition:'Share of AI actions escalated.',baseline:18,pilot:9,format:'percent',improve:'down'},
+        {label:'Audit evidence completeness',definition:'Share with complete evidence.',baseline:84,pilot:97,format:'percent',improve:'up'},
+      ],
+      controls:[
+        {name:'Model Usage Policy',detail:'Enterprise reasoning tier limits enforced.',status:'green',label:'Compliant'},
+        {name:'Data Privacy Controls',detail:'PII masking active across delivery assistants.',status:'green',label:'Enforced'},
+        {name:'Prompt Injection Guard',detail:'3 suspicious patterns quarantined.',status:'amber',label:'Review Req'},
+        {name:'Output Quality Threshold',detail:'Hallucination score below 0.1%.',status:'green',label:'Passing'},
+        {name:'Cost Budget Alerts',detail:'Q2 AI budget at 82% utilization.',status:'amber',label:'Warning'},
+        {name:'Audit Logging',detail:'All agent actions in immutable cold storage.',status:'green',label:'Active'},
+      ]
+    },
+    economics:{
+      byWorkflow:[
+        {id:'planning',label:'Planning / Refinement',baseline:260,pilot:290,format:'currencyK'},
+        {id:'build',label:'Build / Test / Review',baseline:630,pilot:710,format:'currencyK'},
+        {id:'run',label:'Run / Support',baseline:350,pilot:310,format:'currencyK'},
+      ],
+      modelMix:[
+        {label:'Reasoning tier',share:34,className:'mix-segment--one'},
+        {label:'Fast completion tier',share:29,className:'mix-segment--two'},
+        {label:'Embedding / retrieval',share:21,className:'mix-segment--three'},
+        {label:'Policy and safety',share:16,className:'mix-segment--four'},
+      ]
+    },
+    actions:[
+      {workflow:'planning',title:'Expand green-list for planning copilots',owner:'Enterprise Architecture',due:'18 Apr 2026',impact:'Unlock +12 pts coverage'},
+      {workflow:'build',title:'Require evidence-pack on AI-assisted PRs',owner:'Quality Engineering',due:'22 Apr 2026',impact:'Lift audit completeness 3 pts'},
+      {workflow:'build',title:'Shift test generation to efficient model tier',owner:'FinOps',due:'26 Apr 2026',impact:'Save £110K annual'},
+      {workflow:'run',title:'Scale incident triage to all P2/P3 queues',owner:'Service Operations',due:'30 Apr 2026',impact:'Cut MTTR 1.1 hours'},
+      {workflow:'all',title:'Close amber review backlog — monthly CIO risk forum',owner:'Risk & Compliance',due:'03 May 2026',impact:'Remove 6 exceptions'},
+    ],
+    roadmap:[
+      {window:'30 days',title:'Stabilize the operating baseline',items:['Standardize assistant patterns for planning, code review, incident triage.','Automate evidence capture for AI-assisted work.','Publish shared cost guardrail with workflow budgets.']},
+      {window:'60 days',title:'Scale safe adoption',items:['Extend green use cases into adjacent service teams.','Roll out model-routing by task type.','Reduce amber approval time with pre-cleared templates.']},
+      {window:'90 days',title:'Move to portfolio governance',items:['Embed AI metrics into monthly CIO operating review.','Tie funding gates to evidence completeness.','Set enterprise AI delivery run-rate target.']},
+    ]
+  }
+};
+
+var oversightProfiles_cio={
+  enterprise:{
+    routing:{auto:72,supervised:21,escalated:7},
+    pending:[
+      {title:'Expand reasoning-model access for 4 planning teams',owner:'Enterprise Architecture',due:'12 Apr 2026',severity:'medium'},
+      {title:'Exception renewal: Legacy runbook automation — Ops Tower 3',owner:'Service Operations',due:'14 Apr 2026',severity:'high'},
+      {title:'New use-case approval: Supplier contract review copilot',owner:'Legal & Procurement',due:'16 Apr 2026',severity:'medium'},
+      {title:'Risk review: High-frequency incident triage auto-close rule',owner:'CISO',due:'19 Apr 2026',severity:'high'},
+    ]
+  }
+};
+</script>
+</body>
+</html>

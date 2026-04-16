@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meridian AI Enterprise Cockpit</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <div class="skip-links" aria-label="Skip links">
+      <a class="skip-link" href="#institutionMain">Skip to Institutionalisation content</a>
+      <a class="skip-link" href="#deliveryMain">Skip to Delivery content</a>
+    </div>
+    <div class="page-shell">
+      <div class="page-shell__glow page-shell__glow--top"></div>
+      <div class="page-shell__glow page-shell__glow--bottom"></div>
+
+      <section class="screen-stack landing-screen" id="landingView" aria-labelledby="landingTitle">
+        <header class="landing-hero panel">
+          <div class="landing-hero__copy">
+            <p class="eyebrow">Meridian Group</p>
+            <h1 id="landingTitle">AI Enterprise Cockpit</h1>
+            <p class="landing-hero__subtitle">
+              One platform, multiple executive lenses. Phase 1 focuses on the
+              Institutionalisation and Delivery views so leaders can see value,
+              risk, flow, and what to do next from a shared story.
+            </p>
+          </div>
+          <div class="landing-hero__meta">
+            <span class="scope-chip"><strong>Phase 1</strong><span>Institutionalisation + Delivery</span></span>
+            <span class="scope-chip"><strong>Model</strong><span>Shared enterprise cockpit</span></span>
+            <span class="scope-chip"><strong>Data</strong><span>One underlying operating picture</span></span>
+            <span class="scope-chip"><strong>Status</strong><span>Integration in progress</span></span>
+          </div>
+        </header>
+
+        <div class="persona-grid" aria-label="Cockpit entry points">
+          <button class="persona-card persona-card--strategy" type="button" data-open-screen="institutionalization">
+            <span class="persona-card__badge">CEO · CFO · Board</span>
+            <h2 class="persona-card__title">Institutionalisation View</h2>
+            <p class="persona-card__copy">
+              Enterprise maturity, portfolio value, governance posture, workforce
+              readiness, responsible AI, and benchmark position.
+            </p>
+            <div class="persona-card__metrics">
+              <span>AII Score</span>
+              <span>Portfolio ROI</span>
+              <span>Governance</span>
+              <span>Responsible AI</span>
+            </div>
+            <span class="persona-card__cta">Open view</span>
+          </button>
+
+          <button class="persona-card persona-card--delivery" type="button" data-open-screen="delivery">
+            <span class="persona-card__badge">CIO · Engineering · Delivery</span>
+            <h2 class="persona-card__title">Delivery Engine View</h2>
+            <p class="persona-card__copy">
+              Workflow coverage, flow, quality, human oversight, economics, and
+              executive actions across the delivery estate.
+            </p>
+            <div class="persona-card__metrics">
+              <span>Flow Index</span>
+              <span>Quality Guardrail</span>
+              <span>Oversight</span>
+              <span>Economics</span>
+            </div>
+            <span class="persona-card__cta">Open view</span>
+          </button>
+
+          <button
+            class="persona-card persona-card--future"
+            type="button"
+            disabled
+            aria-disabled="true"
+          >
+            <span class="persona-card__badge">CISO · Risk · Compliance</span>
+            <h2 class="persona-card__title">Risk &amp; Governance View</h2>
+            <p class="persona-card__copy">
+              Prompt debt, regulatory readiness, shadow AI, and enterprise control
+              coverage are planned as the next focused expansion.
+            </p>
+            <div class="persona-card__metrics">
+              <span>Phase 2</span>
+              <span>Deferred</span>
+            </div>
+            <span class="persona-card__cta">Planned next</span>
+          </button>
+
+          <button
+            class="persona-card persona-card--future"
+            type="button"
+            disabled
+            aria-disabled="true"
+          >
+            <span class="persona-card__badge">COO · Operations · Service</span>
+            <h2 class="persona-card__title">Operations &amp; Service View</h2>
+            <p class="persona-card__copy">
+              Live agent performance, SLA and XLA outcomes, service recovery, and
+              operational AI telemetry will follow after the two core views land.
+            </p>
+            <div class="persona-card__metrics">
+              <span>Phase 2</span>
+              <span>Deferred</span>
+            </div>
+            <span class="persona-card__cta">Planned next</span>
+          </button>
+        </div>
+
+        <section class="panel landing-story" aria-labelledby="storyHeading">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Phase 1 Story</p>
+              <h2 id="storyHeading">One cockpit, two working executive lenses</h2>
+            </div>
+            <p class="section-head__note">
+              Institutionalisation shows whether AI is becoming an enterprise
+              capability. Delivery shows whether it is improving outcomes now.
+            </p>
+          </div>
+          <div class="landing-story__grid">
+            <article class="landing-story__card">
+              <strong>1. Enterprise posture</strong>
+              <p>Start with maturity, portfolio value, governance readiness, and the biggest scaling constraints.</p>
+            </article>
+            <article class="landing-story__card">
+              <strong>2. Delivery evidence</strong>
+              <p>Move into workflow coverage, flow, quality, human oversight, and unit economics.</p>
+            </article>
+            <article class="landing-story__card">
+              <strong>3. Leadership action</strong>
+              <p>End with the decisions Meridian leadership should make next, not just the charts they can admire.</p>
+            </article>
+          </div>
+        </section>
+      </section>
+
+      <section id="institutionalizationView" hidden>
+        <div class="screen-stack">
+          <header class="view-bar panel">
+            <div class="view-bar__left">
+              <button class="view-bar__back" type="button" data-back-home>All views</button>
+              <div>
+                <p class="eyebrow">Executive Role View</p>
+                <h2 class="view-bar__title">Institutionalisation View</h2>
+              </div>
+            </div>
+            <div class="view-bar__right" id="institutionalizationViewMeta">
+              <span class="view-bar__badge">CEO · CFO · Board</span>
+              <span class="view-bar__meta">Enterprise posture</span>
+            </div>
+          </header>
+          <div id="institutionalizationSavedViewsPanel"></div>
+          <div id="institutionalizationAskPanel"></div>
+          <div id="institutionalizationContent" tabindex="-1"></div>
+        </div>
+      </section>
+
+      <section id="deliveryView" hidden>
+        <div class="screen-stack">
+          <header class="view-bar panel">
+            <div class="view-bar__left">
+              <button class="view-bar__back" type="button" data-back-home>All views</button>
+              <div>
+                <p class="eyebrow">Executive Role View</p>
+                <h2 class="view-bar__title">Delivery Engine View</h2>
+              </div>
+            </div>
+            <div class="view-bar__right" id="deliveryViewMeta">
+              <span class="view-bar__badge">CIO · Engineering · Delivery</span>
+              <span class="view-bar__meta">Operational outcomes</span>
+            </div>
+          </header>
+
+      <main class="dashboard" id="deliveryMain" tabindex="-1" aria-label="Delivery Engine View dashboard">
+        <header class="page-header panel">
+          <div class="page-header__copy">
+            <p class="eyebrow">CIO View</p>
+            <h1>Delivery Engine View</h1>
+            <p class="page-header__subtitle">
+              CIO View of AI Delivery — Value, Risk, Flow, and Adoption.
+            </p>
+            <div class="scope-summary" id="scopeSummary" aria-live="polite"></div>
+          </div>
+
+          <form class="filter-bar" aria-label="Dashboard filters">
+            <label class="control">
+              <span class="control__label">Date Range</span>
+              <select id="dateFilter" name="dateFilter">
+                <option value="last-30">Last 30 days</option>
+                <option value="q1-2026">Q1 2026</option>
+                <option value="q2-2026" selected>Q2 2026</option>
+              </select>
+            </label>
+
+            <label class="control">
+              <span class="control__label">Team</span>
+              <select id="teamFilter" name="teamFilter">
+                <option value="enterprise" selected>Enterprise Portfolio</option>
+                <option value="product">Digital Products</option>
+                <option value="operations">RunOps &amp; Support</option>
+              </select>
+            </label>
+
+            <label class="control">
+              <span class="control__label">Workflow</span>
+              <select id="workflowFilter" name="workflowFilter">
+                <option value="all" selected>All workflows</option>
+                <option value="planning">Planning / Refinement</option>
+                <option value="build">Build / Test / Review</option>
+                <option value="run">Run / Support</option>
+              </select>
+            </label>
+
+            <fieldset class="toggle-group" aria-label="Baseline versus pilot view">
+              <legend class="control__label">View</legend>
+              <div class="toggle-group__options">
+                <button
+                  class="toggle-group__button"
+                  id="baselineToggle"
+                  type="button"
+                  data-mode="baseline"
+                  aria-pressed="false"
+                >
+                  Baseline
+                </button>
+                <button
+                  class="toggle-group__button is-active"
+                  id="pilotToggle"
+                  type="button"
+                  data-mode="pilot"
+                  aria-pressed="true"
+                >
+                  Pilot
+                </button>
+              </div>
+            </fieldset>
+          </form>
+          <div id="deliverySegmentationBar"></div>
+        </header>
+
+        <div id="deliverySavedViewsPanel"></div>
+        <div id="deliveryAskPanel"></div>
+
+        <section class="kpi-grid" id="kpiGrid" aria-label="Executive KPI cards"></section>
+
+        <section class="panel" id="delivery-swimlanes" aria-labelledby="swimlanesHeading">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Workflow Swimlanes</p>
+              <h2 id="swimlanesHeading">Where value is moving and where risk still sits</h2>
+            </div>
+            <p class="section-head__note">
+              Each lane shows one outcome metric, one quality or risk signal, and the
+              operating interpretation executives can act on.
+            </p>
+          </div>
+          <div class="swimlane-grid" id="swimlaneGrid"></div>
+        </section>
+
+        <section class="oversight-panel" id="delivery-oversight" aria-labelledby="oversightHeading">
+          <div class="section-head section-head--dark">
+            <div class="oversight-panel__intro">
+              <p class="eyebrow eyebrow--dark">Human Oversight Gateway</p>
+              <h2 id="oversightHeading">Human Oversight Gateway</h2>
+              <p class="oversight-panel__subtitle">
+                Policy routes low-risk work automatically and escalates material
+                decisions to accountable humans.
+              </p>
+              <div class="oversight-panel__summary" id="oversightSummary"></div>
+            </div>
+            <div class="oversight-panel__tabs" role="tablist" aria-label="Oversight views">
+              <button
+                id="overviewTab"
+                class="oversight-tab is-active"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                aria-controls="pendingDecisions"
+                data-oversight-tab="overview"
+              >
+                Overview
+              </button>
+              <button
+                id="governanceTab"
+                class="oversight-tab"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="pendingDecisions"
+                data-oversight-tab="governance"
+              >
+                Governance
+              </button>
+            </div>
+          </div>
+
+          <div class="oversight-kpis" id="oversightKpis" aria-label="Human oversight KPIs"></div>
+          <div class="oversight-diagnostics" id="oversightDiagnostics"></div>
+
+          <div class="oversight-layout">
+            <div class="oversight-card">
+              <div class="oversight-card__head">
+                <p class="eyebrow eyebrow--dark">Oversight Routing Map</p>
+                <h3>Policy-based execution paths</h3>
+                <p class="oversight-card__subcopy">
+                  Recommendations enter a governed route, evidence is checked, and
+                  only material decisions pause for accountable human review.
+                </p>
+              </div>
+              <div id="routingMap"></div>
+            </div>
+
+            <div class="oversight-card" id="pendingDecisions">
+              <div class="oversight-card__head">
+                <p class="eyebrow eyebrow--dark">Pending Decisions</p>
+                <h3>Escalations requiring accountable review</h3>
+                <p class="oversight-card__subcopy">
+                  Queue attention is reserved for policy exceptions, elevated blast
+                  radius, and incomplete evidence.
+                </p>
+              </div>
+              <div id="pendingQueue"></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="content-grid">
+          <div class="content-column content-column--primary">
+            <section class="panel panel--wide" id="delivery-trends" aria-labelledby="trendsHeading">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Trend Section</p>
+                  <h2 id="trendsHeading">Baseline vs current vs target</h2>
+                </div>
+                <p class="section-head__note" id="trendWindowNote"></p>
+              </div>
+              <div class="trend-grid" id="trendGrid"></div>
+            </section>
+
+            <section class="panel" id="delivery-adoption" aria-labelledby="adoptionHeading">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Adoption Behavior</p>
+                  <h2 id="adoptionHeading">Are people actually using the approved AI workflows?</h2>
+                </div>
+                <p class="section-head__note">
+                  Workflow coverage tells us approved presence. This section tells us whether people return often enough for AI to become a real working pattern.
+                </p>
+              </div>
+              <div id="adoptionBehaviorPanel"></div>
+            </section>
+
+            <section class="panel" id="delivery-productivity" aria-labelledby="productivityHeading">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Productivity Method</p>
+                  <h2 id="productivityHeading">How Net Productivity Gain is measured</h2>
+                </div>
+                <p class="section-head__note">
+                  This section explains the comparison method behind the headline productivity KPI and shows which workflows and trains are driving the result.
+                </p>
+              </div>
+              <div id="productivityMethodologyPanel"></div>
+            </section>
+
+            <section class="panel" id="delivery-economics" aria-labelledby="economicsHeading">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Economics</p>
+                  <h2 id="economicsHeading">Spend mix and outcome efficiency</h2>
+                </div>
+              </div>
+              <div id="economicsPanel"></div>
+            </section>
+          </div>
+
+          <div class="content-column content-column--secondary">
+            <section class="panel" id="delivery-governance" aria-labelledby="governanceHeading">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Governance</p>
+                  <h2 id="governanceHeading">Governance Console</h2>
+                </div>
+                <p class="section-head__note">
+                  Governance is now segmented by risk tier, service criticality, data sensitivity, and framework readiness so one topline percentage does not hide concentrated exposure.
+                </p>
+              </div>
+              <div id="governancePanel"></div>
+            </section>
+          </div>
+
+          <section class="panel panel--full content-action" id="delivery-actions" aria-labelledby="actionsHeading">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Action Center</p>
+                <h2 id="actionsHeading">Executive action workflow</h2>
+              </div>
+            </div>
+            <div id="actionCenter"></div>
+          </section>
+
+          <section class="panel panel--full content-roadmap" id="delivery-roadmap" aria-labelledby="roadmapHeading">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Roadmap</p>
+                <h2 id="roadmapHeading">30 / 60 / 90 day milestones</h2>
+              </div>
+            </div>
+            <div id="roadmapPanel"></div>
+          </section>
+
+          <section class="panel panel--full content-trust" id="delivery-trust" aria-labelledby="trustHeading">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Operational Trust Layer</p>
+                <h2 id="trustHeading">Access scope, reliability, instrumentation, retrieval grounding, model behavior, prompt security, alerting, and data health</h2>
+              </div>
+              <p class="section-head__note">
+                These supporting signals explain how complete, searchable, observable, grounded, secure, alertable, and current the underlying cockpit telemetry really is.
+              </p>
+            </div>
+            <div id="trustLayerPanel"></div>
+          </section>
+        </div>
+
+        <footer class="page-footer panel panel--full">
+          <div>
+            <p class="eyebrow">Operational Metadata</p>
+            <p class="page-footer__meta" id="lastUpdated"></p>
+          </div>
+          <div>
+            <p class="eyebrow">Data Sources</p>
+            <p class="page-footer__sources" id="dataSources"></p>
+          </div>
+        </footer>
+      </main>
+        </div>
+      </section>
+    </div>
+
+    <aside class="metric-drawer" id="metricDrawer" hidden>
+      <button
+        class="metric-drawer__scrim"
+        id="metricDrawerScrim"
+        type="button"
+        aria-label="Close detail drawer"
+      ></button>
+      <div
+        class="metric-drawer__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="metricDrawerTitle"
+      >
+        <button class="metric-drawer__close" id="metricDrawerClose" type="button" aria-label="Close detail drawer">
+          Close
+        </button>
+        <div id="metricDrawerContent"></div>
+      </div>
+    </aside>
+  </body>
+</html>
