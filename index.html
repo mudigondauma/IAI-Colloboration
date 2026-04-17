@@ -9,14 +9,14 @@
   </head>
   <body>
     <div class="skip-links" aria-label="Skip links">
-      <a class="skip-link" href="#institutionMain">Skip to Institutionalisation content</a>
+      <a class="skip-link" href="#institutionalizationContent">Skip to Institutionalisation content</a>
       <a class="skip-link" href="#deliveryMain">Skip to Delivery content</a>
     </div>
     <div class="page-shell">
       <div class="page-shell__glow page-shell__glow--top"></div>
       <div class="page-shell__glow page-shell__glow--bottom"></div>
 
-      <section class="screen-stack landing-screen" id="landingView" aria-labelledby="landingTitle">
+      <section class="screen-stack landing-screen screen-view screen-view--landing" id="landingView" aria-labelledby="landingTitle">
         <header class="landing-hero panel">
           <div class="landing-hero__copy">
             <p class="eyebrow">Meridian Group</p>
@@ -36,7 +36,7 @@
         </header>
 
         <div class="persona-grid" aria-label="Cockpit entry points">
-          <button class="persona-card persona-card--strategy" type="button" data-open-screen="institutionalization">
+          <a class="persona-card persona-card--strategy" href="#institutionalizationView" data-open-screen="institutionalization">
             <span class="persona-card__badge">CEO · CFO · Board</span>
             <h2 class="persona-card__title">Institutionalisation View</h2>
             <p class="persona-card__copy">
@@ -50,9 +50,9 @@
               <span>Responsible AI</span>
             </div>
             <span class="persona-card__cta">Open view</span>
-          </button>
+          </a>
 
-          <button class="persona-card persona-card--delivery" type="button" data-open-screen="delivery">
+          <a class="persona-card persona-card--delivery" href="#deliveryView" data-open-screen="delivery">
             <span class="persona-card__badge">CIO · Engineering · Delivery</span>
             <h2 class="persona-card__title">Delivery Engine View</h2>
             <p class="persona-card__copy">
@@ -66,7 +66,7 @@
               <span>Economics</span>
             </div>
             <span class="persona-card__cta">Open view</span>
-          </button>
+          </a>
 
           <button
             class="persona-card persona-card--future"
@@ -135,53 +135,67 @@
         </section>
       </section>
 
-      <section id="institutionalizationView" hidden>
+      <section class="screen-view screen-view--detail" id="institutionalizationView">
         <div class="screen-stack">
           <header class="view-bar panel">
             <div class="view-bar__left">
-              <button class="view-bar__back" type="button" data-back-home>All views</button>
+              <a class="view-bar__back" href="#landingView" data-back-home aria-label="Return to all views">
+                <span class="view-bar__back-icon" aria-hidden="true">&larr;</span>
+                <span class="view-bar__back-copy">
+                  <span class="view-bar__back-label">Navigation</span>
+                  <strong>All views</strong>
+                </span>
+              </a>
               <div>
                 <p class="eyebrow">Executive Role View</p>
                 <h2 class="view-bar__title">Institutionalisation View</h2>
               </div>
             </div>
             <div class="view-bar__right" id="institutionalizationViewMeta">
-              <span class="view-bar__badge">CEO · CFO · Board</span>
-              <span class="view-bar__meta">Enterprise posture</span>
+              <span class="view-bar__meta"><strong class="view-bar__meta-label">Audience</strong><span>CEO · CFO · Board</span></span>
+              <span class="view-bar__meta"><strong class="view-bar__meta-label">Lens</strong><span>Enterprise posture</span></span>
             </div>
           </header>
-          <div id="institutionalizationSavedViewsPanel"></div>
-          <div id="institutionalizationAskPanel"></div>
+          <div class="view-support-stack view-support-stack--dark">
+            <div id="institutionalizationSavedViewsPanel"></div>
+            <div id="institutionalizationAskPanel"></div>
+          </div>
           <div id="institutionalizationContent" tabindex="-1"></div>
         </div>
       </section>
 
-      <section id="deliveryView" hidden>
+      <section class="screen-view screen-view--detail" id="deliveryView">
         <div class="screen-stack">
           <header class="view-bar panel">
             <div class="view-bar__left">
-              <button class="view-bar__back" type="button" data-back-home>All views</button>
+              <a class="view-bar__back" href="#landingView" data-back-home aria-label="Return to all views">
+                <span class="view-bar__back-icon" aria-hidden="true">&larr;</span>
+                <span class="view-bar__back-copy">
+                  <span class="view-bar__back-label">Navigation</span>
+                  <strong>All views</strong>
+                </span>
+              </a>
               <div>
                 <p class="eyebrow">Executive Role View</p>
                 <h2 class="view-bar__title">Delivery Engine View</h2>
               </div>
             </div>
             <div class="view-bar__right" id="deliveryViewMeta">
-              <span class="view-bar__badge">CIO · Engineering · Delivery</span>
-              <span class="view-bar__meta">Operational outcomes</span>
+              <span class="view-bar__meta"><strong class="view-bar__meta-label">Audience</strong><span>CIO · Engineering · Delivery</span></span>
+              <span class="view-bar__meta"><strong class="view-bar__meta-label">Lens</strong><span>Operational outcomes</span></span>
             </div>
           </header>
 
       <main class="dashboard" id="deliveryMain" tabindex="-1" aria-label="Delivery Engine View dashboard">
         <header class="page-header panel">
-          <div class="page-header__copy">
-            <p class="eyebrow">CIO View</p>
-            <h1>Delivery Engine View</h1>
-            <p class="page-header__subtitle">
-              CIO View of AI Delivery — Value, Risk, Flow, and Adoption.
-            </p>
-            <div class="scope-summary" id="scopeSummary" aria-live="polite"></div>
-          </div>
+            <div class="page-header__copy">
+              <p class="eyebrow">CIO View</p>
+              <h1>Delivery Engine View</h1>
+              <p class="page-header__subtitle">
+              Operational view of AI delivery, flow, trust, and realized value.
+              </p>
+              <div class="scope-summary" id="scopeSummary" aria-live="polite"></div>
+            </div>
 
           <form class="filter-bar" aria-label="Dashboard filters">
             <label class="control">
@@ -239,8 +253,12 @@
           <div id="deliverySegmentationBar"></div>
         </header>
 
-        <div id="deliverySavedViewsPanel"></div>
-        <div id="deliveryAskPanel"></div>
+        <div class="view-support-stack">
+          <div id="deliverySavedViewsPanel"></div>
+          <div id="deliveryAskPanel"></div>
+        </div>
+
+        <div id="deliveryQuickNav"></div>
 
         <section class="kpi-grid" id="kpiGrid" aria-label="Executive KPI cards"></section>
 
@@ -438,6 +456,8 @@
         </div>
       </section>
     </div>
+
+    <div id="jumpReturnChip" aria-live="polite"></div>
 
     <aside class="metric-drawer" id="metricDrawer" hidden>
       <button

@@ -11,11 +11,55 @@ const state = {
   businessFunction: "all",
   useCase: "all",
   modelTier: "all",
+  selectedValueInitiativeId: null,
+  bridgeTileFlips: {},
+  workforceProofFlips: {},
+  workforceTopFlips: {},
   askFocus: {
-    institutionalization: "scale-readiness",
-    delivery: "what-changed",
+    institutionalization: null,
+    delivery: null,
   },
 };
+
+function getScreenFromHash(hash = window.location.hash, fallback = "landing") {
+  if (!hash || hash === "#landingView") {
+    return "landing";
+  }
+
+  if (hash.startsWith("#institution")) {
+    return "institutionalization";
+  }
+
+  if (hash.startsWith("#delivery")) {
+    return "delivery";
+  }
+
+  return fallback;
+}
+
+state.screen = getScreenFromHash();
+
+function updateInstitutionSubnavActive() {
+  const links = document.querySelectorAll(".institution-subnav__link");
+  const currentHash = window.location.hash;
+
+  links.forEach((link) => {
+    const isActive = currentHash && link.getAttribute("href") === currentHash;
+    link.classList.toggle("is-active", isActive);
+    link.setAttribute("aria-current", isActive ? "location" : "false");
+  });
+}
+
+function updateDeliveryQuickNavActive() {
+  const links = document.querySelectorAll(".delivery-quicknav__link");
+  const currentHash = window.location.hash;
+
+  links.forEach((link) => {
+    const isActive = currentHash && link.getAttribute("href") === currentHash;
+    link.classList.toggle("is-active", isActive);
+    link.setAttribute("aria-current", isActive ? "location" : "false");
+  });
+}
 
 const periodLabels = {
   "last-30": "Last 30 days",
@@ -5987,16 +6031,16 @@ const accessProfiles = {
 
 const askPromptRegistry = {
   institutionalization: [
-    { id: "scale-readiness", label: "Are we ready to scale AI?" },
-    { id: "blocking-scale", label: "What is still blocking scale?" },
-    { id: "value-proof", label: "Where is value already proven?" },
-    { id: "leadership-next", label: "What should leadership do next?" },
+    { id: "scale-readiness", label: "Scale readiness" },
+    { id: "blocking-scale", label: "What blocks scale?" },
+    { id: "value-proof", label: "Where is value proven?" },
+    { id: "leadership-next", label: "What should leaders do next?" },
   ],
   delivery: [
-    { id: "what-changed", label: "What changed in this slice?" },
-    { id: "needs-attention", label: "What needs attention now?" },
-    { id: "why-risky", label: "Why is this slice still risky?" },
-    { id: "leadership-next", label: "What should leadership do next?" },
+    { id: "what-changed", label: "What changed?" },
+    { id: "needs-attention", label: "What needs attention?" },
+    { id: "why-risky", label: "Why is this risky?" },
+    { id: "leadership-next", label: "What should leaders do next?" },
   ],
 };
 
@@ -6006,7 +6050,7 @@ const savedViewRegistry = {
       id: "board-overview",
       role: "Board default",
       title: "Scale readiness pack",
-      note: "Enterprise rollup for value, control, and scale posture in the current board frame.",
+      note: "Enterprise rollup for value, control, and scale posture.",
       chips: ["Q2 2026", "Enterprise slice", "Scale readiness"],
       askPrompt: "scale-readiness",
       anchor: "#institution-board-readout",
@@ -6022,7 +6066,7 @@ const savedViewRegistry = {
       id: "cfo-value-pack",
       role: "CFO lens",
       title: "Finance-grade value pack",
-      note: "Restores the value chapter with finance-context segmentation and ROI proof in focus.",
+      note: "Finance-led value proof with ROI, payback, and validated benefit evidence.",
       chips: ["Finance", "Value proof", "Payback"],
       askPrompt: "value-proof",
       anchor: "#institution-value",
@@ -6038,7 +6082,7 @@ const savedViewRegistry = {
       id: "risk-committee",
       role: "Risk committee",
       title: "Control and readiness watch",
-      note: "Brings governance blockers, control exposure, and board-next actions into one reusable lens.",
+      note: "Governance blockers, control exposure, and board-next actions in one lens.",
       chips: ["Risk", "Governance", "Board action"],
       askPrompt: "blocking-scale",
       anchor: "#institution-governance",
@@ -6056,7 +6100,7 @@ const savedViewRegistry = {
       id: "cio-operating-review",
       role: "CIO default",
       title: "Operating review",
-      note: "Restores the main enterprise delivery slice for flow, oversight, economics, and executive action closure.",
+      note: "Enterprise delivery review for flow, oversight, economics, and actions.",
       chips: ["Enterprise", "All workflows", "Pilot"],
       askPrompt: "what-changed",
       anchor: "#delivery-swimlanes",
@@ -6076,7 +6120,7 @@ const savedViewRegistry = {
       id: "product-engineering",
       role: "Product engineering",
       title: "Build quality and productivity",
-      note: "Shifts to the digital products build slice to review throughput, quality, and train-level gain.",
+      note: "Digital products build slice for throughput, quality, and productivity.",
       chips: ["Digital Products", "Build", "Productivity"],
       askPrompt: "what-changed",
       anchor: "#delivery-productivity",
@@ -6096,7 +6140,7 @@ const savedViewRegistry = {
       id: "ops-resilience-watch",
       role: "Operations resilience",
       title: "Trust and exception watch",
-      note: "Restores the RunOps support slice for oversight pressure, reliability, and trust hot spots.",
+      note: "RunOps slice for oversight pressure, reliability, and trust hot spots.",
       chips: ["RunOps", "Run", "Trust"],
       askPrompt: "why-risky",
       anchor: "#delivery-trust",
@@ -6126,6 +6170,7 @@ const elements = {
   deliveryViewMeta: document.querySelector("#deliveryViewMeta"),
   deliverySavedViewsPanel: document.querySelector("#deliverySavedViewsPanel"),
   deliveryAskPanel: document.querySelector("#deliveryAskPanel"),
+  deliveryQuickNav: document.querySelector("#deliveryQuickNav"),
   scopeSummary: document.querySelector("#scopeSummary"),
   dateFilter: document.querySelector("#dateFilter"),
   teamFilter: document.querySelector("#teamFilter"),
@@ -6153,6 +6198,7 @@ const elements = {
   trendWindowNote: document.querySelector("#trendWindowNote"),
   lastUpdated: document.querySelector("#lastUpdated"),
   dataSources: document.querySelector("#dataSources"),
+  jumpReturnChip: document.querySelector("#jumpReturnChip"),
   metricDrawer: document.querySelector("#metricDrawer"),
   metricDrawerPanel: document.querySelector(".metric-drawer__panel"),
   metricDrawerContent: document.querySelector("#metricDrawerContent"),
@@ -6695,8 +6741,12 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+function prefersTouchScrolling() {
+  return window.matchMedia("(pointer: coarse)").matches;
+}
+
 function topScrollBehavior() {
-  return prefersReducedMotion() ? "auto" : "smooth";
+  return prefersReducedMotion() || prefersTouchScrolling() ? "auto" : "smooth";
 }
 
 function getFilterLabel(filterKey, value) {
@@ -7441,7 +7491,17 @@ function summarizeValueLedger(items) {
   };
 }
 
-function renderValueSummaryCards(snapshot, { compact = false } = {}) {
+function renderValueCard(card) {
+  return `
+    <article class="finance-card ${card.className ?? ""}">
+      <span class="finance-card__label">${card.label}</span>
+      <strong class="finance-card__value">${card.value}</strong>
+      <p>${card.note}</p>
+    </article>
+  `;
+}
+
+function renderValueSummaryCards(snapshot, { compact = false, extraCards = [] } = {}) {
   if (!snapshot) {
     return `
       <div class="empty-state-card">
@@ -7485,18 +7545,9 @@ function renderValueSummaryCards(snapshot, { compact = false } = {}) {
   ];
 
   return `
-    <div class="finance-card-grid ${compact ? "finance-card-grid--compact" : ""}">
-      ${cards
-        .map(
-          (card) => `
-            <article class="finance-card">
-              <span class="finance-card__label">${card.label}</span>
-              <strong class="finance-card__value">${card.value}</strong>
-              <p>${card.note}</p>
-            </article>
-          `,
-        )
-        .join("")}
+    <div class="finance-card-grid ${compact ? "finance-card-grid--compact" : ""} ${extraCards.length ? "finance-card-grid--expanded" : ""}">
+      ${cards.map((card) => renderValueCard(card)).join("")}
+      ${extraCards.map((card) => renderValueCard(card)).join("")}
     </div>
   `;
 }
@@ -7526,7 +7577,338 @@ function renderBenefitMix(summary) {
   `;
 }
 
-function renderValueInitiatives(items, { limit = null } = {}) {
+function getBridgeWhyItMatters(label) {
+  const narratives = {
+    "Flow Index": "Shows whether AI work is moving through the delivery system with enough throughput to support enterprise-scale execution.",
+    "Quality Guardrail": "Confirms that scale is not being bought at the expense of quality, assurance, or review discipline.",
+    "AI Coverage": "Shows how much of the operating estate has moved from isolated experiments into instrumented AI support.",
+    "Delivery run-rate": "Gives the board the spend baseline behind the delivery engine, separate from realized operational value.",
+    "Operational AI": "This is the clearest proof that run operations are already generating material board-visible value.",
+    "Total AI spend": "Puts ROI, governance expectations, and enterprise exposure in the context of total AI footprint.",
+  };
+
+  return narratives[label] || "Connects a delivery-side signal to the enterprise story the board is being asked to sponsor.";
+}
+
+function renderBridgeCard(item) {
+  const isFlipped = Boolean(state.bridgeTileFlips?.[item.label]);
+
+  return `
+    <button
+      class="mini-stat mini-stat--bridge-flip ${isFlipped ? "is-flipped" : ""}"
+      type="button"
+      data-bridge-tile-id="${item.label}"
+      aria-pressed="${String(isFlipped)}"
+      aria-label="${isFlipped ? `Show front of ${item.label}` : `Show why ${item.label} matters`}"
+    >
+      <span class="bridge-flip-card__inner" aria-hidden="true">
+        <span class="bridge-flip-card__face bridge-flip-card__face--front">
+          <span class="mini-stat__label">${item.label}</span>
+          <span class="mini-stat__value">${item.value}</span>
+          <span class="bridge-flip-card__copy">${item.detail}</span>
+          <span class="bridge-flip-card__hint">Tap for why it matters</span>
+        </span>
+        <span class="bridge-flip-card__face bridge-flip-card__face--back">
+          <span class="mini-stat__label">Why it matters</span>
+          <strong>${item.label}</strong>
+          <span class="bridge-flip-card__copy">${getBridgeWhyItMatters(item.label)}</span>
+          <span class="bridge-flip-card__hint">Tap to return</span>
+        </span>
+      </span>
+    </button>
+  `;
+}
+
+function getWorkforceProofWhyItMatters(label) {
+  const narratives = {
+    "Scenario assessment pass":
+      "Shows whether learning is turning into assessed job-ready capability instead of remaining broad but shallow training completion.",
+    "Supervised safe-use sign-off":
+      "This is the gating step between certification and real operating autonomy, because it proves governed use on live work with named supervision.",
+    "Policy-exception ready leaders":
+      "Shows whether Meridian has enough accountable leadership capacity to approve exceptions, handle escalation paths, and scale safely under pressure.",
+    "Control-function validation":
+      "Shows whether risk, legal, audit, and governance teams can challenge and certify AI use with documented criteria as adoption spreads.",
+  };
+
+  return narratives[label] || "Shows why this capability signal matters to safe scale, not just workforce optics.";
+}
+
+function getWorkforceProofProgressLabel(label) {
+  const labels = {
+    "Scenario assessment pass": "First-attempt assessment",
+    "Supervised safe-use sign-off": "Workflow sign-off coverage",
+    "Policy-exception ready leaders": "Exception-ready leadership",
+    "Control-function validation": "Control-team coverage",
+  };
+
+  return labels[label] || "Capability coverage";
+}
+
+function renderWorkforceProofCard(item) {
+  const isFlipped = Boolean(state.workforceProofFlips?.[item.label]);
+  const percent = Number.parseFloat(item.value) || 0;
+  const progressLabel = getWorkforceProofProgressLabel(item.label);
+
+  return `
+    <button
+      class="workforce-proof-card workforce-proof-card--flip workforce-proof-card--progress workforce-proof-card--${item.tone} ${isFlipped ? "is-flipped" : ""}"
+      type="button"
+      data-workforce-proof-id="${item.label}"
+      aria-pressed="${String(isFlipped)}"
+      aria-label="${isFlipped ? `Show front of ${item.label}` : `Show why ${item.label} matters`}"
+    >
+      <span class="workforce-proof-card__inner" aria-hidden="true">
+        <span class="workforce-proof-card__face workforce-proof-card__face--front">
+          <span class="workforce-proof-card__label">${item.label}</span>
+          <strong class="workforce-proof-card__value">${item.value}</strong>
+          <span class="workforce-proof-card__copy">${item.detail}</span>
+          <span class="workforce-proof-card__progress-block">
+            <span class="workforce-proof-card__progress-label">${progressLabel}</span>
+            <span class="workforce-proof-card__progress" aria-hidden="true">
+              <span class="workforce-proof-card__progress-fill workforce-proof-card__progress-fill--${item.tone}" style="width: ${percent}%"></span>
+            </span>
+          </span>
+          <span class="workforce-proof-card__hint">Tap for why it matters</span>
+        </span>
+        <span class="workforce-proof-card__face workforce-proof-card__face--back">
+          <span class="workforce-proof-card__label">Why it matters</span>
+          <strong>${item.label}</strong>
+          <span class="workforce-proof-card__copy">${getWorkforceProofWhyItMatters(item.label)}</span>
+          <span class="workforce-proof-card__progress-block">
+            <span class="workforce-proof-card__progress-label">${progressLabel}</span>
+            <span class="workforce-proof-card__progress" aria-hidden="true">
+              <span class="workforce-proof-card__progress-fill workforce-proof-card__progress-fill--${item.tone}" style="width: ${percent}%"></span>
+            </span>
+          </span>
+          <span class="workforce-proof-card__hint">Tap to return</span>
+        </span>
+      </span>
+    </button>
+  `;
+}
+
+function getWorkforceTopWhyItMatters(label) {
+  const narratives = {
+    "Role-certified practitioners":
+      "This is the first real capability gate beyond training volume. It shows whether Meridian is building role-ready practitioners, not just awareness.",
+    "Safe-use validated":
+      "This is the main scale gate, because it proves governed use on supervised live workflows without material policy or quality breaches.",
+    "Decision-rights certified leaders":
+      "This shows whether Meridian has enough cleared leaders to approve exceptions, handle escalations, and sponsor broader scale safely.",
+  };
+
+  return narratives[label] || "Shows why this workforce signal matters to safe enterprise scale, not just learning progress.";
+}
+
+function getWorkforceTopProgressLabel(label) {
+  const progressLabels = {
+    "Role-certified practitioners": "Certification coverage",
+    "Safe-use validated": "Workflow validation",
+    "Decision-rights certified leaders": "Leadership clearance",
+  };
+
+  return progressLabels[label] || "Capability coverage";
+}
+
+function renderWorkforceTopMetric(item) {
+  if (item.label === "Foundations learning") {
+    return `
+      <div class="summary-row--inline">
+        <div>
+          <strong>${item.label}</strong>
+          <span>${item.detail}</span>
+        </div>
+        <b>${item.value}</b>
+      </div>
+    `;
+  }
+
+  const isFlipped = Boolean(state.workforceTopFlips?.[item.label]);
+  const percent = Number.parseFloat(item.value) || 0;
+  const progressLabel = getWorkforceTopProgressLabel(item.label);
+
+  return `
+    <button
+      class="summary-row--flip summary-row--flip--progress ${isFlipped ? "is-flipped" : ""}"
+      type="button"
+      data-workforce-top-id="${item.label}"
+      aria-pressed="${String(isFlipped)}"
+      aria-label="${isFlipped ? `Show front of ${item.label}` : `Show why ${item.label} matters`}"
+    >
+      <span class="summary-row--flip__inner" aria-hidden="true">
+        <span class="summary-row--flip__face summary-row--flip__face--front">
+          <span class="summary-row--flip__content">
+            <span class="summary-row--flip__head">
+              <strong>${item.label}</strong>
+              <b>${item.value}</b>
+            </span>
+            <span class="summary-row--flip__body">${item.detail}</span>
+            <span class="summary-row--flip__progress-block">
+              <span class="summary-row--flip__progress-label">${progressLabel}</span>
+              <span class="summary-row--flip__progress" aria-hidden="true">
+                <span class="summary-row--flip__progress-fill" style="width: ${percent}%"></span>
+              </span>
+            </span>
+            <span class="summary-row--flip__hint">Tap for why it matters</span>
+          </span>
+        </span>
+        <span class="summary-row--flip__face summary-row--flip__face--back">
+          <span class="summary-row--flip__content">
+            <span class="summary-row--flip__head">
+              <strong>Why it matters</strong>
+              <b>${item.value}</b>
+            </span>
+            <span class="summary-row--flip__body">${getWorkforceTopWhyItMatters(item.label)}</span>
+            <span class="summary-row--flip__progress-block">
+              <span class="summary-row--flip__progress-label">${progressLabel}</span>
+              <span class="summary-row--flip__progress" aria-hidden="true">
+                <span class="summary-row--flip__progress-fill" style="width: ${percent}%"></span>
+              </span>
+            </span>
+            <span class="summary-row--flip__hint">Tap to return</span>
+          </span>
+        </span>
+      </span>
+    </button>
+  `;
+}
+
+function getSelectedValueInitiative(items) {
+  if (!items?.length) {
+    return null;
+  }
+
+  return items.find((item) => item.id === state.selectedValueInitiativeId) ?? items[0];
+}
+
+function getInitiativeAttainment(initiative) {
+  return initiative.forecastValue ? Math.round((initiative.realizedValue / initiative.forecastValue) * 100) : 0;
+}
+
+function getInitiativeBoardSummary(initiative) {
+  const attainment = getInitiativeAttainment(initiative);
+  const validationLine = initiative.financeValidated
+    ? "Finance validation is in place."
+    : "Finance review is still pending.";
+
+  if (initiative.stage === "Stalled") {
+    return `${attainment}% forecast attainment, but the initiative is stalled. ${validationLine}`;
+  }
+
+  if (initiative.financeValidated && attainment >= 85) {
+    return `${attainment}% forecast attainment with ${formatMonths(initiative.paybackMonths)} payback. ${validationLine}`;
+  }
+
+  return `${initiative.stage} with ${attainment}% forecast attainment and ${formatMoneyM(initiative.realizedValue)} realized against ${formatMoneyM(initiative.forecastValue)} forecast. ${validationLine}`;
+}
+
+function renderValueInitiativePicker(items, selectedId) {
+  if (!items?.length || items.length < 2) {
+    return "";
+  }
+
+  const limit = 10;
+  const topItems = items.slice(0, limit);
+  const selected = items.find((item) => item.id === selectedId);
+  const visible = selected && !topItems.some((item) => item.id === selected.id)
+    ? [...topItems.slice(0, Math.max(0, limit - 1)), selected]
+    : topItems;
+  const maxRealized = Math.max(...visible.map((item) => item.realizedValue), 1);
+
+  return `
+    <div class="initiative-picker-panel" id="valueInitiativePicker">
+      <div class="initiative-picker__head">
+        <strong>Choose initiative</strong>
+        <p>Click an initiative name or bar to update the selected summary. Showing ${visible.length} strongest value signals in the current slice.</p>
+      </div>
+      <div class="initiative-picker">
+        <div class="initiative-picker__list">
+          ${visible
+            .map(
+              (initiative) => `
+                <button
+                  class="initiative-picker__option ${selectedId === initiative.id ? "is-active" : ""}"
+                  type="button"
+                  data-initiative-select="${initiative.id}"
+                  aria-pressed="${String(selectedId === initiative.id)}"
+                >
+                  <span class="initiative-picker__name">${initiative.name}</span>
+                  <span class="initiative-picker__bar" aria-hidden="true">
+                    <span class="initiative-picker__fill initiative-picker__fill--${initiative.financeValidated ? "validated" : "directional"}" style="width: ${(initiative.realizedValue / maxRealized) * 100}%"></span>
+                  </span>
+                  <span class="initiative-picker__value">${formatMoneyM(initiative.realizedValue)}</span>
+                </button>
+              `,
+            )
+            .join("")}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderValueInitiativeSummary(initiative) {
+  if (!initiative) {
+    return "";
+  }
+
+  const attainment = getInitiativeAttainment(initiative);
+
+  return `
+    <article class="initiative-summary-card">
+      <div class="initiative-summary-card__head">
+        <div>
+          <span class="initiative-summary-card__eyebrow">Selected initiative</span>
+          <h3>${initiative.name}</h3>
+          <p>${initiative.function} · ${initiative.stage} · ${initiative.geography} · ${initiative.deliveryTrain}</p>
+        </div>
+        <span class="status-chip ${initiative.financeValidated ? "status-chip--green" : "status-chip--amber"}">
+          ${initiative.financeValidated ? "Finance validated" : "Directional value"}
+        </span>
+      </div>
+      <div class="initiative-summary-card__body">
+        <div class="initiative-summary-card__copy">
+          <p class="initiative-summary-card__story">${getInitiativeBoardSummary(initiative)}</p>
+          <div class="initiative-summary-card__tags">
+            <span>${initiative.useCase}</span>
+            <span>${initiative.tierLabel}</span>
+            <span>${initiative.benefitType}</span>
+            <span>${initiative.confidence} confidence</span>
+          </div>
+        </div>
+        <div class="initiative-summary-card__metrics">
+          <div>
+            <span>Realized</span>
+            <strong>${formatMoneyM(initiative.realizedValue)}</strong>
+          </div>
+          <div>
+            <span>Forecast</span>
+            <strong>${formatMoneyM(initiative.forecastValue)}</strong>
+          </div>
+          <div>
+            <span>Attainment</span>
+            <strong>${attainment}%</strong>
+          </div>
+          <div>
+            <span>Payback</span>
+            <strong>${formatMonths(initiative.paybackMonths)}</strong>
+          </div>
+        </div>
+      </div>
+      <div class="initiative-summary-card__footer">
+        <span class="trace-note">${initiative.financeValidated ? "Finance, control, and release proof linked." : "Value case linked, finance review still pending."}</span>
+        <div class="initiative-summary-card__actions">
+          <button class="detail-link" type="button" data-evidence-id="${getInitiativeEvidenceId(initiative.id)}" aria-label="Open evidence pack for ${initiative.name}">
+            Open evidence pack
+          </button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function renderValueInitiatives(items, { limit = null, selectedId = null } = {}) {
   const visible = limit ? items.slice(0, limit) : items;
 
   if (!visible.length) {
@@ -7541,15 +7923,27 @@ function renderValueInitiatives(items, { limit = null } = {}) {
   return visible
     .map(
       (initiative) => `
-        <article class="initiative-item initiative-item--finance">
+        <article
+          class="initiative-item initiative-item--finance initiative-item--selectable ${selectedId === initiative.id ? "is-active" : ""}"
+          data-initiative-select="${initiative.id}"
+          tabindex="0"
+          role="button"
+          aria-pressed="${String(selectedId === initiative.id)}"
+          aria-label="Select ${initiative.name} summary"
+        >
           <div class="initiative-item__head">
             <div>
               <strong>${initiative.name}</strong>
               <p>${initiative.function} · ${initiative.stage} · ${initiative.geography} · ${initiative.deliveryTrain}</p>
             </div>
-            <span class="status-chip ${initiative.financeValidated ? "status-chip--green" : "status-chip--amber"}">
-              ${initiative.financeValidated ? "Finance validated" : "Directional value"}
-            </span>
+            <div class="initiative-item__head-tags">
+              ${selectedId === initiative.id
+                ? `<span class="initiative-item__selection-chip">Selected</span>`
+                : ""}
+              <span class="status-chip ${initiative.financeValidated ? "status-chip--green" : "status-chip--amber"}">
+                ${initiative.financeValidated ? "Finance validated" : "Directional value"}
+              </span>
+            </div>
           </div>
           <div class="initiative-value-grid">
             <div>
@@ -9793,19 +10187,43 @@ function renderViewBars() {
 
   if (elements.institutionalizationViewMeta && institutionAccess) {
     elements.institutionalizationViewMeta.innerHTML = `
-      <span class="view-bar__badge">${institutionAccess.roleLabel}</span>
-      <span class="view-bar__meta">${institutionAccess.posture}</span>
-      <span class="view-bar__meta view-bar__meta--access">${institutionAccess.clearance}</span>
-      <span class="view-bar__meta">${institutionAccess.scopeLabel}</span>
+      <span class="view-bar__meta">
+        <strong class="view-bar__meta-label">Audience</strong>
+        <span>${institutionAccess.roleLabel}</span>
+      </span>
+      <span class="view-bar__meta">
+        <strong class="view-bar__meta-label">Lens</strong>
+        <span>${institutionAccess.posture}</span>
+      </span>
+      <span class="view-bar__meta">
+        <strong class="view-bar__meta-label">Access</strong>
+        <span>${institutionAccess.clearance}</span>
+      </span>
+      <span class="view-bar__meta">
+        <strong class="view-bar__meta-label">Scope</strong>
+        <span>${institutionAccess.scopeLabel}</span>
+      </span>
     `;
   }
 
   if (elements.deliveryViewMeta && deliveryAccess) {
     elements.deliveryViewMeta.innerHTML = `
-      <span class="view-bar__badge">${deliveryAccess.roleLabel}</span>
-      <span class="view-bar__meta">${deliveryAccess.posture}</span>
-      <span class="view-bar__meta view-bar__meta--access">${deliveryAccess.clearance}</span>
-      <span class="view-bar__meta">${deliveryAccess.scopeLabel}</span>
+      <span class="view-bar__meta">
+        <strong class="view-bar__meta-label">Audience</strong>
+        <span>${deliveryAccess.roleLabel}</span>
+      </span>
+      <span class="view-bar__meta">
+        <strong class="view-bar__meta-label">Lens</strong>
+        <span>${deliveryAccess.posture}</span>
+      </span>
+      <span class="view-bar__meta">
+        <strong class="view-bar__meta-label">Access</strong>
+        <span>${deliveryAccess.clearance}</span>
+      </span>
+      <span class="view-bar__meta">
+        <strong class="view-bar__meta-label">Scope</strong>
+        <span>${deliveryAccess.scopeLabel}</span>
+      </span>
     `;
   }
 }
@@ -9817,9 +10235,7 @@ function renderShell() {
     delivery: elements.deliveryView,
   };
 
-  Object.entries(screens).forEach(([screen, element]) => {
-    element.hidden = state.screen !== screen;
-  });
+  document.body.dataset.screen = state.screen;
 
   const titles = {
     landing: "Meridian AI Enterprise Cockpit",
@@ -9828,6 +10244,81 @@ function renderShell() {
   };
 
   document.title = titles[state.screen] || titles.landing;
+
+  const hashes = {
+    landing: "#landingView",
+    institutionalization: "#institutionalizationView",
+    delivery: "#deliveryView",
+  };
+
+  const currentHash = window.location.hash;
+  const currentHashScreen = getScreenFromHash(currentHash, null);
+  const targetHash = currentHash && currentHashScreen === state.screen
+    ? currentHash
+    : hashes[state.screen] || hashes.landing;
+
+  if (window.location.hash !== targetHash) {
+    window.history.replaceState(null, "", targetHash);
+  }
+
+  renderJumpReturnChip(targetHash);
+}
+
+function getJumpReturnConfig(hash = window.location.hash) {
+  if (!hash || hash === "#landingView") {
+    return null;
+  }
+
+  if (hash === "#institutionalizationView" || hash === "#institutionalizationAskPanel") {
+    return null;
+  }
+
+  if (hash === "#deliveryView" || hash === "#deliveryAskPanel") {
+    return null;
+  }
+
+  if (hash.startsWith("#institution-")) {
+    return {
+      href: "#institutionalizationAskPanel",
+      label: "Back to guided questions",
+      screen: "institutionalization",
+    };
+  }
+
+  if (hash.startsWith("#delivery-")) {
+    return {
+      href: "#deliveryAskPanel",
+      label: "Back to guided questions",
+      screen: "delivery",
+    };
+  }
+
+  return null;
+}
+
+function renderJumpReturnChip(hash = window.location.hash) {
+  if (!elements.jumpReturnChip) {
+    return;
+  }
+
+  const config = getJumpReturnConfig(hash);
+
+  if (!config) {
+    elements.jumpReturnChip.hidden = true;
+    elements.jumpReturnChip.innerHTML = "";
+    return;
+  }
+
+  elements.jumpReturnChip.hidden = false;
+  elements.jumpReturnChip.innerHTML = `
+    <a class="jump-return-chip jump-return-chip--${config.screen}" href="${config.href}">
+      <span class="jump-return-chip__icon" aria-hidden="true">↑</span>
+      <span class="jump-return-chip__copy">
+        <span class="jump-return-chip__label">Ask the cockpit</span>
+        <strong>${config.label}</strong>
+      </span>
+    </a>
+  `;
 }
 
 function renderDeliverySegmentationBar() {
@@ -9842,6 +10333,43 @@ function renderDeliverySegmentationBar() {
   `;
 }
 
+function renderDeliveryQuickNav() {
+  const items = [
+    { id: "delivery-swimlanes", label: "Flow" },
+    { id: "delivery-oversight", label: "Oversight" },
+    { id: "delivery-adoption", label: "Adoption" },
+    { id: "delivery-productivity", label: "Productivity" },
+    { id: "delivery-economics", label: "Economics" },
+    { id: "delivery-governance", label: "Governance" },
+    { id: "delivery-actions", label: "Actions" },
+    { id: "delivery-trust", label: "Trust" },
+  ];
+
+  const linksHtml = items
+    .map(
+      (item) => `
+        <a class="delivery-quicknav__link" href="#${item.id}" aria-current="false">${item.label}</a>
+      `,
+    )
+    .join("");
+
+  elements.deliveryQuickNav.innerHTML = `
+    <nav class="delivery-quicknav panel" aria-label="Delivery quick navigation">
+      <div class="delivery-quicknav__head">
+        <div>
+          <p class="eyebrow">Quick Jump</p>
+          <span class="delivery-quicknav__note">Move across the delivery evidence without losing the operating thread.</span>
+        </div>
+      </div>
+      <div class="delivery-quicknav__links">
+        ${linksHtml}
+      </div>
+    </nav>
+  `;
+
+  updateDeliveryQuickNavActive();
+}
+
 function getSavedViews(screen) {
   return savedViewRegistry[screen] || [];
 }
@@ -9849,7 +10377,7 @@ function getSavedViews(screen) {
 function savedViewMatchesState(screen, preset) {
   const entries = Object.entries(preset.state || {});
   const stateMatches = entries.every(([key, value]) => state[key] === value);
-  const askMatches = !preset.askPrompt || state.askFocus[screen] === preset.askPrompt;
+  const askMatches = state.askFocus[screen] == null || !preset.askPrompt || state.askFocus[screen] === preset.askPrompt;
 
   return stateMatches && askMatches;
 }
@@ -9916,12 +10444,12 @@ function renderSavedViewsPanel(screen) {
       <div class="saved-view-panel__head">
         <div>
           <p class="eyebrow ${isDark ? "eyebrow--dark" : ""}">Saved views</p>
-          <h3>Reusable role presets for this cockpit lens</h3>
+          <h3>Saved lenses for this view</h3>
         </div>
         <p class="saved-view-panel__note">
           ${activePreset
-            ? `Active preset: ${activePreset.title}`
-            : "Adjusted from saved view: one or more filters, toggles, or guided prompts now differ from the preset, so this is a custom slice."}
+            ? `Active lens: ${activePreset.title}.`
+            : "Adjusted from saved view. One or more filters, toggles, or guided prompts now differ from the preset."}
         </p>
       </div>
       <div class="saved-view-grid">
@@ -9938,7 +10466,7 @@ function renderSavedViewsPanel(screen) {
                 <div class="saved-view-card__head">
                   <span class="saved-view-card__role">${preset.role}</span>
                   <span class="status-chip ${savedViewMatchesState(screen, preset) ? "status-chip--green" : ""}">
-                    ${savedViewMatchesState(screen, preset) ? "Active" : "Restore"}
+                    ${savedViewMatchesState(screen, preset) ? "Active" : "Use lens"}
                   </span>
                 </div>
                 <strong class="saved-view-card__title">${preset.title}</strong>
@@ -10460,24 +10988,24 @@ function renderAskPanel(screen) {
       <div class="ask-layer__head">
         <div>
           <p class="eyebrow ${isDark ? "eyebrow--dark" : ""}">Ask the cockpit</p>
-          <h3 id="${headingId}">Guided answers from the current slice</h3>
+          <h3 id="${headingId}">Grounded questions for this view</h3>
         </div>
         <p class="ask-layer__note">
           ${screen === "institutionalization"
-            ? "Board questions stay grounded in the current slice, the scorecard, and the evidence already in this cockpit."
-            : "Delivery questions stay grounded in the current portfolio, workflow, active filters, and the same evidence used elsewhere in the view."}
+            ? "Board questions stay tied to the current slice, scorecard, and evidence already on this page."
+            : "Delivery questions stay tied to the active portfolio, workflow, and evidence already on this page."}
         </p>
       </div>
       <div class="ask-layer__toolbar">
         <div class="ask-layer__prompts" role="list">
           ${promptButtonsHtml}
         </div>
-        <span class="ask-layer__hint">For metric-specific definitions, use the <code>i</code> buttons and metric cards.</span>
+        <span class="ask-layer__hint">For metric definitions, use the <code>i</code> buttons.</span>
       </div>
       ${answer ? renderAskAnswer(screen, activePrompt, answer) : `
         <div class="empty-state-card">
-          <strong>Select one of the guided questions above.</strong>
-          <p>The answer will stay constrained to the current slice and point back to the same metrics, actions, and evidence already visible in the cockpit.</p>
+          <strong>Choose a guided question.</strong>
+          <p>The answer will stay constrained to the current slice and point back to the same metrics, actions, and evidence already visible here.</p>
         </div>
       `}
     </section>
@@ -10497,35 +11025,57 @@ function renderInstitutionalization() {
   const valueSegmentNote = enterpriseValueSnapshot
     ? `${enterpriseValueSnapshot.count} initiatives match ${describeActiveSegments()}. ${enterpriseValueSnapshot.liveCount} are live or scaling and ${Math.round(enterpriseValueSnapshot.validatedShare)}% of realized value is already finance validated.`
     : `No initiatives match ${describeActiveSegments()}.`;
-  const valueSummaryCardsHtml = renderValueSummaryCards(enterpriseValueSnapshot);
-  const valueMixHtml = renderBenefitMix(enterpriseValueSnapshot);
-  const initiativesHtml = renderValueInitiatives(enterpriseSlice);
-  const dynamicPortfolioMetrics = enterpriseValueSnapshot
+  const valueSupportCards = enterpriseValueSnapshot
     ? [
-        { label: "Matching initiatives", value: `${enterpriseValueSnapshot.count}`, detail: `${enterpriseValueSnapshot.productionCount} in full production today` },
-        { label: "Live or scaling", value: `${enterpriseValueSnapshot.liveCount}`, detail: "Production and scaling initiatives in the current slice" },
-        { label: "Finance validated", value: `${Math.round(enterpriseValueSnapshot.validatedShare)}%`, detail: "Share of realized value already backed by finance evidence" },
-        { label: "Stalled value at risk", value: formatMoneyM(enterpriseValueSnapshot.stalledRisk), detail: "Forecast value currently trapped in stalled initiatives" },
+        {
+          id: "matching-initiatives",
+          label: "Matching initiatives",
+          value: `${enterpriseValueSnapshot.count}`,
+          note: `${enterpriseValueSnapshot.liveCount} are still live or scaling in the current slice.`,
+          className: "finance-card--support",
+        },
+        {
+          id: "live-or-scaling",
+          label: "Live or scaling",
+          value: `${enterpriseValueSnapshot.liveCount}`,
+          note: "Production and scaling initiatives in the current slice.",
+          className: "finance-card--support",
+        },
+        {
+          id: "in-full-production",
+          label: "In full production",
+          value: `${enterpriseValueSnapshot.productionCount}`,
+          note: "Initiatives already operating at full production today.",
+          className: "finance-card--support",
+        },
+        {
+          id: "stalled-value-at-risk",
+          label: "Stalled value at risk",
+          value: formatMoneyM(enterpriseValueSnapshot.stalledRisk),
+          note: "Forecast value currently trapped in stalled initiatives.",
+          className: "finance-card--support",
+        },
+        {
+          id: "future-slot-1",
+          label: "Future slot 1",
+          value: "TBD",
+          note: "Reserved for a future board-ready value signal.",
+          className: "finance-card--placeholder",
+        },
+        {
+          id: "future-slot-2",
+          label: "Future slot 2",
+          value: "TBD",
+          note: "Reserved for a future board-ready operating signal.",
+          className: "finance-card--placeholder",
+        },
       ]
-    : [];
-  const portfolioMetricsHtml = dynamicPortfolioMetrics.length
-    ? dynamicPortfolioMetrics
-        .map(
-          (item) => `
-            <article class="mini-stat">
-              <span class="mini-stat__label">${item.label}</span>
-              <div class="mini-stat__value">${item.value}</div>
-              <p>${item.detail}</p>
-            </article>
-          `,
-        )
-        .join("")
-    : `
-      <div class="empty-state-card">
-        <strong>No portfolio value snapshot is available for the current slice.</strong>
-        <p>Broaden the global segmentation controls to restore the value readout.</p>
-      </div>
-    `;
+    : "";
+  const valueSummaryCardsHtml = renderValueSummaryCards(enterpriseValueSnapshot, { extraCards: valueSupportCards || [] });
+  const valueMixHtml = renderBenefitMix(enterpriseValueSnapshot);
+  const selectedValueInitiative = getSelectedValueInitiative(enterpriseSlice);
+  const initiativeSummaryHtml = renderValueInitiativeSummary(selectedValueInitiative);
+  const initiativeSelectorHtml = renderValueInitiativePicker(enterpriseSlice, selectedValueInitiative?.id);
   const northStarSpotlightValue = enterpriseValueSnapshot
     ? `${formatRatio(enterpriseValueSnapshot.roi)} ROI`
     : data.northStarSpotlight.value;
@@ -10625,40 +11175,38 @@ function renderInstitutionalization() {
     .join("");
 
   const bridgeHtml = data.bridge
-    .map(
-      (item) => `
-        <article class="mini-stat">
-          ${metricLabelRow(item.label, "mini-stat__label")}
-          <div class="mini-stat__value">${item.value}</div>
-          <p>${item.detail}</p>
-        </article>
-      `,
-    )
+    .map((item) => renderBridgeCard(item))
     .join("");
 
-  const workforceHtml = data.workforce
-    .map(
-      (item) => `
-        <div class="summary-row--inline">
-          <div>
-            <strong>${item.label}</strong>
-            <span>${item.detail}</span>
-          </div>
-          <b>${item.value}</b>
+  const workforceBaseline = data.workforce.find((item) => item.label === "Foundations learning");
+  const workforceBaselineHtml = workforceBaseline
+    ? `
+      <article class="workforce-baseline-strip">
+        <div class="workforce-baseline-strip__content">
+          <span class="workforce-baseline-strip__eyebrow">Baseline readiness</span>
+          <strong class="workforce-baseline-strip__title">${workforceBaseline.label}</strong>
+          <p>${workforceBaseline.detail}</p>
+          <span class="summary-row--flip__progress-block workforce-baseline-strip__progress-block">
+            <span class="summary-row--flip__progress-label">Foundations coverage</span>
+            <span class="summary-row--flip__progress" aria-hidden="true">
+              <span class="summary-row--flip__progress-fill" style="width: ${Number.parseFloat(workforceBaseline.value) || 0}%"></span>
+            </span>
+          </span>
+          <span class="workforce-baseline-strip__note">Large candidate bench established, but advanced validation still lags.</span>
         </div>
-      `,
-    )
+        <b class="workforce-baseline-strip__value">${workforceBaseline.value}</b>
+      </article>
+    `
+    : "";
+
+  const workforceTopMetricsHtml = data.workforce
+    .filter((item) => item.label !== "Foundations learning")
+    .map((item) => renderWorkforceTopMetric(item))
     .join("");
 
   const workforceValidationMetricsHtml = data.workforceValidation.metrics
     .map(
-      (item) => `
-        <article class="workforce-proof-card workforce-proof-card--${item.tone}">
-          <span class="workforce-proof-card__label">${item.label}</span>
-          <strong class="workforce-proof-card__value">${item.value}</strong>
-          <p>${item.detail}</p>
-        </article>
-      `,
+      (item) => renderWorkforceProofCard(item),
     )
     .join("");
 
@@ -10839,6 +11387,47 @@ function renderInstitutionalization() {
     })
     .join("");
 
+  const benchmarkDeltas = data.benchmarkBars
+    .map((item) => ({
+      ...item,
+      delta: item.meridian - item.sector,
+      tone: item.meridian - item.sector >= 0 ? "good" : item.meridian - item.sector <= -5 ? "risk" : "watch",
+    }));
+
+  const benchmarkLeadBulletsHtml = benchmarkDeltas
+    .filter((item) => item.delta > 0)
+    .sort((left, right) => right.delta - left.delta)
+    .slice(0, 4)
+    .map(
+      (item) => `
+        <li class="benchmark-bullet">
+          <div class="benchmark-bullet__head">
+            <strong>${item.label}</strong>
+            <span class="delta-chip delta-chip--${item.tone}">+${item.delta}</span>
+          </div>
+          <span class="benchmark-bullet__detail">Meridian ${item.meridian} vs sector ${item.sector}.</span>
+        </li>
+      `,
+    )
+    .join("");
+
+  const benchmarkGapBulletsHtml = benchmarkDeltas
+    .filter((item) => item.delta < 0)
+    .sort((left, right) => left.delta - right.delta)
+    .slice(0, 3)
+    .map(
+      (item) => `
+        <li class="benchmark-bullet">
+          <div class="benchmark-bullet__head">
+            <strong>${item.label}</strong>
+            <span class="delta-chip delta-chip--${item.tone}">${item.delta}</span>
+          </div>
+          <span class="benchmark-bullet__detail">Meridian ${item.meridian} vs sector ${item.sector}.</span>
+        </li>
+      `,
+    )
+    .join("");
+
   const benchmarkDriversHtml = data.benchmarkProvenance.drivers
     .map(
       (item) => `
@@ -10866,7 +11455,7 @@ function renderInstitutionalization() {
   const institutionSubnavHtml = institutionSectionNav
     .map(
       (item) => `
-        <a class="institution-subnav__link" href="#${item.id}">
+        <a class="institution-subnav__link" href="#${item.id}" aria-current="false">
           <span>${item.number}</span>
           <strong>${item.label}</strong>
         </a>
@@ -10894,21 +11483,19 @@ function renderInstitutionalization() {
             <h1>Institutionalisation View</h1>
           </div>
           <p class="institution-header__subtitle">
-            Board-level lens on whether Meridian is turning AI from promising
-            deployment activity into a governed, repeatable enterprise capability
-            with durable value, trusted controls, and clear scaling choices.
+            Board lens on whether Meridian is turning AI activity into a governed,
+            repeatable enterprise capability with durable value.
           </p>
           <div class="institution-header__summary">
             <span class="scope-chip"><strong>Audience</strong><span>Board and enterprise leadership</span></span>
-            <span class="scope-chip"><strong>Question</strong><span>Are we scaling AI as an enterprise capability?</span></span>
-            <span class="scope-chip"><strong>Board lens</strong><span>Value, control, and scale readiness</span></span>
-            <span class="scope-chip"><strong>Bridge</strong><span>Delivery evidence now feeds the enterprise story</span></span>
-            <span class="scope-chip"><strong>Period</strong><span>${periodLabels[state.period]} strategic frame</span></span>
+            <span class="scope-chip"><strong>Question</strong><span>Can Meridian scale AI as a governed capability?</span></span>
+            <span class="scope-chip"><strong>Lens</strong><span>Value, control, and readiness</span></span>
+            <span class="scope-chip"><strong>Board frame</strong><span>Delivery proof to enterprise decisions · ${periodLabels[state.period]}</span></span>
           </div>
           <div class="institution-header__filters">
             <div class="segment-toolbar__meta">
               <p class="eyebrow eyebrow--dark">Global segmentation</p>
-              <p>These filters persist into Delivery and reshape the value evidence below.</p>
+              <p>These filters persist into Delivery and reshape the evidence below.</p>
             </div>
             ${institutionFilterBarHtml}
           </div>
@@ -10930,6 +11517,18 @@ function renderInstitutionalization() {
         </aside>
       </div>
     </header>
+
+    <nav class="institution-subnav panel" aria-label="Institutionalisation chapters">
+      <div class="institution-subnav__head">
+        <div>
+          <p class="eyebrow">Chapter Navigation</p>
+          <span class="institution-subnav__note">Use this bar to move across the view at any time.</span>
+        </div>
+      </div>
+      <div class="institution-subnav__links">
+        ${institutionSubnavHtml}
+      </div>
+    </nav>
 
     <section class="institution-strip" aria-label="Board north-star strip">
       <div class="institution-strip__stage">
@@ -10965,15 +11564,7 @@ function renderInstitutionalization() {
       </div>
     </section>
 
-    <nav class="institution-subnav panel" aria-label="Institutionalisation chapters">
-      <div class="institution-subnav__head">
-        <p class="eyebrow">Strategic Chapters</p>
-        <span class="institution-subnav__note">Scroll or jump through the board narrative</span>
-      </div>
-      <div class="institution-subnav__links">${institutionSubnavHtml}</div>
-    </nav>
-
-    <section id="institution-board-readout" class="panel board-readout institution-section">
+    <section id="institution-board-readout" class="panel board-readout institution-section institution-section--board">
       <div class="section-head">
         <div class="section-head__cluster">
           <span class="section-index">01</span>
@@ -10994,7 +11585,7 @@ function renderInstitutionalization() {
       </div>
     </section>
 
-    <section id="institution-index" class="panel institution-section">
+    <section id="institution-index" class="panel institution-section institution-section--index">
       <div class="section-head">
         <div class="section-head__cluster">
           <span class="section-index">02</span>
@@ -11015,7 +11606,7 @@ function renderInstitutionalization() {
       </div>
     </section>
 
-    <section id="institution-bridge" class="panel institution-section">
+    <section id="institution-bridge" class="panel institution-section institution-section--bridge">
       <div class="section-head">
         <div class="section-head__cluster">
           <span class="section-index">03</span>
@@ -11035,7 +11626,7 @@ function renderInstitutionalization() {
 
     <div class="institution-layout">
       <div class="institution-column institution-column--primary">
-        <section id="institution-value" class="panel institution-section">
+        <section id="institution-value" class="panel institution-section institution-section--value">
           <div class="section-head">
             <div class="section-head__cluster">
               <span class="section-index">04</span>
@@ -11056,13 +11647,21 @@ function renderInstitutionalization() {
               <p>${valueSegmentNote}</p>
               ${valueMixHtml}
             </div>
-            ${valueSummaryCardsHtml}
-            <div class="institution-stat-grid">${portfolioMetricsHtml}</div>
-            <div class="initiative-list">${initiativesHtml}</div>
+            <div class="value-layout">
+              <div class="value-layout__overview">
+                ${valueSummaryCardsHtml}
+              </div>
+              <div class="value-layout__selector">
+                ${initiativeSelectorHtml}
+              </div>
+              <div class="value-layout__summary">
+                ${initiativeSummaryHtml}
+              </div>
+            </div>
           </div>
         </section>
 
-        <section id="institution-workforce" class="panel institution-section">
+        <section id="institution-workforce" class="panel institution-section institution-section--workforce">
           <div class="section-head">
             <div class="section-head__cluster">
               <span class="section-index">05</span>
@@ -11085,7 +11684,8 @@ function renderInstitutionalization() {
                 ${data.workforceValidation.evidenceBasis.map((item) => `<span>${item}</span>`).join("")}
               </div>
             </div>
-            ${workforceHtml}
+            ${workforceBaselineHtml}
+            <div class="workforce-top-grid">${workforceTopMetricsHtml}</div>
             <div class="workforce-proof-grid">${workforceValidationMetricsHtml}</div>
             <div class="workforce-validation-grid">${workforceValidationStagesHtml}</div>
             <details class="deep-dive">
@@ -11109,7 +11709,7 @@ function renderInstitutionalization() {
       </div>
 
       <div class="institution-column institution-column--secondary">
-        <section id="institution-governance" class="panel institution-section">
+        <section id="institution-governance" class="panel institution-section institution-section--governance">
           <div class="section-head">
             <div class="section-head__cluster">
               <span class="section-index">06</span>
@@ -11129,7 +11729,7 @@ function renderInstitutionalization() {
           </div>
         </section>
 
-        <section id="institution-debt" class="panel institution-section">
+        <section id="institution-debt" class="panel institution-section institution-section--debt">
           <div class="section-head">
             <div class="section-head__cluster">
               <span class="section-index">07</span>
@@ -11166,7 +11766,7 @@ function renderInstitutionalization() {
         </section>
       </div>
 
-      <section id="institution-trust" class="panel institution-panel--full institution-section">
+      <section id="institution-trust" class="panel institution-panel--full institution-section institution-section--trust">
         <div class="section-head">
           <div class="section-head__cluster">
             <span class="section-index">08</span>
@@ -11199,7 +11799,7 @@ function renderInstitutionalization() {
         </details>
       </section>
 
-      <section id="institution-benchmarking" class="panel institution-panel--full institution-section">
+      <section id="institution-benchmarking" class="panel institution-panel--full institution-section institution-section--benchmarking">
         <div class="section-head">
           <div class="section-head__cluster">
             <span class="section-index">09</span>
@@ -11209,62 +11809,76 @@ function renderInstitutionalization() {
             </div>
           </div>
         </div>
-        <div class="institution-panel__body institution-benchmark-grid">
-          <div class="benchmark-stack">
-            <article class="benchmark-card">
-              <strong>Where Meridian leads</strong>
-              <p>${data.benchmark.strengths}</p>
-            </article>
-            <article class="benchmark-card">
-              <strong>Where to close the gap</strong>
-              <p>${data.benchmark.gaps}</p>
+        <div class="institution-panel__body summary-stack">
+          <div class="institution-benchmark-grid">
+            <div class="benchmark-story-grid">
+              <article class="benchmark-card benchmark-insight-card benchmark-insight-card--good">
+                <div class="benchmark-insight-card__head">
+                  <strong>Where Meridian leads</strong>
+                  <span class="delta-chip delta-chip--good">Scale signals</span>
+                </div>
+                <p class="benchmark-insight-card__summary">
+                  Meridian is ahead of the peer set in the operating-model dimensions that most clearly support enterprise scale.
+                </p>
+                <ul class="benchmark-bullet-list">${benchmarkLeadBulletsHtml}</ul>
+                <p class="benchmark-insight-card__note">
+                  Board implication: scale where service evidence, operating cadence, and technology posture are already ahead of peers.
+                </p>
+              </article>
+              <article class="benchmark-card benchmark-insight-card benchmark-insight-card--risk">
+                <div class="benchmark-insight-card__head">
+                  <strong>Where Meridian trails</strong>
+                  <span class="delta-chip delta-chip--risk">Control gaps</span>
+                </div>
+                <p class="benchmark-insight-card__summary">
+                  The next constraint is not feasibility. It is governance rigor and wider cultural adoption.
+                </p>
+                <ul class="benchmark-bullet-list">${benchmarkGapBulletsHtml}</ul>
+                <p class="benchmark-insight-card__note">
+                  Board implication: treat governance and culture as gating conditions for durable scale, not presentation polish.
+                </p>
+              </article>
+            </div>
+            <article class="benchmark-card benchmark-provenance-card">
+              <div class="benchmark-provenance-card__head">
+                <div>
+                  <strong>Benchmark provenance</strong>
+                  <p>${data.benchmarkProvenance.methodology}</p>
+                </div>
+                <button class="detail-link" type="button" data-evidence-id="${getBenchmarkEvidenceId()}" aria-label="Open benchmark provenance evidence pack">
+                  Open evidence pack
+                </button>
+              </div>
+              <div class="benchmark-provenance-meta">
+                <div>
+                  <span>Peer group</span>
+                  <strong>${data.benchmarkProvenance.peerGroup}</strong>
+                </div>
+                <div>
+                  <span>Source</span>
+                  <strong>${data.benchmarkProvenance.source}</strong>
+                </div>
+                <div>
+                  <span>Last refresh</span>
+                  <strong>${data.benchmarkProvenance.lastRefresh}</strong>
+                </div>
+                <div>
+                  <span>Confidence</span>
+                  <strong>${data.benchmarkProvenance.confidence}</strong>
+                </div>
+              </div>
+              <div class="benchmark-driver-list">${benchmarkDriversHtml}</div>
+              <p class="benchmark-provenance-card__note">${data.benchmarkProvenance.caveat}</p>
             </article>
           </div>
-          <article class="benchmark-card benchmark-provenance-card">
-            <div class="benchmark-provenance-card__head">
-              <div>
-                <strong>Benchmark provenance</strong>
-                <p>${data.benchmarkProvenance.methodology}</p>
-              </div>
-              <button class="detail-link" type="button" data-evidence-id="${getBenchmarkEvidenceId()}" aria-label="Open benchmark provenance evidence pack">
-                Open evidence pack
-              </button>
-            </div>
-            <div class="benchmark-provenance-meta">
-              <div>
-                <span>Peer group</span>
-                <strong>${data.benchmarkProvenance.peerGroup}</strong>
-              </div>
-              <div>
-                <span>Source</span>
-                <strong>${data.benchmarkProvenance.source}</strong>
-              </div>
-              <div>
-                <span>Last refresh</span>
-                <strong>${data.benchmarkProvenance.lastRefresh}</strong>
-              </div>
-              <div>
-                <span>Confidence</span>
-                <strong>${data.benchmarkProvenance.confidence}</strong>
-              </div>
-            </div>
-            <div class="benchmark-driver-list">${benchmarkDriversHtml}</div>
-            <p class="benchmark-provenance-card__note">${data.benchmarkProvenance.caveat}</p>
-          </article>
+          <div class="benchmark-bar-grid benchmark-bar-grid--inline">${benchmarkBarsHtml}</div>
+          <p class="benchmark-section-note">
+            Dimension-by-dimension comparison is now shown inline so the board story, evidence, and peer position can be read in one pass.
+          </p>
         </div>
-        <details class="deep-dive deep-dive--wide">
-          <summary>
-            <span class="deep-dive__eyebrow">Deferred from Toggle Strategic</span>
-            <span class="deep-dive__title">Open benchmark comparison bars</span>
-            <span class="deep-dive__hint">Explicit Meridian-vs-sector view across the core dimensions</span>
-          </summary>
-          <div class="deep-dive__body">
-            <div class="benchmark-bar-grid">${benchmarkBarsHtml}</div>
-          </div>
-        </details>
       </section>
 
-      <section id="institution-priorities" class="panel institution-panel--full institution-section">
+      <section id="institution-priorities" class="panel institution-panel--full institution-section institution-section--priorities">
         <div class="section-head">
           <div class="section-head__cluster">
             <span class="section-index">10</span>
@@ -11294,6 +11908,8 @@ function renderInstitutionalization() {
       </div>
     </footer>
   `;
+
+  updateInstitutionSubnavActive();
 }
 
 function renderScopeSummary(portfolio) {
@@ -11319,6 +11935,7 @@ function render() {
   renderShell();
   renderViewBars();
   renderDeliverySegmentationBar();
+  renderDeliveryQuickNav();
   renderInstitutionalization();
   renderSavedViewPanels();
   renderAskPanels();
@@ -11399,7 +12016,8 @@ document.addEventListener("change", (event) => {
 });
 
 elements.openScreenButtons.forEach((button) => {
-  button.addEventListener("click", () => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
     state.screen = button.dataset.openScreen;
     state.metricFocus = null;
     state.evidenceFocus = null;
@@ -11409,7 +12027,8 @@ elements.openScreenButtons.forEach((button) => {
 });
 
 elements.backHomeButtons.forEach((button) => {
-  button.addEventListener("click", () => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
     state.screen = "landing";
     state.metricFocus = null;
     state.evidenceFocus = null;
@@ -11418,12 +12037,33 @@ elements.backHomeButtons.forEach((button) => {
   });
 });
 
+window.addEventListener("hashchange", () => {
+  const nextScreen = getScreenFromHash(window.location.hash, state.screen);
+
+  updateInstitutionSubnavActive();
+  updateDeliveryQuickNavActive();
+  renderJumpReturnChip(window.location.hash);
+
+  if (state.screen === nextScreen) {
+    return;
+  }
+
+  state.screen = nextScreen;
+  state.metricFocus = null;
+  state.evidenceFocus = null;
+  render();
+});
+
 document.addEventListener("click", (event) => {
   const savedViewTrigger = event.target.closest("[data-saved-view-id]");
   const askTrigger = event.target.closest("[data-ask-prompt]");
   const askClearTrigger = event.target.closest("[data-ask-clear]");
   const trigger = event.target.closest("[data-metric-id]");
   const evidenceTrigger = event.target.closest("[data-evidence-id]");
+  const initiativeSelectTrigger = event.target.closest("[data-initiative-select]");
+  const bridgeTileTrigger = event.target.closest("[data-bridge-tile-id]");
+  const workforceProofTrigger = event.target.closest("[data-workforce-proof-id]");
+  const workforceTopTrigger = event.target.closest("[data-workforce-top-id]");
 
   if (savedViewTrigger) {
     event.preventDefault();
@@ -11454,21 +12094,79 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  if (!evidenceTrigger) {
+  if (evidenceTrigger) {
+    event.preventDefault();
+    lastDrawerTrigger = elements.metricDrawer.contains(evidenceTrigger) ? null : evidenceTrigger;
+    state.metricFocus = null;
+    state.evidenceFocus = evidenceTrigger.dataset.evidenceId;
+    renderMetricDrawer();
+    return;
+  }
+
+  if (bridgeTileTrigger) {
+    event.preventDefault();
+    const tileId = bridgeTileTrigger.dataset.bridgeTileId;
+    const nextState = !state.bridgeTileFlips?.[tileId];
+    state.bridgeTileFlips = {
+      ...state.bridgeTileFlips,
+      [tileId]: nextState,
+    };
+    bridgeTileTrigger.classList.toggle("is-flipped", nextState);
+    bridgeTileTrigger.setAttribute("aria-pressed", String(nextState));
+    bridgeTileTrigger.setAttribute("aria-label", nextState ? `Show front of ${tileId}` : `Show why ${tileId} matters`);
+    return;
+  }
+
+  if (workforceProofTrigger) {
+    event.preventDefault();
+    const tileId = workforceProofTrigger.dataset.workforceProofId;
+    const nextState = !state.workforceProofFlips?.[tileId];
+    state.workforceProofFlips = {
+      ...state.workforceProofFlips,
+      [tileId]: nextState,
+    };
+    workforceProofTrigger.classList.toggle("is-flipped", nextState);
+    workforceProofTrigger.setAttribute("aria-pressed", String(nextState));
+    workforceProofTrigger.setAttribute("aria-label", nextState ? `Show front of ${tileId}` : `Show why ${tileId} matters`);
+    return;
+  }
+
+  if (workforceTopTrigger) {
+    event.preventDefault();
+    const tileId = workforceTopTrigger.dataset.workforceTopId;
+    const nextState = !state.workforceTopFlips?.[tileId];
+    state.workforceTopFlips = {
+      ...state.workforceTopFlips,
+      [tileId]: nextState,
+    };
+    workforceTopTrigger.classList.toggle("is-flipped", nextState);
+    workforceTopTrigger.setAttribute("aria-pressed", String(nextState));
+    workforceTopTrigger.setAttribute("aria-label", nextState ? `Show front of ${tileId}` : `Show why ${tileId} matters`);
+    return;
+  }
+
+  if (!initiativeSelectTrigger) {
     return;
   }
 
   event.preventDefault();
-  lastDrawerTrigger = elements.metricDrawer.contains(evidenceTrigger) ? null : evidenceTrigger;
-  state.metricFocus = null;
-  state.evidenceFocus = evidenceTrigger.dataset.evidenceId;
-  renderMetricDrawer();
+  state.selectedValueInitiativeId = initiativeSelectTrigger.dataset.initiativeSelect;
+  render();
 });
 
 elements.metricDrawerClose.addEventListener("click", closeMetricDrawer);
 elements.metricDrawerScrim.addEventListener("click", closeMetricDrawer);
 
 document.addEventListener("keydown", (event) => {
+  const initiativeSelectTrigger = event.target.closest("[data-initiative-select]");
+
+  if (initiativeSelectTrigger && (event.key === "Enter" || event.key === " ")) {
+    event.preventDefault();
+    state.selectedValueInitiativeId = initiativeSelectTrigger.dataset.initiativeSelect;
+    render();
+    return;
+  }
+
   if (event.key === "Escape") {
     closeMetricDrawer();
     return;
