@@ -1,0 +1,486 @@
+/* Responsive and reduced-motion overrides for all views. */
+@media (max-width: 1380px) {
+  .persona-grid,
+  .landing-story__grid,
+  .institution-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .institution-header__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .institution-strip__stage {
+    grid-template-columns: 1fr;
+  }
+
+  .north-star-spotlight__facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .north-star-rail__support .institution-kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .board-readout__grid,
+  .board-decision-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bridge-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .page-header {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .segment-toolbar__grid,
+  .finance-card-grid,
+  .adoption-summary-grid,
+  .persona-adoption-grid,
+  .productivity-method-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .oversight-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .oversight-performance-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .oversight-performance-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .content-column--primary,
+  .content-column--secondary,
+  .institution-column--primary,
+  .institution-column--secondary {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 1100px) {
+  .view-support-stack {
+    grid-template-columns: 1fr;
+  }
+
+  .persona-grid,
+  .landing-story__grid,
+  .saved-view-grid,
+  .institution-toolrail__stack,
+  .institution-kpi-grid,
+  .value-layout,
+  .workforce-top-grid,
+  .benchmark-story-grid,
+  .initiative-summary-card__metrics,
+  .workforce-proof-grid,
+  .workforce-validation-grid,
+  .target-grid,
+  .benchmark-bar-grid,
+  .benchmark-provenance-meta,
+  .institution-stat-grid,
+  .pillars-grid,
+  .institution-footer,
+  .board-readout__grid,
+  .board-decision-grid,
+  .adoption-summary-grid,
+  .persona-adoption-grid,
+  .productivity-method-grid,
+  .workflow-productivity-grid,
+  .ask-answer__support {
+    grid-template-columns: 1fr;
+  }
+
+  .institution-dimension-grid,
+  .institution-benchmark-grid,
+  .bridge-strip,
+  .swimlane-grid,
+  .trend-grid,
+  .roadmap-grid,
+  .page-footer,
+  .initiative-list--compact,
+  .finance-card-grid,
+  .segment-toolbar__grid,
+  .governance-console__frameworks {
+    grid-template-columns: 1fr;
+  }
+
+  .workforce-baseline-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .north-star-spotlight__facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .north-star-rail__support .institution-kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .oversight-layout,
+  .routing-map__branches,
+  .routing-map__kpi-strip,
+  .routing-map__footer {
+    grid-template-columns: 1fr;
+  }
+
+  .routing-map__sla-head {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .content-column--primary,
+  .content-column--secondary,
+  .institution-column--primary,
+  .institution-column--secondary,
+  .institution-panel--full,
+  .content-action,
+  .content-roadmap,
+  .content-trust {
+    grid-column: 1 / -1;
+  }
+
+  .institution-strip__insights {
+    grid-template-columns: 1fr;
+  }
+
+  .initiative-summary-card__body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .page-shell {
+    padding: 18px;
+  }
+
+  .landing-hero,
+  .view-bar,
+  .institution-header,
+  .institution-subnav,
+  .delivery-quicknav,
+  .institution-strip__stage {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .section-head,
+  .governance-layout,
+  .economics-layout,
+  .trend-grid,
+  .swimlane-grid,
+  .roadmap-grid,
+  .page-footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .page-header {
+    padding: 22px 20px;
+  }
+
+  .view-bar,
+  .view-bar__left,
+  .view-bar__right,
+  .ask-answer__head {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .saved-view-panel__head,
+  .ask-layer__head,
+  .institution-toolrail__head {
+    grid-template-columns: 1fr;
+  }
+
+  .institution-subnav {
+    position: sticky;
+    top: 10px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: var(--shadow-sm);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.96));
+  }
+
+  .institution-subnav__head,
+  .delivery-quicknav__head,
+  .benchmark-insight-card__head,
+  .benchmark-bullet__head,
+  .section-head__cluster {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .institution-panel__body {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .north-star-spotlight__facts {
+    grid-template-columns: 1fr;
+  }
+
+  .north-star-rail__support .institution-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .deep-dive--wide {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .section-head {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .section-head__note {
+    text-align: left;
+  }
+
+  .filter-bar,
+  .kpi-grid,
+  .persona-grid,
+  .initiative-value-grid,
+  .action-summary-grid,
+  .action-workflow-grid,
+  .trust-grid,
+  .assurance-metric-grid,
+  .oversight-performance-summary,
+  .oversight-performance-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .oversight-kpis {
+    grid-template-columns: 1fr;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .oversight-diagnostics {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .oversight-layout {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .oversight-diagnostics__intro,
+  .oversight-breakdown-row,
+  .trust-watchlist__head,
+  .trust-feed-row__head,
+  .trust-model-row__head {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .oversight-breakdown-row__values {
+    justify-content: start;
+  }
+
+  .section-head--dark {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .action-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .action-table thead th,
+  .action-table tbody td {
+    white-space: nowrap;
+  }
+
+  .action-table tbody td:first-child {
+    white-space: normal;
+    min-width: 280px;
+  }
+
+  .governance-console__head,
+  .governance-control__status {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .initiative-item__head {
+    flex-direction: column;
+  }
+
+  .initiative-summary-card__head,
+  .initiative-summary-card__footer,
+  .initiative-summary-card__actions {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .initiative-picker__option {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .initiative-picker__name {
+    grid-column: 1 / -1;
+  }
+
+  .initiative-picker__bar {
+    grid-column: 1;
+  }
+
+  .initiative-picker__value {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  .initiative-item__footer,
+  .action-workitem__head,
+  .action-workitem__footer,
+  .ask-answer__meta,
+  .ask-answer__actions {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .action-workitem__meta {
+    grid-template-columns: 1fr;
+  }
+
+  .target-card__head,
+  .benchmark-bar-card__head {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .governance-control {
+    grid-template-columns: 1fr;
+  }
+
+  .dimension-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dimension-row__meta {
+    text-align: left;
+  }
+}
+
+@media (pointer: coarse) {
+  .institution-subnav {
+    position: sticky;
+    top: 10px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: var(--shadow-sm);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.96));
+  }
+
+  .institution-subnav__links {
+    scrollbar-width: thin;
+  }
+}
+
+@media (max-width: 560px) {
+  .landing-hero__meta,
+  .institution-header__summary,
+  .institution-strip__signals {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .institution-subnav__head {
+    align-items: start;
+  }
+
+  .jump-return-chip {
+    left: 14px;
+    right: auto;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    max-width: min(calc(100vw - 28px), 320px);
+  }
+
+  .north-star-spotlight {
+    padding: 20px;
+  }
+
+  .institution-header__subscores {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-meta,
+  .trend-card__header,
+  .swimlane__metric-value {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .metric-drawer__panel {
+    padding: 22px 18px 28px;
+  }
+
+  .metric-drawer__header,
+  .metric-drawer__badges {
+    flex-direction: column;
+    align-items: start;
+    justify-content: flex-start;
+  }
+
+  .metric-drawer__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-drawer__stack {
+    grid-template-columns: 1fr;
+  }
+
+  .benchmark-provenance-card__head,
+  .saved-view-card__head,
+  .saved-view-card__chips,
+  .productivity-story-card__head,
+  .productivity-subhead,
+  .workflow-productivity-card__head,
+  .workflow-productivity-card__metrics,
+  .persona-adoption-card__head,
+  .persona-adoption-card__stats,
+  .ask-layer__prompts,
+  .trust-model-row__meta,
+  .trust-model-row__stats {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .trust-card__head {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .tooltip__text {
+    right: auto;
+    left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
