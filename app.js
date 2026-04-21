@@ -18,6 +18,7 @@ const state = {
   bridgeTileFlips: {},
   workforceProofFlips: {},
   workforceTopFlips: {},
+  institutionToolTab: "saved",
   askFocus: {
     institutionalization: null,
     delivery: null,
@@ -480,6 +481,10 @@ function buildEvidencePackLibrary() {
   return packs;
 }
 
+// Canonical owner rule:
+// - explainable metrics and score-like values belong in metricLibrary
+// - traceable proof claims belong in evidencePackLibrary
+// - repeated user-facing controls should be introduced through shared component patterns
 const evidencePackLibrary = buildEvidencePackLibrary();
 
 function getMetricId(label) {
@@ -5029,22 +5034,13 @@ function renderInstitutionalization() {
   const northStarSpotlightNote = enterpriseValueSnapshot
     ? `${Math.round(enterpriseValueSnapshot.validatedShare)}% of realized value is finance validated and weighted payback sits at ${formatMonths(enterpriseValueSnapshot.paybackMonths)}.`
     : data.northStarSpotlight.note;
-  const subscoreDefinitions = {
-    Strategy:
-      "Strategy sub-score: measures whether Meridian has a clear enterprise AI direction, named sponsorship, and portfolio choices aligned to board priorities.",
-    Ops:
-      "Ops sub-score: measures whether delivery flow, operational controls, and run-state evidence are strong enough to support governed scale.",
-    People:
-      "People sub-score: measures workforce readiness, leadership decision rights, and the institutional capability required to operate AI at scale.",
-  };
-
   const subscoresHtml = data.subscores
     .map(
       (item) => `
         <article class="institution-header__subscore">
           <div class="institution-header__subscore-head">
             <span>${item.label}</span>
-            ${metricInfoButton(null, `${item.label} sub-score`, "dark", subscoreDefinitions[item.label] || "")}
+            ${metricInfoButton(getMetricId(item.label), `${item.label} sub-score`, "dark")}
           </div>
           <strong>${item.value}</strong>
         </article>
@@ -5314,6 +5310,18 @@ function renderInstitutionalization() {
     )
     .join("");
 
+  const benchmarkMetricIds = {
+    Technology: "benchmark_technology",
+    "Strategic alignment": "benchmark_strategic_alignment",
+    "Portfolio & ROI": "benchmark_portfolio_roi",
+    "Governance & risk": "benchmark_governance_risk",
+    Workforce: "benchmark_workforce",
+    Culture: "benchmark_culture",
+    "Operational AI": "benchmark_operational_ai",
+    "SLA/XLA": "benchmark_sla_xla",
+    "Responsible AI": "benchmark_responsible_ai",
+  };
+
   const benchmarkBarsHtml = data.benchmarkBars
     .map((item) => {
       const delta = item.meridian - item.sector;
@@ -5323,7 +5331,10 @@ function renderInstitutionalization() {
       return `
         <article class="benchmark-bar-card">
           <div class="benchmark-bar-card__head">
-            <strong>${item.label}</strong>
+            <div class="benchmark-bar-card__label-group">
+              <strong>${item.label}</strong>
+              ${metricInfoButton(benchmarkMetricIds[item.label] || getMetricId(item.label), item.label)}
+            </div>
             <span class="delta-chip delta-chip--${tone}">${deltaLabel}</span>
           </div>
           <div class="benchmark-bar-card__row">
@@ -5447,6 +5458,47 @@ function renderInstitutionalization() {
     )
     .join("");
 
+  const institutionToolTabs = [
+    {
+      id: "saved",
+      label: "Saved lenses",
+      note: "Restore named board cuts quickly.",
+    },
+    {
+      id: "ask",
+      label: "Board questions",
+      note: "Ask grounded follow-up questions.",
+    },
+    {
+      id: "filters",
+      label: "Filters",
+      note: "Re-scope the enterprise slice.",
+    },
+  ];
+
+  const institutionToolSwitchHtml = institutionToolTabs
+    .map(
+      (tab, index) => `
+        <button
+          class="institution-toolrail__switcher ${state.institutionToolTab === tab.id ? "is-active" : ""}"
+          type="button"
+          role="tab"
+          aria-selected="${String(state.institutionToolTab === tab.id)}"
+          aria-controls="institution-toolrail-panel-${tab.id}"
+          data-institution-tool-tab="${tab.id}"
+        >
+          <span class="institution-toolrail__switcher-topline">
+            <span class="institution-toolrail__switcher-index">${String(index + 1).padStart(2, "0")}</span>
+            <span class="institution-toolrail__switcher-state">${state.institutionToolTab === tab.id ? "Active" : "Open"}</span>
+          </span>
+          <span class="institution-toolrail__switcher-label">${tab.label}</span>
+          <span class="institution-toolrail__switcher-note">${tab.note}</span>
+          <span class="institution-toolrail__switcher-cta">${state.institutionToolTab === tab.id ? "Showing now" : "Open tool"}</span>
+        </button>
+      `,
+    )
+    .join("");
+
   const boardDecisionsHtml = data.boardDecisions
     .map(
       (item) => `
@@ -5459,6 +5511,18 @@ function renderInstitutionalization() {
     .join("");
 
   elements.institutionalizationContent.innerHTML = `
+    <nav class="institution-subnav panel" aria-label="Institutionalisation chapters">
+      <div class="institution-subnav__head">
+        <div>
+          <p class="eyebrow">Chapter navigation</p>
+          <span class="institution-subnav__note">Use this bar to move quickly across the board view.</span>
+        </div>
+      </div>
+      <div class="institution-subnav__links">
+        ${institutionSubnavHtml}
+      </div>
+    </nav>
+
     <section class="institution-strip" aria-label="Board north-star strip">
       <div class="institution-strip__stage">
         <div class="institution-strip__copy">
@@ -5535,38 +5599,53 @@ function renderInstitutionalization() {
       </div>
     </section>
 
-    <nav class="institution-subnav panel" aria-label="Institutionalisation chapters">
-      <div class="institution-subnav__head">
-        <div>
-          <p class="eyebrow">Chapter navigation</p>
-          <span class="institution-subnav__note">Use this chapter bar after the opening board snapshot.</span>
-        </div>
-      </div>
-      <div class="institution-subnav__links">
-        ${institutionSubnavHtml}
-      </div>
-    </nav>
-
     <section class="panel institution-toolrail" aria-labelledby="institutionToolsHeading">
       <div class="institution-toolrail__head">
         <div>
           <p class="eyebrow">Board tools</p>
-          <h2 id="institutionToolsHeading">Filters, saved lenses, and guided board questions</h2>
+          <h2 id="institutionToolsHeading">Open one board tool at a time</h2>
         </div>
         <p class="institution-toolrail__note">
-          Use these controls after the opening snapshot to re-scope the board view or ask grounded follow-up questions.
+          Use this tray after the opening snapshot to restore lenses, re-scope the slice, or ask grounded follow-up questions.
         </p>
       </div>
-      <div class="institution-toolrail__filters">
-        <div class="segment-toolbar__meta">
-          <p class="eyebrow">Global segmentation</p>
-          <p>These filters persist into Delivery and reshape the board evidence below.</p>
-        </div>
-        ${institutionFilterBarHtml}
+      <div class="institution-toolrail__switch" role="tablist" aria-label="Board tools">
+        ${institutionToolSwitchHtml}
       </div>
-      <div class="institution-toolrail__stack view-support-stack view-support-stack--dark">
-        <div id="institutionalizationSavedViewsPanel"></div>
-        <div id="institutionalizationAskPanel"></div>
+      <div class="institution-toolrail__body">
+        <section
+          id="institution-toolrail-panel-saved"
+          class="institution-toolrail__pane ${state.institutionToolTab === "saved" ? "is-active" : ""}"
+          role="tabpanel"
+          aria-label="Saved board lenses"
+          ${state.institutionToolTab === "saved" ? "" : "hidden"}
+        >
+          <div id="institutionalizationSavedViewsPanel"></div>
+        </section>
+        <section
+          id="institution-toolrail-panel-ask"
+          class="institution-toolrail__pane ${state.institutionToolTab === "ask" ? "is-active" : ""}"
+          role="tabpanel"
+          aria-label="Board questions from the current slice"
+          ${state.institutionToolTab === "ask" ? "" : "hidden"}
+        >
+          <div id="institutionalizationAskPanel"></div>
+        </section>
+        <section
+          id="institution-toolrail-panel-filters"
+          class="institution-toolrail__pane institution-toolrail__pane--filters ${state.institutionToolTab === "filters" ? "is-active" : ""}"
+          role="tabpanel"
+          aria-label="Board filters"
+          ${state.institutionToolTab === "filters" ? "" : "hidden"}
+        >
+          <div class="institution-toolrail__filters">
+            <div class="segment-toolbar__meta">
+              <p class="eyebrow">Global segmentation</p>
+              <p>These filters persist into Delivery and reshape the board evidence below.</p>
+            </div>
+            ${institutionFilterBarHtml}
+          </div>
+        </section>
       </div>
     </section>
 
@@ -6040,6 +6119,7 @@ window.addEventListener("hashchange", () => {
 });
 
 document.addEventListener("click", (event) => {
+  const institutionToolTabTrigger = event.target.closest("[data-institution-tool-tab]");
   const savedViewTrigger = event.target.closest("[data-saved-view-id]");
   const askTrigger = event.target.closest("[data-ask-prompt]");
   const askClearTrigger = event.target.closest("[data-ask-clear]");
@@ -6049,6 +6129,13 @@ document.addEventListener("click", (event) => {
   const bridgeTileTrigger = event.target.closest("[data-bridge-tile-id]");
   const workforceProofTrigger = event.target.closest("[data-workforce-proof-id]");
   const workforceTopTrigger = event.target.closest("[data-workforce-top-id]");
+
+  if (institutionToolTabTrigger) {
+    event.preventDefault();
+    state.institutionToolTab = institutionToolTabTrigger.dataset.institutionToolTab;
+    render();
+    return;
+  }
 
   if (savedViewTrigger) {
     event.preventDefault();

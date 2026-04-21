@@ -98,6 +98,14 @@ If any answer suggests duplication, conflict, or drift, stop and explain the iss
 
 - For content or layout updates, start with `index.html` and `styles.css`.
 - For any metric, filter, toggle, or card behavior, start with `app.js`.
+- Treat the live metric registry as mandatory infrastructure. Any new metric introduced in the UI, and any existing metric whose meaning, formula, ownership, or scope is corrected, must be added or updated in the shared metric library before the change is considered complete.
+- Any new user-facing metric, control, or evidence claim must have one canonical owner:
+  - metric library for explainable metrics and score-like values
+  - evidence library for traceability, packs, and supporting proof claims
+  - shared component pattern for repeated controls and interaction surfaces
+- If a new UI element does not clearly belong to one of those owners yet, define the owner before shipping the change. Do not leave important user-facing behavior as one-off inline logic or ad hoc copy.
+- Do not leave important displayed values as anonymous one-off numbers if they are intended to be explainable, reusable, or surfaced through metric cards, tooltips, guided Ask answers, benchmarking, or later logic audit work.
+- When a metric label changes, update the registry entry and the label-to-id mapping together so the UI keeps pointing to the canonical definition instead of creating a second source of truth.
 - If you change section names or control labels, verify that related copy in summaries, chips, and tables still matches.
 - If you add a new workflow or team, update the label maps and any prioritization logic tied to workflow IDs.
 - Avoid broad file renames unless requested. Several filenames currently contain inconsistent capitalization or spelling, but they may be referenced externally.

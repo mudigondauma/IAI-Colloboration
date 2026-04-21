@@ -180,7 +180,7 @@
   gap: 6px;
 }
 
-.institution-header__subscore-head > span {
+.institution-header__subscore-head > span:not(.tooltip) {
   color: #d2dce8;
   font-size: 0.7rem;
   font-weight: 700;
@@ -563,7 +563,10 @@
 
 .north-star-rail__support .institution-kpi-card__value {
   color: #ffffff;
-  font-size: 1.45rem;
+  font-size: clamp(2.1rem, 3vw, 2.75rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
 }
 
@@ -709,11 +712,154 @@
   line-height: 1.48;
 }
 
+.institution-toolrail__switch {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.institution-toolrail__switcher {
+  appearance: none;
+  position: relative;
+  display: grid;
+  gap: 8px;
+  min-height: 120px;
+  padding: 16px 17px 15px;
+  overflow: hidden;
+  border: 1px solid rgba(198, 210, 226, 0.9);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top right, rgba(115, 153, 204, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(244, 248, 252, 0.95));
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.institution-toolrail__switcher::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(77, 125, 194, 0.74), rgba(137, 171, 219, 0.18));
+}
+
+.institution-toolrail__switcher:hover,
+.institution-toolrail__switcher:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(77, 125, 194, 0.36);
+  box-shadow: 0 14px 24px rgba(18, 42, 77, 0.1);
+  outline: none;
+}
+
+.institution-toolrail__switcher.is-active {
+  border-color: rgba(77, 125, 194, 0.42);
+  background:
+    radial-gradient(circle at top right, rgba(102, 138, 186, 0.12), transparent 42%),
+    linear-gradient(180deg, rgba(231, 240, 251, 0.98), rgba(244, 248, 252, 0.96));
+  box-shadow: 0 12px 22px rgba(18, 42, 77, 0.1);
+}
+
+.institution-toolrail__switcher.is-active::before {
+  background: linear-gradient(90deg, rgba(63, 112, 186, 0.9), rgba(131, 168, 220, 0.5));
+}
+
+.institution-toolrail__switcher-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.institution-toolrail__switcher-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(18, 51, 96, 0.08);
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.institution-toolrail__switcher-state {
+  color: var(--text-soft);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.institution-toolrail__switcher-label {
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.institution-toolrail__switcher-note {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.42;
+}
+
+.institution-toolrail__switcher-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.institution-toolrail__switcher-cta::after {
+  content: ">";
+  font-size: 0.86rem;
+  line-height: 1;
+}
+
+.institution-toolrail__switcher.is-active .institution-toolrail__switcher-state,
+.institution-toolrail__switcher.is-active .institution-toolrail__switcher-cta,
+.institution-toolrail__switcher.is-active .institution-toolrail__switcher-index {
+  color: var(--accent-strong);
+}
+
+.institution-toolrail__switcher.is-active .institution-toolrail__switcher-index {
+  background: rgba(63, 112, 186, 0.14);
+}
+
+.institution-toolrail__body {
+  display: grid;
+  gap: 10px;
+}
+
+.institution-toolrail__pane[hidden] {
+  display: none;
+}
+
+.institution-toolrail__pane.is-active {
+  display: grid;
+}
+
+.institution-toolrail__pane--filters {
+  padding-top: 2px;
+}
+
 .institution-toolrail__filters {
   display: grid;
   gap: 8px;
-  padding: 14px 0 0;
-  border-top: 1px solid rgba(198, 210, 226, 0.9);
+  padding: 6px 0 0;
 }
 
 .institution-toolrail__stack {
@@ -2702,6 +2848,13 @@
   justify-content: space-between;
   align-items: start;
   gap: 10px;
+}
+
+.benchmark-bar-card__label-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .target-card__head strong,

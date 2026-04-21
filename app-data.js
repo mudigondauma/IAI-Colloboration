@@ -15,6 +15,13 @@ const workflowLabels = {
   run: "Run / Support",
 };
 
+// Canonical owner system for user-facing cockpit claims:
+// - explainable metrics and score-like values belong in metricLibrary
+// - traceable proof claims belong in evidencePackLibrary
+// - repeated controls should extend shared render/component patterns
+// Rule: any new metric introduced in the UI, and any existing metric whose meaning,
+// formula, ownership, scope, or refresh logic is corrected, must be added or
+// updated here before the change is considered complete.
 const metricLibrary = {
   aii_score: {
     label: "AII Score",
@@ -485,31 +492,510 @@ const metricLibrary = {
   },
 };
 
+function buildBenchmarkDimensionMetric({ label, definition, owner, evidence }) {
+  return {
+    label,
+    lens: "Institutionalisation",
+    definition,
+    formula: `Normalized 0–100 benchmark score for ${label.toLowerCase()} against the selected peer-set sector average.`,
+    numerator: evidence,
+    denominator: "100-point peer-normalized dimension scale.",
+    scope: "Quarterly board benchmark against the selected regulated-services peer set.",
+    exclusions:
+      "Not a live route-level KPI. Excludes respondent-level raw survey detail and peer organizations outside the curated benchmark panel.",
+    owner,
+    sourceSystems: [
+      "Benchmark survey panel",
+      "Analyst synthesis",
+      "Internal evidence scoring",
+    ],
+    refreshCadence: "Quarterly benchmark refresh",
+    lastRefresh: "02 Apr 2026, 09:00 BST",
+    confidence: "B / peer-normalized and partly sample-based",
+    evidence,
+  };
+}
+
+function buildDerivedEnterpriseMetric({
+  label,
+  definition,
+  formula,
+  numerator,
+  denominator,
+  owner,
+  evidence,
+  sourceSystems,
+  confidence = "B / portfolio-derived",
+}) {
+  return {
+    label,
+    lens: "Institutionalisation",
+    definition,
+    formula,
+    numerator,
+    denominator,
+    scope: "Filtered enterprise portfolio slice shown in the board view.",
+    exclusions:
+      "Excludes concepts outside shared portfolio intake and any initiative records outside the active enterprise slice.",
+    owner,
+    sourceSystems,
+    refreshCadence: "Monthly operating review; quarterly board framing",
+    lastRefresh: "08 Apr 2026, 08:30 BST",
+    confidence,
+    evidence,
+  };
+}
+
+function buildOversightMetric({
+  label,
+  definition,
+  formula,
+  numerator,
+  denominator,
+  evidence,
+}) {
+  return {
+    label,
+    lens: "Delivery",
+    definition,
+    formula,
+    numerator,
+    denominator,
+    scope: "Selected delivery portfolio and workflow slice across accountable oversight events.",
+    exclusions:
+      "Excludes items outside approved oversight routing and historic cases no longer active in the current review model.",
+    owner: "Delivery Governance + Control Tower",
+    sourceSystems: [
+      "Oversight routing ledger",
+      "Accountable review workflow",
+      "QA evidence store",
+    ],
+    refreshCadence: "Daily with weekly operating review roll-up",
+    lastRefresh: "08 Apr 2026, 08:15 BST",
+    confidence: "A- / oversight event-backed",
+    evidence,
+  };
+}
+
+const benchmarkDimensionMetricLibrary = {
+  benchmark_strategic_alignment: buildBenchmarkDimensionMetric({
+    label: "Strategic alignment benchmark",
+    definition:
+      "Relative benchmark score for enterprise AI direction, named sponsorship, and portfolio choices aligned to board priorities.",
+    owner: "Enterprise AI PMO + Strategy Office",
+    evidence:
+      "Weighted benchmark points across executive sponsorship, enterprise narrative clarity, and portfolio alignment artifacts.",
+  }),
+  benchmark_portfolio_roi: buildBenchmarkDimensionMetric({
+    label: "Portfolio & ROI benchmark",
+    definition:
+      "Relative benchmark score for finance-grade value evidence, ROI discipline, and portfolio value governance.",
+    owner: "Finance + Product + Data",
+    evidence:
+      "Weighted benchmark points across realized-vs-forecast value proof, attribution discipline, and finance validation depth.",
+  }),
+  benchmark_governance_risk: buildBenchmarkDimensionMetric({
+    label: "Governance & risk benchmark",
+    definition:
+      "Relative benchmark score for AI risk classification, control completeness, exception handling, and evidence discipline.",
+    owner: "Risk & Compliance",
+    evidence:
+      "Weighted benchmark points across control coverage, policy enforcement, exception discipline, and audit-ready evidence quality.",
+  }),
+  benchmark_workforce: buildBenchmarkDimensionMetric({
+    label: "Workforce benchmark",
+    definition:
+      "Relative benchmark score for workforce readiness, role certification, and safe-use validation at enterprise scale.",
+    owner: "People + AI Enablement",
+    evidence:
+      "Weighted benchmark points across foundations coverage, role certification, safe-use validation, and leadership readiness.",
+  }),
+  benchmark_technology: buildBenchmarkDimensionMetric({
+    label: "Technology benchmark",
+    definition:
+      "Relative benchmark score for platform readiness, telemetry coverage, architecture consistency, and reusable AI enablement.",
+    owner: "Platform Engineering + Enterprise Architecture",
+    evidence:
+      "Weighted benchmark points across shared platform readiness, observability coverage, and reusable AI service foundations.",
+  }),
+  benchmark_culture: buildBenchmarkDimensionMetric({
+    label: "Culture benchmark",
+    definition:
+      "Relative benchmark score for behavioral adoption, management support, and everyday working-pattern integration.",
+    owner: "Transformation Office + People",
+    evidence:
+      "Weighted benchmark points across adoption depth, line-manager support, and behavioral embedment of approved AI workflows.",
+  }),
+  benchmark_operational_ai: buildBenchmarkDimensionMetric({
+    label: "Operational AI benchmark",
+    definition:
+      "Relative benchmark score for live operational AI usage, service automation penetration, and board-visible run-state impact.",
+    owner: "COO Operations + CIO Delivery Operations",
+    evidence:
+      "Weighted benchmark points across run-state automation depth, incident support coverage, and operating AI value proof.",
+  }),
+  benchmark_sla_xla: buildBenchmarkDimensionMetric({
+    label: "SLA/XLA benchmark",
+    definition:
+      "Relative benchmark score for service-level and experience-level improvement associated with AI-assisted operations.",
+    owner: "Service Operations + Experience Office",
+    evidence:
+      "Weighted benchmark points across SLA adherence, experience outcomes, and service reliability lift from AI-assisted workflows.",
+  }),
+  benchmark_responsible_ai: buildBenchmarkDimensionMetric({
+    label: "Responsible AI benchmark",
+    definition:
+      "Relative benchmark score for responsible AI controls, transparency, review discipline, and incident preparedness.",
+    owner: "Responsible AI Office",
+    evidence:
+      "Weighted benchmark points across RAI control maturity, transparency artifacts, review governance, and incident readiness.",
+  }),
+};
+
+const aiiSubscoreMetricLibrary = {
+  aii_strategy_score: {
+    label: "Strategy sub-score",
+    lens: "Institutionalisation",
+    definition:
+      "Board-facing AII sub-score summarizing strategic alignment, portfolio value logic, and governance direction.",
+    formula:
+      "Weighted aggregate of Strategic alignment, Portfolio & ROI, and Governance & risk dimension scores.",
+    numerator: "Weighted points from the three board-facing enterprise dimensions in the AII model.",
+    denominator: "100-point AII sub-score scale.",
+    scope: "Enterprise board posture for the active institutionalisation period.",
+    exclusions:
+      "Does not expose route-level delivery telemetry directly; this is an executive aggregation layer.",
+    owner: "Enterprise AI PMO + Strategy Office",
+    sourceSystems: [
+      "AII scoring engine",
+      "Dimension scorecards",
+      "Board evidence pack",
+    ],
+    refreshCadence: "Quarterly board frame with weekly source checks",
+    lastRefresh: "07 Apr 2026, 08:30 BST",
+    confidence: "B / composite score built from normalized dimension evidence",
+    evidence:
+      "Shows whether enterprise direction, value logic, and governance posture are aligned strongly enough for board sponsorship.",
+  },
+  aii_ops_score: {
+    label: "Ops sub-score",
+    lens: "Institutionalisation",
+    definition:
+      "Board-facing AII sub-score summarizing operational AI depth, service outcomes, and technology readiness.",
+    formula:
+      "Weighted aggregate of Operational AI, SLA/XLA, and Technology dimension scores.",
+    numerator: "Weighted points from the three operations-facing enterprise dimensions in the AII model.",
+    denominator: "100-point AII sub-score scale.",
+    scope: "Enterprise board posture for the active institutionalisation period.",
+    exclusions:
+      "Does not show workflow-level detail directly; this is an executive aggregation of operational readiness.",
+    owner: "COO Operations + Platform Engineering",
+    sourceSystems: [
+      "AII scoring engine",
+      "Dimension scorecards",
+      "Board evidence pack",
+    ],
+    refreshCadence: "Quarterly board frame with weekly source checks",
+    lastRefresh: "07 Apr 2026, 08:30 BST",
+    confidence: "B / composite score built from normalized dimension evidence",
+    evidence:
+      "Shows whether service operations, technology foundations, and service outcomes are strong enough to support governed scale.",
+  },
+  aii_people_score: {
+    label: "People sub-score",
+    lens: "Institutionalisation",
+    definition:
+      "Board-facing AII sub-score summarizing workforce capability, cultural adoption, and leadership readiness.",
+    formula:
+      "Weighted aggregate of Workforce and Culture dimension scores.",
+    numerator: "Weighted points from the people and adoption dimensions in the AII model.",
+    denominator: "100-point AII sub-score scale.",
+    scope: "Enterprise board posture for the active institutionalisation period.",
+    exclusions:
+      "Does not show persona-level behavioral detail directly; this is an executive aggregation of people readiness.",
+    owner: "People + AI Enablement",
+    sourceSystems: [
+      "AII scoring engine",
+      "Workforce telemetry",
+      "Behavioral adoption evidence",
+    ],
+    refreshCadence: "Quarterly board frame with weekly source checks",
+    lastRefresh: "07 Apr 2026, 08:30 BST",
+    confidence: "B / composite score built from normalized dimension evidence",
+    evidence:
+      "Shows whether training, safe-use validation, and cultural adoption are keeping pace with scale ambition.",
+  },
+};
+
+const northStarSupportMetricLibrary = {
+  forecast_value: buildDerivedEnterpriseMetric({
+    label: "Forecast value",
+    definition:
+      "Annualized forecast value expected from the matching initiatives in the current enterprise slice.",
+    formula: "Sum of initiative-level forecast value across the current slice.",
+    numerator: "Forecast value from matching initiatives in the active slice.",
+    denominator: "Not applicable; this is an absolute value metric.",
+    owner: "Finance + Product",
+    evidence:
+      "Use-case forecast value from the filtered enterprise initiative ledger.",
+    sourceSystems: [
+      "Portfolio value register",
+      "Benefit case tracker",
+      "Initiative scorecards",
+    ],
+  }),
+  realized_value: buildDerivedEnterpriseMetric({
+    label: "Realized value",
+    definition:
+      "Annualized realized value already evidenced by matching initiatives in the current enterprise slice.",
+    formula: "Sum of initiative-level realized value across the current slice.",
+    numerator: "Realized value from matching initiatives in the active slice.",
+    denominator: "Not applicable; this is an absolute value metric.",
+    owner: "Finance + Product",
+    evidence:
+      "Evidenced realized value from the filtered enterprise initiative ledger.",
+    sourceSystems: [
+      "Portfolio value register",
+      "Benefit case tracker",
+      "Finance validation notes",
+    ],
+  }),
+  value_attainment: buildDerivedEnterpriseMetric({
+    label: "Attainment",
+    definition:
+      "Share of forecast value that has already turned into realized value in the current enterprise slice.",
+    formula: "Realized value / forecast value.",
+    numerator: "Realized value from matching initiatives in the active slice.",
+    denominator: "Forecast value from matching initiatives in the active slice.",
+    owner: "Finance + Product",
+    evidence:
+      "Shows how much of the current portfolio forecast is already landing as evidenced value.",
+    sourceSystems: [
+      "Portfolio value register",
+      "Benefit case tracker",
+      "Finance validation notes",
+    ],
+  }),
+  finance_validated_share: buildDerivedEnterpriseMetric({
+    label: "Finance-validated",
+    definition:
+      "Share of realized value that has already been reviewed and backed by finance evidence in the current slice.",
+    formula: "Finance-validated realized value / total realized value.",
+    numerator: "Realized value with finance validation already in place.",
+    denominator: "Total realized value in the current enterprise slice.",
+    owner: "Finance",
+    evidence:
+      "Shows how much of the realized value story is already finance-grade rather than directional.",
+    sourceSystems: [
+      "Finance validation memo set",
+      "Portfolio value register",
+      "Benefit case tracker",
+    ],
+  }),
+  weighted_payback: buildDerivedEnterpriseMetric({
+    label: "Weighted payback",
+    definition:
+      "Realized-value-weighted payback period across matching initiatives in the current slice.",
+    formula: "Sum(payback months × realized value) / sum(realized value).",
+    numerator: "Realized-value-weighted payback months across matching initiatives.",
+    denominator: "Total realized value in the current enterprise slice.",
+    owner: "Finance + Product",
+    evidence:
+      "Weights faster and larger realized initiatives more heavily than smaller or earlier-stage work.",
+    sourceSystems: [
+      "Portfolio value register",
+      "Benefit case tracker",
+      "Initiative scorecards",
+    ],
+  }),
+  matching_initiatives: buildDerivedEnterpriseMetric({
+    label: "Matching initiatives",
+    definition:
+      "Count of initiatives remaining in scope after the current board-view filters are applied.",
+    formula: "Count of initiative records in the active enterprise slice.",
+    numerator: "Matching initiatives in the filtered enterprise slice.",
+    denominator: "Not applicable; this is an absolute count metric.",
+    owner: "Enterprise AI PMO",
+    evidence:
+      "Shows how many initiatives are contributing to the current board story.",
+    sourceSystems: [
+      "Initiative ledger",
+      "Portfolio intake model",
+      "Segment slice controls",
+    ],
+    confidence: "A- / slice-driven count",
+  }),
+  live_or_scaling: buildDerivedEnterpriseMetric({
+    label: "Live or scaling",
+    definition:
+      "Count of matching initiatives already in production or active scaling in the current slice.",
+    formula: "Count of matching initiatives where stage is Production or Scaling.",
+    numerator: "Matching initiatives at Production or Scaling stage.",
+    denominator: "Matching initiatives in the active enterprise slice.",
+    owner: "Enterprise AI PMO",
+    evidence:
+      "Shows how much of the filtered portfolio is already beyond pilot proof.",
+    sourceSystems: [
+      "Initiative ledger",
+      "Portfolio stage tracker",
+      "Segment slice controls",
+    ],
+    confidence: "A- / stage-led count",
+  }),
+  in_full_production: buildDerivedEnterpriseMetric({
+    label: "In full production",
+    definition:
+      "Count of matching initiatives already operating at full production in the current slice.",
+    formula: "Count of matching initiatives where stage is Production.",
+    numerator: "Matching initiatives at Production stage.",
+    denominator: "Matching initiatives in the active enterprise slice.",
+    owner: "Enterprise AI PMO",
+    evidence:
+      "Shows how much of the filtered portfolio is fully live rather than still scaling.",
+    sourceSystems: [
+      "Initiative ledger",
+      "Portfolio stage tracker",
+      "Segment slice controls",
+    ],
+    confidence: "A- / stage-led count",
+  }),
+  stalled_value_at_risk: buildDerivedEnterpriseMetric({
+    label: "Stalled value at risk",
+    definition:
+      "Forecast value trapped in matching initiatives that are currently stalled rather than scaling or in production.",
+    formula: "Sum of forecast value across matching initiatives where stage is Stalled.",
+    numerator: "Forecast value attached to stalled initiatives in the active enterprise slice.",
+    denominator: "Not applicable; this is an absolute value metric.",
+    owner: "Finance + Enterprise AI PMO",
+    evidence:
+      "Shows the amount of expected value not converting because initiatives have stalled in the current slice.",
+    sourceSystems: [
+      "Initiative ledger",
+      "Portfolio value register",
+      "Portfolio stage tracker",
+    ],
+  }),
+};
+
+const oversightMetricLibrary = {
+  straight_through_rate: buildOversightMetric({
+    label: "Straight-Through Rate",
+    definition:
+      "Share of in-scope decisions cleared by policy and evidence checks without manual review.",
+    formula: "Straight-through cleared decisions / total in-scope decisions.",
+    numerator: "Decisions auto-cleared by policy and evidence checks.",
+    denominator: "All in-scope decisions entering the accountable review flow.",
+    evidence:
+      "Shows how much of the oversight load is resolved inside policy rather than routed to human review.",
+  }),
+  human_review_queue: buildOversightMetric({
+    label: "Human Review Queue",
+    definition:
+      "Count of active items awaiting accountable reviewer action in the current slice.",
+    formula: "Count of still-open oversight items awaiting accountable review.",
+    numerator: "Active queue items awaiting reviewer action.",
+    denominator: "Not applicable; this is an absolute count metric.",
+    evidence:
+      "Shows current manual review pressure rather than policy-driven straight-through flow.",
+  }),
+  median_review_sla: buildOversightMetric({
+    label: "Median Review SLA",
+    definition:
+      "Median time to decision for items requiring human review after policy scan.",
+    formula: "Median elapsed review time for in-scope reviewed items.",
+    numerator: "Elapsed hours to accountable decision for reviewed items.",
+    denominator: "Not applicable; this is a median duration metric.",
+    evidence:
+      "Shows how quickly the accountable review system is moving once work cannot clear automatically.",
+  }),
+  override_rate: buildOversightMetric({
+    label: "Override Rate",
+    definition:
+      "Share of recommendations changed by accountable humans after escalation.",
+    formula: "Human-overridden recommendations / total human-reviewed recommendations.",
+    numerator: "Recommendations changed by accountable humans after escalation.",
+    denominator: "All recommendations that reached human review.",
+    evidence:
+      "Shows whether the routing and policy logic are making the right calls before human review intervenes.",
+  }),
+  high_risk_holds: buildOversightMetric({
+    label: "High-Risk Holds",
+    definition:
+      "Count of red-tier items placed on hold pending investigation, approval, or rejection.",
+    formula: "Count of red-tier in-scope items with hold status.",
+    numerator: "Active high-risk items on hold.",
+    denominator: "Not applicable; this is an absolute count metric.",
+    evidence:
+      "Shows where the review system is intentionally stopping riskier work from progressing automatically.",
+  }),
+  oldest_queue_age: buildOversightMetric({
+    label: "Oldest queue age",
+    definition:
+      "Elapsed time since the oldest still-open oversight item entered accountable review.",
+    formula: "Now minus created_at for the oldest still-open oversight item.",
+    numerator: "Elapsed age of the oldest open queue item.",
+    denominator: "Not applicable; this is an elapsed-time metric.",
+    evidence:
+      "Shows whether queue ageing is concentrating in a small number of stuck items even when median SLA is healthy.",
+  }),
+  reviewer_capacity_use: buildOversightMetric({
+    label: "Reviewer capacity use",
+    definition:
+      "Share of accountable reviewer capacity currently committed across the oversight queue.",
+    formula: "Committed reviewer capacity / total accountable reviewer capacity.",
+    numerator: "Current committed reviewer capacity across active oversight work.",
+    denominator: "Total accountable reviewer capacity in the current slice.",
+    evidence:
+      "Shows whether reviewer headroom is being consumed faster than straight-through routing can relieve it.",
+  }),
+  sampling_coverage: buildOversightMetric({
+    label: "Sampling coverage",
+    definition:
+      "Share of straight-through decisions sampled post-hoc for policy and quality assurance.",
+    formula: "Post-hoc sampled straight-through decisions / total straight-through decisions.",
+    numerator: "Straight-through decisions sampled for post-hoc review.",
+    denominator: "All straight-through decisions in the current slice.",
+    evidence:
+      "Shows whether oversight is checking enough automatically-cleared work to keep confidence in the routing model.",
+  }),
+  escalation_qa_pass: buildOversightMetric({
+    label: "Escalation QA pass",
+    definition:
+      "Share of reviewed decisions that pass secondary QA without remediation or policy challenge.",
+    formula: "QA-passing reviewed decisions / total QA-reviewed decisions.",
+    numerator: "Reviewed decisions that pass secondary QA without remediation.",
+    denominator: "All reviewed decisions sampled for secondary QA.",
+    evidence:
+      "Shows whether accountable review quality is holding up once work reaches human escalation.",
+  }),
+};
+
+Object.assign(
+  metricLibrary,
+  benchmarkDimensionMetricLibrary,
+  aiiSubscoreMetricLibrary,
+  northStarSupportMetricLibrary,
+  oversightMetricLibrary,
+);
+
 const metricLabelToId = {
-  "AII Score": "aii_score",
-  "Portfolio ROI": "portfolio_roi",
-  "Governance Coverage": "governance_coverage",
-  "RAI Index": "rai_index",
-  "Tech Debt Index": "tech_debt_index",
-  "Flow Index": "delivery_flow_index",
+  ...Object.fromEntries(Object.entries(metricLibrary).map(([id, metric]) => [metric.label, id])),
+  "Strategy": "aii_strategy_score",
+  "Ops": "aii_ops_score",
+  "People": "aii_people_score",
+  "Technology": "benchmark_technology",
+  "Strategic alignment": "benchmark_strategic_alignment",
+  "Portfolio & ROI": "benchmark_portfolio_roi",
+  "Governance & risk": "benchmark_governance_risk",
+  "Workforce": "benchmark_workforce",
+  "Culture": "benchmark_culture",
+  "SLA/XLA": "benchmark_sla_xla",
+  "Responsible AI": "benchmark_responsible_ai",
   "Delivery Flow Index": "delivery_flow_index",
-  "Quality Guardrail": "quality_guardrail",
   "AI Coverage": "ai_workflow_coverage",
-  "AI Workflow Coverage": "ai_workflow_coverage",
   "Delivery run-rate": "delivery_ai_run_rate",
-  "AI Run-Rate Cost": "delivery_ai_run_rate",
-  "Operational AI": "operational_ai_spend",
-  "Total AI spend": "total_ai_spend",
-  "Value delivered": "value_delivered",
-  "Net Productivity Gain": "net_productivity_gain",
-  "Governance Compliance": "delivery_governance_compliance",
-  "Daily Active Users": "daily_active_users",
-  "Weekly Active Users": "weekly_active_users",
-  "Monthly Active Users": "monthly_active_users",
-  "Seat Utilization": "seat_utilization",
-  "Repeat Use Rate": "repeat_use_rate",
-  "30-Day Retention": "retention_30_day",
-  "Active Teams": "active_teams",
+  "Strategic Alignment": "benchmark_strategic_alignment",
+  "Governance & Risk": "benchmark_governance_risk",
 };
 
 const initiativeLedger = [

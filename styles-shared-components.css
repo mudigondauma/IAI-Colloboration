@@ -1,4 +1,5 @@
-/* Shared components used across landing, Institutionalisation, and Delivery. */
+/* Shared components used across landing, Institutionalisation, and Delivery.
+   New user-facing controls should land here as shared patterns before section-specific variants are added. */
 .landing-hero {
   display: grid;
   gap: 18px;
