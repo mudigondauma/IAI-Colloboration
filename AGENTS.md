@@ -99,6 +99,9 @@ If any answer suggests duplication, conflict, or drift, stop and explain the iss
 - For content or layout updates, start with `index.html` and `styles.css`.
 - For any metric, filter, toggle, or card behavior, start with `app.js`.
 - Treat the live metric registry as mandatory infrastructure. Any new metric introduced in the UI, and any existing metric whose meaning, formula, ownership, or scope is corrected, must be added or updated in the shared metric library before the change is considered complete.
+- Any metric addition, rename, retirement, formula change, reweighting, or threshold change must follow `METRIC_CHANGE_PROTOCOL.md` so the canonical definition, UI surfaces, docs, and product-rollout files stay aligned.
+- If a file becomes canonical, stops being canonical, or the update dependencies between files change, update `WHERE_TRUTH_LIVES.md` before the task is considered complete.
+- If the practical working state of the repo changes in a way a new human or AI would need to know, update `CURRENT_STATE_HANDOFF.md`.
 - Any new user-facing metric, control, or evidence claim must have one canonical owner:
   - metric library for explainable metrics and score-like values
   - evidence library for traceability, packs, and supporting proof claims
