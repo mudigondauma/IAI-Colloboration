@@ -19,6 +19,7 @@ const state = {
   workforceProofFlips: {},
   workforceTopFlips: {},
   institutionToolTab: "saved",
+  deliveryToolTab: "saved",
   askFocus: {
     institutionalization: null,
     delivery: null,
@@ -42,6 +43,18 @@ function getScreenFromHash(hash = window.location.hash, fallback = "landing") {
 }
 
 state.screen = getScreenFromHash();
+
+function syncToolTabsFromHash(hash = window.location.hash) {
+  if (hash === "#institutionalizationAskPanel") {
+    state.institutionToolTab = "ask";
+  }
+
+  if (hash === "#deliveryAskPanel") {
+    state.deliveryToolTab = "ask";
+  }
+}
+
+syncToolTabsFromHash();
 
 const {
   periodLabels,
@@ -104,9 +117,9 @@ const elements = {
   institutionalizationAskPanel: document.querySelector("#institutionalizationAskPanel"),
   institutionalizationViewMeta: document.querySelector("#institutionalizationViewMeta"),
   deliveryViewMeta: document.querySelector("#deliveryViewMeta"),
-  deliverySavedViewsPanel: document.querySelector("#deliverySavedViewsPanel"),
-  deliveryAskPanel: document.querySelector("#deliveryAskPanel"),
   deliveryQuickNav: document.querySelector("#deliveryQuickNav"),
+  deliveryToolrail: document.querySelector("#deliveryToolrail"),
+  deliveryPosture: document.querySelector("#deliveryPosture"),
   scopeSummary: document.querySelector("#scopeSummary"),
   dateFilter: document.querySelector("#dateFilter"),
   teamFilter: document.querySelector("#teamFilter"),
@@ -4373,7 +4386,7 @@ function applySavedView(screen, presetId) {
 function renderSavedViewsPanel(screen) {
   const container = screen === "institutionalization"
     ? document.querySelector("#institutionalizationSavedViewsPanel")
-    : elements.deliverySavedViewsPanel;
+    : document.querySelector("#deliverySavedViewsPanel");
   const presets = getSavedViews(screen);
 
   if (!container || !presets.length) {
@@ -4900,7 +4913,7 @@ function buildDeliveryAskAnswer(promptId) {
 function renderAskPanel(screen) {
   const container = screen === "institutionalization"
     ? document.querySelector("#institutionalizationAskPanel")
-    : elements.deliveryAskPanel;
+    : document.querySelector("#deliveryAskPanel");
   const prompts = askPromptRegistry[screen] || [];
 
   if (!container || !prompts.length) {
@@ -4964,6 +4977,85 @@ function renderAskPanel(screen) {
 function renderAskPanels() {
   renderAskPanel("institutionalization");
   renderAskPanel("delivery");
+}
+
+function renderDeliveryToolrail() {
+  if (!elements.deliveryToolrail) {
+    return;
+  }
+
+  const deliveryToolTabs = [
+    {
+      id: "saved",
+      label: "Saved lenses",
+      note: "Restore CIO and portfolio presets without rebuilding the operating slice.",
+    },
+    {
+      id: "ask",
+      label: "Grounded questions",
+      note: "Open operating answers tied to the same KPIs, actions, and trust signals already on the page.",
+    },
+  ];
+
+  const switchHtml = deliveryToolTabs
+    .map(
+      (tab, index) => `
+        <button
+          class="delivery-toolrail__switcher ${state.deliveryToolTab === tab.id ? "is-active" : ""}"
+          type="button"
+          role="tab"
+          aria-selected="${String(state.deliveryToolTab === tab.id)}"
+          aria-controls="delivery-toolrail-panel-${tab.id}"
+          data-delivery-tool-tab="${tab.id}"
+        >
+          <span class="delivery-toolrail__switcher-topline">
+            <span class="delivery-toolrail__switcher-index">${String(index + 1).padStart(2, "0")}</span>
+            <span class="delivery-toolrail__switcher-state">${state.deliveryToolTab === tab.id ? "Active" : "Open"}</span>
+          </span>
+          <span class="delivery-toolrail__switcher-label">${tab.label}</span>
+          <span class="delivery-toolrail__switcher-note">${tab.note}</span>
+          <span class="delivery-toolrail__switcher-cta">${state.deliveryToolTab === tab.id ? "Showing now" : "Open tool"}</span>
+        </button>
+      `,
+    )
+    .join("");
+
+  elements.deliveryToolrail.innerHTML = `
+    <section class="panel delivery-toolrail" aria-labelledby="deliveryToolsHeading">
+      <div class="delivery-toolrail__head">
+        <div>
+          <p class="eyebrow">Delivery tools</p>
+          <h2 id="deliveryToolsHeading">Open one operating tool at a time</h2>
+        </div>
+        <p class="delivery-toolrail__note">
+          Use this tray after the KPI row to restore saved lenses or ask grounded operating follow-ups without crowding the opening.
+        </p>
+      </div>
+      <div class="delivery-toolrail__switch" role="tablist" aria-label="Delivery tools">
+        ${switchHtml}
+      </div>
+      <div class="delivery-toolrail__body">
+        <section
+          id="delivery-toolrail-panel-saved"
+          class="delivery-toolrail__pane ${state.deliveryToolTab === "saved" ? "is-active" : ""}"
+          role="tabpanel"
+          aria-label="Saved lenses for this view"
+          ${state.deliveryToolTab === "saved" ? "" : "hidden"}
+        >
+          <div id="deliverySavedViewsPanel"></div>
+        </section>
+        <section
+          id="delivery-toolrail-panel-ask"
+          class="delivery-toolrail__pane ${state.deliveryToolTab === "ask" ? "is-active" : ""}"
+          role="tabpanel"
+          aria-label="Grounded questions for this view"
+          ${state.deliveryToolTab === "ask" ? "" : "hidden"}
+        >
+          <div id="deliveryAskPanel"></div>
+        </section>
+      </div>
+    </section>
+  `;
 }
 
 function renderInstitutionalization() {
@@ -5533,7 +5625,7 @@ function renderInstitutionalization() {
             </div>
           </div>
           <p class="institution-strip__context">
-            <strong>Current slice</strong>
+            <strong>Enterprise slice</strong>
             <span>${periodLabels[state.period]} · ${describeActiveSegments()}</span>
           </p>
           <p class="institution-strip__summary">${data.northStarStory.summary}</p>
@@ -5976,17 +6068,106 @@ function renderInstitutionalization() {
   updateInstitutionSubnavActive();
 }
 
+function formatNaturalList(items = []) {
+  if (!items.length) {
+    return "";
+  }
+
+  if (items.length === 1) {
+    return items[0];
+  }
+
+  if (items.length === 2) {
+    return `${items[0]} and ${items[1]}`;
+  }
+
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+}
+
+function renderDeliveryPosture(portfolio) {
+  if (!elements.deliveryPosture) {
+    return;
+  }
+
+  if (state.mode === "baseline") {
+    elements.deliveryPosture.innerHTML = `
+      <strong>Baseline operating posture</strong>
+      <p>This reference view shows the starting delivery system before AI-assisted uplift is applied to flow, quality, coverage, and cost.</p>
+    `;
+    return;
+  }
+
+  const postureMetrics = [
+    {
+      label: "Delivery Flow Index",
+      phrase: "delivery flow",
+    },
+    {
+      label: "Quality Guardrail",
+      phrase: "quality guardrails",
+    },
+    {
+      label: "Governance Compliance",
+      phrase: "governance coverage",
+    },
+    {
+      label: "AI Workflow Coverage",
+      phrase: "workflow coverage",
+    },
+    {
+      label: "Net Productivity Gain",
+      phrase: "productivity conversion",
+    },
+    {
+      label: "AI Run-Rate Cost",
+      phrase: "run-rate cost discipline",
+    },
+  ]
+    .map((item) => {
+      const metric = getPortfolioKpi(portfolio, item.label);
+
+      if (!metric) {
+        return null;
+      }
+
+      return {
+        ...item,
+        status: progressState(metric, state.mode === "pilot" ? metric.pilot : metric.baseline).label,
+      };
+    })
+    .filter(Boolean);
+
+  const strongAreas = postureMetrics
+    .filter((item) => item.status === "Strong")
+    .map((item) => item.phrase);
+  const weakAreas = postureMetrics
+    .filter((item) => item.status !== "Strong")
+    .map((item) => item.phrase);
+
+  const strengthLine = strongAreas.length
+    ? `${formatNaturalList(strongAreas)} are moving in the right direction`
+    : "the delivery system is stabilizing but not yet convincingly ahead of baseline";
+  const pressureLine = weakAreas.length
+    ? `${formatNaturalList(weakAreas)} still need intervention before delivery scale feels routine`
+    : "the remaining watchpoints are narrow enough to manage through standard operating reviews";
+
+  elements.deliveryPosture.innerHTML = `
+    <strong>Operating posture</strong>
+    <p>${strengthLine}, but ${pressureLine}.</p>
+  `;
+}
+
 function renderScopeSummary(portfolio) {
+  const activeSegmentSummary = describeActiveSegments();
   elements.scopeSummary.innerHTML = `
-    <span class="scope-chip"><strong>Team</strong><span>${portfolio.label}</span></span>
-    <span class="scope-chip"><strong>Workflow</strong><span>${workflowLabels[state.workflow]}</span></span>
-    <span class="scope-chip"><strong>Mode</strong><span>${state.mode === "pilot" ? "Pilot assisted" : "Baseline reference"}</span></span>
-    <span class="scope-chip"><strong>Date</strong><span>${periodLabels[state.period]}</span></span>
-    <span class="scope-chip"><strong>Region</strong><span>${getFilterLabel("geography", state.geography)}</span></span>
-    <span class="scope-chip"><strong>Function</strong><span>${getFilterLabel("businessFunction", state.businessFunction)}</span></span>
-    <span class="scope-chip"><strong>Use case</strong><span>${getFilterLabel("useCase", state.useCase)}</span></span>
-    <span class="scope-chip"><strong>Model tier</strong><span>${getFilterLabel("modelTier", state.modelTier)}</span></span>
-    <span class="scope-chip"><strong>Scope</strong><span>${portfolio.scope}</span></span>
+    <p class="scope-summary__line">
+      <strong>Portfolio lens:</strong>
+      <span>${portfolio.label} · ${workflowLabels[state.workflow]} · ${state.mode === "pilot" ? "Pilot assisted" : "Baseline reference"} · ${periodLabels[state.period]}</span>
+    </p>
+    <p class="scope-summary__line">
+      <strong>Filtered to:</strong>
+      <span>${activeSegmentSummary} · ${portfolio.scope}</span>
+    </p>
   `;
 }
 
@@ -6000,12 +6181,14 @@ function render() {
   renderViewBars();
   renderDeliverySegmentationBar();
   renderDeliveryQuickNav();
+  renderDeliveryToolrail();
   renderInstitutionalization();
   renderSavedViewPanels();
   renderAskPanels();
 
   const portfolio = portfolios[state.team];
   const oversightProfile = oversightProfiles[state.team];
+  renderDeliveryPosture(portfolio);
   renderScopeSummary(portfolio);
   renderKpis(portfolio);
   renderSwimlanes(portfolio);
@@ -6104,6 +6287,7 @@ elements.backHomeButtons.forEach((button) => {
 window.addEventListener("hashchange", () => {
   const nextScreen = getScreenFromHash(window.location.hash, state.screen);
 
+  syncToolTabsFromHash(window.location.hash);
   updateInstitutionSubnavActive();
   updateDeliveryQuickNavActive();
   renderJumpReturnChip(window.location.hash);
@@ -6120,6 +6304,7 @@ window.addEventListener("hashchange", () => {
 
 document.addEventListener("click", (event) => {
   const institutionToolTabTrigger = event.target.closest("[data-institution-tool-tab]");
+  const deliveryToolTabTrigger = event.target.closest("[data-delivery-tool-tab]");
   const savedViewTrigger = event.target.closest("[data-saved-view-id]");
   const askTrigger = event.target.closest("[data-ask-prompt]");
   const askClearTrigger = event.target.closest("[data-ask-clear]");
@@ -6133,6 +6318,13 @@ document.addEventListener("click", (event) => {
   if (institutionToolTabTrigger) {
     event.preventDefault();
     state.institutionToolTab = institutionToolTabTrigger.dataset.institutionToolTab;
+    render();
+    return;
+  }
+
+  if (deliveryToolTabTrigger) {
+    event.preventDefault();
+    state.deliveryToolTab = deliveryToolTabTrigger.dataset.deliveryToolTab;
     render();
     return;
   }

@@ -32,7 +32,17 @@ Important changes already made:
 - the `Board tools` area was made more interactive and modern
 - the opening was tightened to get to the board message faster
 
-### 3. Workforce chapter was reworked substantially
+### 3. Delivery opening is now being tightened too
+
+Important current state:
+
+- Delivery keeps the view bar, operating header, quick jump, and KPI opening
+- the opening now leads with an operating posture line and KPI snapshot before scope controls
+- the old passive support stack has been converted into a clickable `Delivery tools` tray
+- the tray now owns saved lenses and grounded delivery questions
+- quick navigation now sits between the KPI opening and the lower scope controls
+- filters and segmentation were demoted into a lower operating-scope panel instead of leading the page
+### 4. Workforce chapter was reworked substantially
 
 Important current state:
 
@@ -41,7 +51,7 @@ Important current state:
 - proof cards were selectively redesigned rather than everything being flipped blindly
 - semantic color logic was intentionally preserved for proof signals
 
-### 4. Metric discipline is now much stronger than before
+### 5. Metric discipline is now much stronger than before
 
 What already exists:
 
@@ -55,7 +65,7 @@ The repo now assumes:
 - important user-facing metrics should have a canonical definition
 - metric changes must follow a change protocol
 
-### 5. Productization / Supabase planning package already exists
+### 6. Productization / Supabase planning package already exists
 
 These are already prepared:
 

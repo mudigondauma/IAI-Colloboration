@@ -185,14 +185,32 @@
 
       <main class="dashboard" id="deliveryMain" tabindex="-1" aria-label="Delivery Engine View dashboard">
         <header class="page-header panel">
-            <div class="page-header__copy">
-              <p class="eyebrow">CIO View</p>
-              <h1>Delivery Engine View</h1>
-              <p class="page-header__subtitle">
+          <div class="page-header__copy">
+            <p class="eyebrow">CIO View</p>
+            <h1>Delivery Engine View</h1>
+            <p class="page-header__subtitle">
               Operational view of AI delivery, flow, trust, and realized value.
-              </p>
-              <div class="scope-summary" id="scopeSummary" aria-live="polite"></div>
+            </p>
+            <div class="delivery-posture" id="deliveryPosture" aria-live="polite"></div>
+            <div class="scope-summary" id="scopeSummary" aria-live="polite"></div>
+          </div>
+        </header>
+
+        <section class="kpi-grid" id="kpiGrid" aria-label="Executive KPI cards"></section>
+
+        <div id="deliveryQuickNav"></div>
+        <div id="deliveryToolrail"></div>
+
+        <section class="panel delivery-control-panel" aria-labelledby="deliveryControlHeading">
+          <div class="delivery-control-panel__head">
+            <div>
+              <p class="eyebrow">Operating scope</p>
+              <h2 id="deliveryControlHeading">Adjust the live delivery slice</h2>
             </div>
+            <p class="delivery-control-panel__note">
+              Use filters after the opening snapshot to re-scope the operating evidence without losing the top-line read.
+            </p>
+          </div>
 
           <form class="filter-bar" aria-label="Dashboard filters">
             <label class="control">
@@ -248,16 +266,7 @@
             </fieldset>
           </form>
           <div id="deliverySegmentationBar"></div>
-        </header>
-
-        <div class="view-support-stack">
-          <div id="deliverySavedViewsPanel"></div>
-          <div id="deliveryAskPanel"></div>
-        </div>
-
-        <div id="deliveryQuickNav"></div>
-
-        <section class="kpi-grid" id="kpiGrid" aria-label="Executive KPI cards"></section>
+        </section>
 
         <section class="panel" id="delivery-swimlanes" aria-labelledby="swimlanesHeading">
           <div class="section-head">

@@ -80,6 +80,7 @@
   .landing-story__grid,
   .saved-view-grid,
   .institution-toolrail__switch,
+  .delivery-toolrail__switch,
   .institution-toolrail__stack,
   .institution-kpi-grid,
   .value-layout,
@@ -172,6 +173,8 @@
   .institution-header,
   .institution-subnav,
   .delivery-quicknav,
+  .delivery-toolrail,
+  .delivery-control-panel,
   .institution-strip__stage {
     padding-left: 20px;
     padding-right: 20px;
@@ -202,7 +205,9 @@
 
   .saved-view-panel__head,
   .ask-layer__head,
-  .institution-toolrail__head {
+  .institution-toolrail__head,
+  .delivery-toolrail__head,
+  .delivery-control-panel__head {
     grid-template-columns: 1fr;
   }
 
@@ -217,6 +222,7 @@
 
   .institution-subnav__head,
   .delivery-quicknav__head,
+  .delivery-toolrail__switcher-topline,
   .benchmark-insight-card__head,
   .benchmark-bullet__head,
   .section-head__cluster {
@@ -418,6 +424,10 @@
     padding: 20px;
   }
 
+  .delivery-posture {
+    padding: 12px 14px;
+  }
+
   .institution-header__subscores {
     grid-template-columns: 1fr;
   }
@@ -451,6 +461,7 @@
   .benchmark-provenance-card__head,
   .saved-view-card__head,
   .saved-view-card__chips,
+  .delivery-toolrail__switcher-cta,
   .productivity-story-card__head,
   .productivity-subhead,
   .workflow-productivity-card__head,
