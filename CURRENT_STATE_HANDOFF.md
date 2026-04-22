@@ -64,6 +64,7 @@ These are already prepared:
 - `SUPABASE_SEED_MAPPING.md`
 - `SUPABASE_ADAPTER_CONTRACT.md`
 - `TEAMMATE_K_SUPABASE_STEP_BY_STEP.md`
+- `TEAMMATE_K_CODESPACES_SETUP.md`
 - `supabase/phase1_schema.sql`
 - `supabase/phase1_seed.sql`
 
@@ -180,4 +181,3 @@ Examples:
 - major UI restructuring is completed
 - a new integration path becomes the default
 - a phase is completed and the next one starts
-

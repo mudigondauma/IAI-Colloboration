@@ -1,1 +1,7 @@
 .DS_Store
+
+# Local-only Supabase and environment config
+.env
+.env.local
+.env.*.local
+supabase-config.local.js

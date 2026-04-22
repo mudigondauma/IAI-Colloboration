@@ -58,6 +58,7 @@ Then read:
 2. [SUPABASE_PHASE1_TABLE_PLAN.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/SUPABASE_PHASE1_TABLE_PLAN.md:1)
 3. [SUPABASE_ADAPTER_CONTRACT.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/SUPABASE_ADAPTER_CONTRACT.md:1)
 4. [TEAMMATE_K_SUPABASE_STEP_BY_STEP.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/TEAMMATE_K_SUPABASE_STEP_BY_STEP.md:1)
+5. [TEAMMATE_K_CODESPACES_SETUP.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/TEAMMATE_K_CODESPACES_SETUP.md:1) if the work is happening in GitHub Codespaces
 5. [PRODUCT_COMPARTMENTALISATION_ROADMAP.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/PRODUCT_COMPARTMENTALISATION_ROADMAP.md:1)
 6. [PHASE1_PRODUCTIZATION_CHECKLIST.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/PHASE1_PRODUCTIZATION_CHECKLIST.md:1)
 
@@ -94,4 +95,3 @@ If you add a new important file, change a file’s canonical role, or move truth
 
 - update [WHERE_TRUTH_LIVES.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/WHERE_TRUTH_LIVES.md:1)
 - update [CURRENT_STATE_HANDOFF.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/CURRENT_STATE_HANDOFF.md:1) if the working state changed
-

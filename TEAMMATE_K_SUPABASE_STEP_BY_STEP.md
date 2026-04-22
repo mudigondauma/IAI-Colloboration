@@ -41,6 +41,7 @@ Read in this order:
 2. [SUPABASE_PHASE1_TABLE_PLAN.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/SUPABASE_PHASE1_TABLE_PLAN.md:1)
 3. [SUPABASE_SEED_MAPPING.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/SUPABASE_SEED_MAPPING.md:1)
 4. [SUPABASE_ADAPTER_CONTRACT.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/SUPABASE_ADAPTER_CONTRACT.md:1)
+5. [TEAMMATE_K_CODESPACES_SETUP.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/TEAMMATE_K_CODESPACES_SETUP.md:1) if working from GitHub Codespaces
 
 Then use:
 
@@ -164,6 +165,7 @@ In `supabase-client.js`:
 - initialize the Supabase browser client
 - use the project URL
 - use the anon key
+- if using Codespaces, keep project-specific values in local-only setup described in `TEAMMATE_K_CODESPACES_SETUP.md`
 
 Do not put business logic here.
 

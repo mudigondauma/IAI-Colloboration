@@ -273,6 +273,17 @@ Use for:
 
 - plain-English execution order for a vibe-coder teammate
 
+### Codespaces / environment setup for K
+
+- `TEAMMATE_K_CODESPACES_SETUP.md`
+
+Use for:
+
+- GitHub Codespaces setup
+- safe preview pattern over HTTP
+- local-only Supabase config guidance
+- browser-safe key handling reminders
+
 ## 5. Human-Readable Orientation Truth
 
 These files exist to help humans and future AI sessions regain context quickly.
@@ -379,4 +390,3 @@ A change is not done if:
 In short:
 
 - if truth moved, this map must move too
-
