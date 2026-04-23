@@ -47,8 +47,12 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .kpi-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .kpi-grid__cards--primary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kpi-grid__cards--secondary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .oversight-kpis {
@@ -63,7 +67,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .content-column--primary,
+  .content-column--primary {
+    grid-column: 1 / -1;
+  }
+
   .content-column--secondary,
   .institution-column--primary,
   .institution-column--secondary {
@@ -81,6 +88,10 @@
   .saved-view-grid,
   .institution-toolrail__switch,
   .delivery-toolrail__switch,
+  .productivity-switch,
+  .governance-switch,
+  .economics-switch,
+  .trust-layer__switch,
   .institution-toolrail__stack,
   .institution-kpi-grid,
   .value-layout,
@@ -115,8 +126,14 @@
   .initiative-list--compact,
   .finance-card-grid,
   .segment-toolbar__grid,
+  .governance-overview__grid,
   .governance-console__frameworks {
     grid-template-columns: 1fr;
+  }
+
+  .classification-grid--governance,
+  .stat-list--governance {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .workforce-baseline-strip {
@@ -223,11 +240,21 @@
   .institution-subnav__head,
   .delivery-quicknav__head,
   .delivery-toolrail__switcher-topline,
+  .governance-switcher__topline,
+  .economics-switcher__topline,
+  .action-queue-lane__head,
+  .trust-layer__switcher-topline,
   .benchmark-insight-card__head,
   .benchmark-bullet__head,
   .section-head__cluster {
     align-items: start;
     flex-direction: column;
+  }
+
+  .scope-summary__line {
+    align-items: start;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .institution-panel__body {
@@ -258,7 +285,11 @@
   }
 
   .filter-bar,
-  .kpi-grid,
+  .kpi-grid__cards--primary,
+  .kpi-grid__cards--secondary,
+  .classification-grid,
+  .stat-list,
+  .action-workitem__insight-grid,
   .persona-grid,
   .initiative-value-grid,
   .action-summary-grid,
@@ -462,6 +493,7 @@
   .saved-view-card__head,
   .saved-view-card__chips,
   .delivery-toolrail__switcher-cta,
+  .productivity-pane-card__head,
   .productivity-story-card__head,
   .productivity-subhead,
   .workflow-productivity-card__head,

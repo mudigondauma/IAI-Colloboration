@@ -28,6 +28,7 @@ Then read:
 2. [WHERE_TRUTH_LIVES.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/WHERE_TRUTH_LIVES.md:1)
 3. [CURRENT_STATE_HANDOFF.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/CURRENT_STATE_HANDOFF.md:1)
 4. [UI_POLISH_BACKLOG.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/UI_POLISH_BACKLOG.md:1)
+5. `skills/delivery-ui-pass/SKILL.md` for repeated Delivery view UI work
 
 Then work mainly in:
 
@@ -42,8 +43,9 @@ Then read:
 
 1. [WHERE_TRUTH_LIVES.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/WHERE_TRUTH_LIVES.md:1)
 2. [METRIC_CHANGE_PROTOCOL.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/METRIC_CHANGE_PROTOCOL.md:1)
-3. [COCKPIT_METRIC_PRIMER.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/COCKPIT_METRIC_PRIMER.md:1)
-4. [LOGIC_AUDIT_CHECKLIST.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/LOGIC_AUDIT_CHECKLIST.md:1)
+3. `skills/metric-change/SKILL.md`
+4. [COCKPIT_METRIC_PRIMER.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/COCKPIT_METRIC_PRIMER.md:1)
+5. [LOGIC_AUDIT_CHECKLIST.md](/Users/umamudigonda/MY%20CODING/Git/IAI%20Colloboration/LOGIC_AUDIT_CHECKLIST.md:1)
 
 Then check:
 

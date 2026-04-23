@@ -38,10 +38,19 @@ Important current state:
 
 - Delivery keeps the view bar, operating header, quick jump, and KPI opening
 - the opening now leads with an operating posture line and KPI snapshot before scope controls
+- the KPI snapshot now separates lead delivery signals from secondary watchpoints
 - the old passive support stack has been converted into a clickable `Delivery tools` tray
 - the tray now owns saved lenses and grounded delivery questions
 - quick navigation now sits between the KPI opening and the lower scope controls
 - filters and segmentation were demoted into a lower operating-scope panel instead of leading the page
+- the Trust layer is now grouped into `Controls`, `Runtime`, and `Safety` buckets instead of one long continuous stack
+- Governance is now grouped into clickable `Posture`, `Risk concentration`, and `Control frameworks` reading modes
+- Productivity Method is now grouped into clickable `Method`, `Drivers`, and `Train ledger` reading modes
+- Economics is now grouped into clickable `Value signal`, `Spend mix`, and `Unit economics` reading modes
+- Governance was moved out of the squeezed side column and now sits as a full-width Delivery chapter
+- Trend, Adoption, Productivity Method, and Economics now use the full Delivery content width instead of an old left-column layout
+- Governance now opens with a tighter operating snapshot and Action Center is split into `Needs intervention now` and `Track to close` lanes with richer work-item context
+- Delivery section framing is now more consistent across Oversight, Economics, Action Center, Roadmap, and Trust, with fewer unlabeled containers and less duplicated header wording
 ### 4. Workforce chapter was reworked substantially
 
 Important current state:
@@ -59,6 +68,8 @@ What already exists:
 - `COCKPIT_METRIC_PRIMER.md`
 - `LOGIC_AUDIT_CHECKLIST.md`
 - `METRIC_CHANGE_PROTOCOL.md`
+- repo-local `skills/metric-change/SKILL.md`
+- repo-local `skills/delivery-ui-pass/SKILL.md`
 
 The repo now assumes:
 
@@ -127,6 +138,7 @@ Start from:
 
 - `app-data.js`
 - `METRIC_CHANGE_PROTOCOL.md`
+- `skills/metric-change/SKILL.md`
 - `COCKPIT_METRIC_PRIMER.md`
 - `LOGIC_AUDIT_CHECKLIST.md`
 
@@ -169,6 +181,12 @@ These files together are the metric / logic memory:
 - `COCKPIT_METRIC_PRIMER.md`
 - `LOGIC_AUDIT_CHECKLIST.md`
 - `METRIC_CHANGE_PROTOCOL.md`
+- `skills/metric-change/SKILL.md`
+
+These files together are the Delivery UI workflow memory:
+
+- `UI_POLISH_BACKLOG.md`
+- `skills/delivery-ui-pass/SKILL.md`
 
 These files together are the productization / Supabase memory:
 

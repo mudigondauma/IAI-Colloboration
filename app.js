@@ -20,6 +20,10 @@ const state = {
   workforceTopFlips: {},
   institutionToolTab: "saved",
   deliveryToolTab: "saved",
+  deliveryTrustTab: "controls",
+  deliveryGovernanceTab: "snapshot",
+  deliveryEconomicsTab: "value",
+  deliveryProductivityTab: "method",
   askFocus: {
     institutionalization: null,
     delivery: null,
@@ -45,6 +49,9 @@ function getScreenFromHash(hash = window.location.hash, fallback = "landing") {
 state.screen = getScreenFromHash();
 
 function syncToolTabsFromHash(hash = window.location.hash) {
+  const previousInstitutionToolTab = state.institutionToolTab;
+  const previousDeliveryToolTab = state.deliveryToolTab;
+
   if (hash === "#institutionalizationAskPanel") {
     state.institutionToolTab = "ask";
   }
@@ -52,6 +59,8 @@ function syncToolTabsFromHash(hash = window.location.hash) {
   if (hash === "#deliveryAskPanel") {
     state.deliveryToolTab = "ask";
   }
+
+  return previousInstitutionToolTab !== state.institutionToolTab || previousDeliveryToolTab !== state.deliveryToolTab;
 }
 
 syncToolTabsFromHash();
@@ -2165,26 +2174,68 @@ function trendStatus(metric) {
 }
 
 function renderKpis(portfolio) {
-  elements.kpiGrid.innerHTML = portfolio.kpis
-    .map((metric) => {
-      const currentValue = state.mode === "pilot" ? metric.pilot : metric.baseline;
-      const delta = describeDelta(metric, currentValue);
-      const status = progressState(metric, currentValue);
-      const metricId = getMetricId(metric.label);
+  const priorityMap = {
+    "Delivery Flow Index": { order: 1, tier: "primary" },
+    "Quality Guardrail": { order: 2, tier: "primary" },
+    "AI Workflow Coverage": { order: 3, tier: "primary" },
+    "Net Productivity Gain": { order: 4, tier: "primary" },
+    "Governance Compliance": { order: 5, tier: "secondary" },
+    "AI Run-Rate Cost": { order: 6, tier: "secondary" },
+  };
 
-      return `
-        <article class="kpi-card">
-          ${tooltip(metric.label, metric.definition, metricId)}
-          <div class="metric-value">${formatValue(currentValue, metric.format)}</div>
-          <div class="metric-meta">
-            <span class="delta-chip delta-chip--${delta.tone}">${delta.arrow} ${delta.text}</span>
-            <span class="status-chip ${status.className}">${status.label}</span>
-          </div>
-          <p class="metric-baseline">Baseline ${formatValue(metric.baseline, metric.format)} | Target ${formatValue(metric.target, metric.format)}</p>
-        </article>
-      `;
-    })
+  const renderKpiCard = (metric, tier = "primary") => {
+    const currentValue = state.mode === "pilot" ? metric.pilot : metric.baseline;
+    const delta = describeDelta(metric, currentValue);
+    const status = progressState(metric, currentValue);
+    const metricId = getMetricId(metric.label);
+
+    return `
+      <article class="kpi-card kpi-card--${tier}">
+        ${tooltip(metric.label, metric.definition, metricId)}
+        <div class="metric-value">${formatValue(currentValue, metric.format)}</div>
+        <div class="metric-meta">
+          <span class="delta-chip delta-chip--${delta.tone}">${delta.arrow} ${delta.text}</span>
+          <span class="status-chip ${status.className}">${status.label}</span>
+        </div>
+        <p class="metric-baseline">Baseline ${formatValue(metric.baseline, metric.format)} | Target ${formatValue(metric.target, metric.format)}</p>
+      </article>
+    `;
+  };
+
+  const orderedMetrics = portfolio.kpis
+    .map((metric) => ({
+      metric,
+      order: priorityMap[metric.label]?.order ?? 99,
+      tier: priorityMap[metric.label]?.tier ?? "secondary",
+    }))
+    .sort((a, b) => a.order - b.order);
+
+  const primaryHtml = orderedMetrics
+    .filter((item) => item.tier === "primary")
+    .map((item) => renderKpiCard(item.metric, "primary"))
     .join("");
+
+  const secondaryHtml = orderedMetrics
+    .filter((item) => item.tier === "secondary")
+    .map((item) => renderKpiCard(item.metric, "secondary"))
+    .join("");
+
+  elements.kpiGrid.innerHTML = `
+    <div class="kpi-grid__group">
+      <div class="kpi-grid__support-copy">
+        <p class="eyebrow">Core operating signals</p>
+        <p class="kpi-grid__support-note">These four signals tell the fastest story about flow, quality, coverage, and realized productivity.</p>
+      </div>
+      <div class="kpi-grid__cards kpi-grid__cards--primary">${primaryHtml}</div>
+    </div>
+    <div class="kpi-grid__group kpi-grid__support">
+      <div class="kpi-grid__support-copy">
+        <p class="eyebrow">Operating watchpoints</p>
+        <p class="kpi-grid__support-note">Governance discipline and run-rate cost stay visible, but below the lead delivery signals.</p>
+      </div>
+      <div class="kpi-grid__cards kpi-grid__cards--secondary">${secondaryHtml}</div>
+    </div>
+  `;
 }
 
 function renderSwimlanes(portfolio) {
@@ -2481,8 +2532,8 @@ function renderProductivityMethodology(portfolio) {
     )
     .join("");
 
-  elements.productivityMethodologyPanel.innerHTML = `
-    <div class="productivity-layout">
+  const methodPaneHtml = `
+    <section class="productivity-pane-card">
       <div class="productivity-story-card">
         <div class="productivity-story-card__head">
           <div>
@@ -2501,25 +2552,34 @@ function renderProductivityMethodology(portfolio) {
           <span><b>${formatPoints(summary.netGain)}</b> current net gain</span>
         </div>
       </div>
-
       <div class="productivity-method-grid">${methodCardsHtml}</div>
+    </section>
+  `;
 
-      <div class="productivity-subhead">
+  const driversPaneHtml = `
+    <section class="productivity-pane-card">
+      <div class="productivity-pane-card__head">
         <div>
-          <p class="eyebrow">Workflow contribution</p>
-          <h3>Where the gain is coming from</h3>
+          <p class="eyebrow">Workflow drivers</p>
+          <h3>Where the current modeled gain is coming from</h3>
         </div>
-        <p>${state.workflow === "all" ? "All workflows are shown below." : `Currently focused on ${workflowLabels[state.workflow]}.`}</p>
+        <span class="status-chip">${state.workflow === "all" ? "All workflows" : workflowLabels[state.workflow]}</span>
       </div>
+      <p class="productivity-pane-card__note">${state.workflow === "all" ? "All workflows are shown below, weighted by modeled contribution to the current slice." : `Currently focused on ${workflowLabels[state.workflow]}, with matched events and train coverage shown below.`}</p>
       <div class="workflow-productivity-grid">${workflowCardsHtml}</div>
+    </section>
+  `;
 
-      <div class="productivity-subhead">
+  const trainPaneHtml = `
+    <section class="productivity-pane-card productivity-pane-card--ledger">
+      <div class="productivity-pane-card__head">
         <div>
-          <p class="eyebrow">Train breakdown</p>
+          <p class="eyebrow">Train ledger</p>
           <h3>Which trains are driving the current modeled uplift</h3>
         </div>
-        <p>Trains are sorted by current net contribution after quality drag is deducted.</p>
+        <span class="status-chip">Detailed view</span>
       </div>
+      <p class="productivity-pane-card__note">Trains are sorted by current net contribution after quality drag is deducted.</p>
       <div class="methodology-table-wrap">
         <table class="methodology-table">
           <thead>
@@ -2534,6 +2594,80 @@ function renderProductivityMethodology(portfolio) {
           </thead>
           <tbody>${trainRowsHtml}</tbody>
         </table>
+      </div>
+    </section>
+  `;
+
+  const productivityTabs = [
+    {
+      id: "method",
+      label: "Method",
+      note: "Formula, observation window, normalization, and confidence rules.",
+      cta: "Formula view",
+      content: methodPaneHtml,
+    },
+    {
+      id: "drivers",
+      label: "Drivers",
+      note: "Workflow weights, matched event volumes, and modeled gain sources.",
+      cta: "Driver view",
+      content: driversPaneHtml,
+    },
+    {
+      id: "ledger",
+      label: "Train ledger",
+      note: "The train-level contribution table behind the current gain story.",
+      cta: "Detailed view",
+      content: trainPaneHtml,
+    },
+  ];
+
+  const productivitySwitchHtml = productivityTabs
+    .map(
+      (tab, index) => `
+        <button
+          class="productivity-switcher ${state.deliveryProductivityTab === tab.id ? "is-active" : ""}"
+          type="button"
+          role="tab"
+          aria-selected="${String(state.deliveryProductivityTab === tab.id)}"
+          aria-controls="productivity-panel-${tab.id}"
+          data-delivery-productivity-tab="${tab.id}"
+        >
+          <span class="productivity-switcher__topline">
+            <span class="productivity-switcher__index">${String(index + 1).padStart(2, "0")}</span>
+            <span class="productivity-switcher__state">${state.deliveryProductivityTab === tab.id ? "Active" : "Open"}</span>
+          </span>
+          <span class="productivity-switcher__label">${tab.label}</span>
+          <span class="productivity-switcher__note">${tab.note}</span>
+          <span class="productivity-switcher__cta">${tab.cta}</span>
+        </button>
+      `,
+    )
+    .join("");
+
+  const productivityPanelsHtml = productivityTabs
+    .map(
+      (tab) => `
+        <section
+          id="productivity-panel-${tab.id}"
+          class="productivity-pane ${state.deliveryProductivityTab === tab.id ? "is-active" : ""}"
+          role="tabpanel"
+          aria-label="${tab.label}"
+          ${state.deliveryProductivityTab === tab.id ? "" : "hidden"}
+        >
+          ${tab.content}
+        </section>
+      `,
+    )
+    .join("");
+
+  elements.productivityMethodologyPanel.innerHTML = `
+    <div class="productivity-layout">
+      <div class="productivity-switch" role="tablist" aria-label="Productivity reading modes">
+        ${productivitySwitchHtml}
+      </div>
+      <div class="productivity-body">
+        ${productivityPanelsHtml}
       </div>
     </div>
   `;
@@ -3035,87 +3169,177 @@ function renderGovernance(portfolio) {
       </section>
     `;
 
-  elements.governancePanel.innerHTML = `
-    <div class="governance-layout">
-      <div class="classification-grid">
-        ${portfolio.governance.useCases
-          .map((item) => {
-            const count = state.mode === "pilot" ? item.pilot : item.baseline;
-            return `
-              <article class="classification-card">
-                <span class="classification-dot classification-dot--${item.status}"></span>
-                <div>
-                  <strong>${item.label}</strong>
-                  <small>${item.detail}</small>
-                </div>
-                <strong>${count}</strong>
-              </article>
-            `;
-          })
-          .join("")}
-      </div>
-      <div class="stat-list">
-        ${portfolio.governance.metrics
-          .map((metric) => {
-            const currentValue = state.mode === "pilot" ? metric.pilot : metric.baseline;
-            const delta = describeDelta(metric, currentValue);
-            return `
-              <div class="stat-row">
-                <div>
-                  ${tooltip(metric.label, metric.definition)}
-                </div>
-                <div class="stat-row__value">
-                  <strong>${formatValue(currentValue, metric.format)}</strong>
-                  <div><span class="delta-chip delta-chip--${delta.tone}">${delta.arrow} ${delta.text}</span></div>
-                </div>
-              </div>
-            `;
-          })
-          .join("")}
-      </div>
-      <p class="governance-note">${portfolio.governance.notes[state.mode]}</p>
-      <section class="governance-risk-board">
-        <div class="governance-risk-board__head">
-          <div>
-            <p class="eyebrow">Risk-Class View</p>
-            <h3>Where governance pressure sits by risk tier, criticality, and data sensitivity</h3>
-          </div>
-          <span class="status-chip">Concentration view</span>
+  const governanceOverviewHtml = `
+    <section class="governance-overview">
+      <div class="governance-overview__head">
+        <div>
+          <p class="eyebrow">Operating governance posture</p>
+          <h3>Coverage, concentration, and control status in one read</h3>
         </div>
-        <p class="governance-risk-board__note">${portfolio.governance.riskNote[state.mode]}</p>
-        ${renderGovernanceRiskSummary(portfolio.governance.riskSummary)}
-        ${renderGovernanceRiskBreakdown(portfolio.governance.riskBreakdown)}
-      </section>
-      <div class="governance-console">
-        <div class="governance-console__head">
-          <div>
-            <p class="eyebrow eyebrow--dark">Control-Level View</p>
-            <h3>Explicit framework and control status</h3>
-          </div>
-          <span class="status-chip">Auditable</span>
-        </div>
-        ${renderGovernanceFrameworkCards(portfolio.governance.complianceFrameworks)}
-        ${renderGovernanceComplianceMatrix(portfolio.governance.complianceMatrix)}
-        <div class="governance-console__list">
-          ${portfolio.governance.controls
-            .map(
-              (control) => `
-                <article class="governance-control">
-                  <div class="governance-control__copy">
-                    <strong>${control.name}</strong>
-                    <span>${control.detail}</span>
+        <span class="status-chip">Snapshot</span>
+      </div>
+      <div class="governance-overview__grid">
+        <div class="classification-grid classification-grid--governance">
+          ${portfolio.governance.useCases
+            .map((item) => {
+              const count = state.mode === "pilot" ? item.pilot : item.baseline;
+              return `
+                <article class="classification-card">
+                  <span class="classification-dot classification-dot--${item.status}"></span>
+                  <div>
+                    <strong>${item.label}</strong>
+                    <small>${item.detail}</small>
                   </div>
-                  <div class="governance-control__status">
-                    <span class="status-chip status-chip--${control.status === "green" ? "green" : control.status === "amber" ? "amber" : "red"}">${control.label}</span>
-                    <button class="governance-control__button" type="button" data-evidence-id="${getControlEvidenceId(state.team, control.name)}" aria-label="Open ${control.name} evidence pack">
-                      View evidence
-                    </button>
-                  </div>
+                  <strong>${count}</strong>
                 </article>
-              `,
-            )
+              `;
+            })
             .join("")}
         </div>
+        <div class="stat-list stat-list--governance">
+          ${portfolio.governance.metrics
+            .map((metric) => {
+              const currentValue = state.mode === "pilot" ? metric.pilot : metric.baseline;
+              const delta = describeDelta(metric, currentValue);
+              return `
+                <div class="stat-row stat-row--governance">
+                  <div class="governance-stat-card__head">
+                    <span class="governance-stat-card__label">${metric.label}</span>
+                    ${metricInfoButton(getMetricId(metric.label), metric.label, "light", metric.definition)}
+                  </div>
+                  <div class="stat-row__value">
+                    <strong>${formatValue(currentValue, metric.format)}</strong>
+                    <span class="delta-chip delta-chip--${delta.tone}">${delta.arrow} ${delta.text}</span>
+                  </div>
+                </div>
+              `;
+            })
+            .join("")}
+        </div>
+      </div>
+      <p class="governance-note">${portfolio.governance.notes[state.mode]}</p>
+    </section>
+  `;
+
+  const governanceRiskHtml = `
+    <section class="governance-risk-board">
+      <div class="governance-risk-board__head">
+        <div>
+          <p class="eyebrow">Risk-Class View</p>
+          <h3>Where governance pressure sits by risk tier, criticality, and data sensitivity</h3>
+        </div>
+        <span class="status-chip">Concentration view</span>
+      </div>
+      <p class="governance-risk-board__note">${portfolio.governance.riskNote[state.mode]}</p>
+      ${renderGovernanceRiskSummary(portfolio.governance.riskSummary)}
+      ${renderGovernanceRiskBreakdown(portfolio.governance.riskBreakdown)}
+    </section>
+  `;
+
+  const governanceControlsHtml = `
+    <div class="governance-console">
+      <div class="governance-console__head">
+        <div>
+          <p class="eyebrow eyebrow--dark">Control-Level View</p>
+          <h3>Explicit framework and control status</h3>
+        </div>
+        <span class="status-chip">Auditable</span>
+      </div>
+      ${renderGovernanceFrameworkCards(portfolio.governance.complianceFrameworks)}
+      ${renderGovernanceComplianceMatrix(portfolio.governance.complianceMatrix)}
+      <div class="governance-console__list">
+        ${portfolio.governance.controls
+          .map(
+            (control) => `
+              <article class="governance-control">
+                <div class="governance-control__copy">
+                  <strong>${control.name}</strong>
+                  <span>${control.detail}</span>
+                </div>
+                <div class="governance-control__status">
+                  <span class="status-chip status-chip--${control.status === "green" ? "green" : control.status === "amber" ? "amber" : "red"}">${control.label}</span>
+                  <button class="governance-control__button" type="button" data-evidence-id="${getControlEvidenceId(state.team, control.name)}" aria-label="Open ${control.name} evidence pack">
+                    View evidence
+                  </button>
+                </div>
+              </article>
+            `,
+          )
+          .join("")}
+      </div>
+    </div>
+  `;
+
+  const governanceTabs = [
+    {
+      id: "snapshot",
+      label: "Posture",
+      note: "Coverage, approvals, exceptions, and evidence posture.",
+      cta: "Fast read",
+      content: governanceOverviewHtml,
+    },
+    {
+      id: "risk",
+      label: "Risk concentration",
+      note: "Where governance pressure sits by risk class and sensitivity.",
+      cta: "Pressure map",
+      content: governanceRiskHtml,
+    },
+    {
+      id: "controls",
+      label: "Control frameworks",
+      note: "Framework readiness, control matrix, and evidence status.",
+      cta: "Auditable view",
+      content: governanceControlsHtml,
+    },
+  ];
+
+  const governanceSwitchHtml = governanceTabs
+    .map(
+      (tab, index) => `
+        <button
+          class="governance-switcher ${state.deliveryGovernanceTab === tab.id ? "is-active" : ""}"
+          type="button"
+          role="tab"
+          aria-selected="${String(state.deliveryGovernanceTab === tab.id)}"
+          aria-controls="governance-panel-${tab.id}"
+          data-delivery-governance-tab="${tab.id}"
+        >
+          <span class="governance-switcher__topline">
+            <span class="governance-switcher__index">${String(index + 1).padStart(2, "0")}</span>
+            <span class="governance-switcher__state">${state.deliveryGovernanceTab === tab.id ? "Active" : "Open"}</span>
+          </span>
+          <span class="governance-switcher__label">${tab.label}</span>
+          <span class="governance-switcher__note">${tab.note}</span>
+          <span class="governance-switcher__cta">${tab.cta}</span>
+        </button>
+      `,
+    )
+    .join("");
+
+  const governancePanelsHtml = governanceTabs
+    .map(
+      (tab) => `
+        <section
+          id="governance-panel-${tab.id}"
+          class="governance-pane ${state.deliveryGovernanceTab === tab.id ? "is-active" : ""}"
+          role="tabpanel"
+          aria-label="${tab.label}"
+          ${state.deliveryGovernanceTab === tab.id ? "" : "hidden"}
+        >
+          ${tab.content}
+        </section>
+      `,
+    )
+    .join("");
+
+  elements.governancePanel.innerHTML = `
+    <div class="governance-layout">
+      <div class="governance-switch" role="tablist" aria-label="Governance reading modes">
+        ${governanceSwitchHtml}
+      </div>
+      <div class="governance-body">
+        ${governancePanelsHtml}
       </div>
     </div>
   `;
@@ -3134,19 +3358,29 @@ function renderEconomics(portfolio) {
     ? `${deliveryValueSnapshot.count} initiatives match ${describeActiveSegments()} in ${portfolio.label}${state.workflow === "all" ? "" : ` and the ${workflowLabels[state.workflow]}`}. ${Math.round(deliveryValueSnapshot.validatedShare)}% of realized value is finance validated.`
     : `No initiatives match ${describeActiveSegments()} in ${portfolio.label}${state.workflow === "all" ? "" : ` and the ${workflowLabels[state.workflow]}`}.`;
 
-  elements.economicsPanel.innerHTML = `
-    <div class="economics-layout">
-      <section class="value-realization-panel">
-        <div class="value-story-card value-story-card--compact">
-          <span class="value-story-card__label">Finance-grade value tracking</span>
-          <p>${valueSegmentNote}</p>
-          ${renderBenefitMix(deliveryValueSnapshot)}
+  const valuePaneHtml = `
+    <section class="value-realization-panel">
+      <div class="value-story-card value-story-card--compact">
+        <span class="value-story-card__label">Finance-grade value tracking</span>
+        <p>${valueSegmentNote}</p>
+        ${renderBenefitMix(deliveryValueSnapshot)}
+      </div>
+      ${renderValueSummaryCards(deliveryValueSnapshot, { compact: true })}
+      <div class="initiative-list initiative-list--compact">
+        ${renderValueInitiatives(deliverySlice, { limit: 3 })}
+      </div>
+    </section>
+  `;
+
+  const spendPaneHtml = `
+    <section class="economics-pane-card">
+      <div class="economics-pane-card__head">
+        <div>
+          <p class="eyebrow">Spend mix</p>
+          <h3>Where delivery run-rate is accumulating</h3>
         </div>
-        ${renderValueSummaryCards(deliveryValueSnapshot, { compact: true })}
-        <div class="initiative-list initiative-list--compact">
-          ${renderValueInitiatives(deliverySlice, { limit: 3 })}
-        </div>
-      </section>
+        <span class="status-chip">Workflow lens</span>
+      </div>
       <div class="cost-bars">
         ${currentCostBars
           .map((item) => {
@@ -3166,13 +3400,23 @@ function renderEconomics(portfolio) {
           })
           .join("")}
       </div>
+      <p class="economics-note">${portfolio.economics.notes[state.mode]}</p>
+    </section>
+  `;
+
+  const efficiencyPaneHtml = `
+    <section class="economics-pane-card">
+      <div class="economics-pane-card__head">
+        <div>
+          <p class="eyebrow">Unit economics</p>
+          <h3>Efficiency and model-routing health</h3>
+        </div>
+        <span class="status-chip">Efficiency lens</span>
+      </div>
       <div>
         <div class="mix-stack">
           ${portfolio.economics.modelMix
-            .map(
-              (segment) =>
-                `<span class="${segment.className}" style="width: ${segment.share}%"></span>`,
-            )
+            .map((segment) => `<span class="${segment.className}" style="width: ${segment.share}%"></span>`)
             .join("")}
         </div>
         <div class="mix-legend">
@@ -3207,6 +3451,80 @@ function renderEconomics(portfolio) {
           .join("")}
       </div>
       <p class="economics-note">${portfolio.economics.notes[state.mode]}</p>
+    </section>
+  `;
+
+  const economicsTabs = [
+    {
+      id: "value",
+      label: "Value signal",
+      note: "Finance-grade realized value, validation, and top initiatives.",
+      cta: "Portfolio view",
+      content: valuePaneHtml,
+    },
+    {
+      id: "spend",
+      label: "Spend mix",
+      note: "Run-rate distribution across planning, build, and run workflows.",
+      cta: "Cost view",
+      content: spendPaneHtml,
+    },
+    {
+      id: "efficiency",
+      label: "Unit economics",
+      note: "Model mix, routing health, and outcome-efficiency metrics.",
+      cta: "Efficiency view",
+      content: efficiencyPaneHtml,
+    },
+  ];
+
+  const economicsSwitchHtml = economicsTabs
+    .map(
+      (tab, index) => `
+        <button
+          class="economics-switcher ${state.deliveryEconomicsTab === tab.id ? "is-active" : ""}"
+          type="button"
+          role="tab"
+          aria-selected="${String(state.deliveryEconomicsTab === tab.id)}"
+          aria-controls="economics-panel-${tab.id}"
+          data-delivery-economics-tab="${tab.id}"
+        >
+          <span class="economics-switcher__topline">
+            <span class="economics-switcher__index">${String(index + 1).padStart(2, "0")}</span>
+            <span class="economics-switcher__state">${state.deliveryEconomicsTab === tab.id ? "Active" : "Open"}</span>
+          </span>
+          <span class="economics-switcher__label">${tab.label}</span>
+          <span class="economics-switcher__note">${tab.note}</span>
+          <span class="economics-switcher__cta">${tab.cta}</span>
+        </button>
+      `,
+    )
+    .join("");
+
+  const economicsPanelsHtml = economicsTabs
+    .map(
+      (tab) => `
+        <section
+          id="economics-panel-${tab.id}"
+          class="economics-pane ${state.deliveryEconomicsTab === tab.id ? "is-active" : ""}"
+          role="tabpanel"
+          aria-label="${tab.label}"
+          ${state.deliveryEconomicsTab === tab.id ? "" : "hidden"}
+        >
+          ${tab.content}
+        </section>
+      `,
+    )
+    .join("");
+
+  elements.economicsPanel.innerHTML = `
+    <div class="economics-layout">
+      <div class="economics-switch" role="tablist" aria-label="Economics reading modes">
+        ${economicsSwitchHtml}
+      </div>
+      <div class="economics-body">
+        ${economicsPanelsHtml}
+      </div>
     </div>
   `;
 }
@@ -3244,96 +3562,129 @@ function renderActionCenter(portfolio) {
   const atRiskCount = actions.filter((item) => item.status === "at-risk" || item.status === "blocked").length;
   const evidenceReadyCount = actions.filter((item) => item.evidenceState === "complete").length;
   const thisMonthCount = actions.filter((item) => item.dueDate.startsWith("2026-04")).length;
+  const urgentActions = actions.filter((item) => item.severity === "high" || item.status === "at-risk" || item.status === "blocked");
+  const closingActions = actions.filter((item) => !urgentActions.includes(item));
+
+  const renderActionCards = (items) =>
+    items
+      .map((action) => {
+        const severityMeta = actionSeverityMeta[action.severity];
+        const statusMeta = actionStatusMeta[action.status];
+        const evidenceMeta = evidenceStateMeta[action.evidenceState];
+        const primaryGap = action.openGaps?.[0] || "No named operating gap is blocking closure right now.";
+
+        return `
+          <article class="action-workitem action-workitem--${action.status} action-workitem--${severityMeta.tone}">
+            <span class="action-workitem__band action-workitem__band--${severityMeta.tone}" aria-hidden="true"></span>
+            <div class="action-workitem__head">
+              <div>
+                <span class="action-workitem__eyebrow">${workflowLabels[action.workflow] || "Cross-workflow"} priority</span>
+                <h3>${action.title}</h3>
+              </div>
+              <div class="action-workitem__chips">
+                <span class="workitem-pill workitem-pill--${severityMeta.tone}">${severityMeta.label}</span>
+                <span class="workitem-pill workitem-pill--${statusMeta.tone}">${statusMeta.label}</span>
+              </div>
+            </div>
+
+            <p class="action-workitem__source"><strong>Source signal:</strong> ${action.sourceSignal}</p>
+
+            <div class="action-progress">
+              <div class="action-progress__head">
+                <span>Closure progress</span>
+                <strong>${action.progress}%</strong>
+              </div>
+              <div class="action-progress__track" aria-hidden="true">
+                <span class="action-progress__fill action-progress__fill--${statusMeta.tone}" style="width: ${action.progress}%"></span>
+              </div>
+            </div>
+
+            <div class="action-workitem__meta">
+              <span class="action-workitem__meta-pill"><strong>Owner</strong>${action.owner}</span>
+              <span class="action-workitem__meta-pill"><strong>Due</strong>${formatDateLabel(action.dueDate)}</span>
+              <span class="action-workitem__meta-pill"><strong>Impact</strong>${action.impact}</span>
+              <span class="action-workitem__meta-pill"><strong>Evidence</strong>${evidenceMeta.label}</span>
+            </div>
+
+            <div class="action-workitem__insight-grid">
+              <div class="action-workitem__insight">
+                <span class="action-workitem__insight-label">Open gap</span>
+                <p>${primaryGap}</p>
+              </div>
+              <div class="action-workitem__insight">
+                <span class="action-workitem__insight-label">Closure proof</span>
+                <p>${action.requiredArtifacts.length} artifacts · ${action.closureCriteria.length} closeout checks</p>
+              </div>
+            </div>
+
+            <p class="action-workitem__next"><strong>Next decision:</strong> ${action.nextStep}</p>
+
+            <div class="action-workitem__footer">
+              <span class="workitem-pill workitem-pill--${evidenceMeta.tone}">${action.evidenceSummary}</span>
+              <button class="detail-link" type="button" data-evidence-id="${getActionEvidenceId(state.team, action.id)}" aria-label="Open evidence pack for ${action.title}">
+                Open evidence pack
+              </button>
+            </div>
+          </article>
+        `;
+      })
+      .join("");
 
   elements.actionCenter.innerHTML = `
     <div class="action-center">
-      <div class="action-summary-grid">
-        <article class="action-summary-card">
-          <span class="action-summary-card__label">High-severity items</span>
-          <strong>${highSeverityCount}</strong>
-          <p>These are the work items most likely to slow safe scale if they drift.</p>
-        </article>
-        <article class="action-summary-card">
-          <span class="action-summary-card__label">At risk or blocked</span>
-          <strong>${atRiskCount}</strong>
-          <p>These items need either executive clearance or missing evidence before they can close.</p>
-        </article>
-        <article class="action-summary-card">
-          <span class="action-summary-card__label">Evidence complete</span>
-          <strong>${evidenceReadyCount}</strong>
-          <p>These items have enough closure evidence attached to support an accountable decision.</p>
-        </article>
-        <article class="action-summary-card">
-          <span class="action-summary-card__label">Due in April 2026</span>
-          <strong>${thisMonthCount}</strong>
-          <p>The action center is built to convert this month’s signals into owned operating work.</p>
-        </article>
-      </div>
-
-      <div class="action-workflow-grid">
-        ${actions
-          .map((action) => {
-            const severityMeta = actionSeverityMeta[action.severity];
-            const statusMeta = actionStatusMeta[action.status];
-            const evidenceMeta = evidenceStateMeta[action.evidenceState];
-
-            return `
-              <article class="action-workitem action-workitem--${action.status}">
-                <div class="action-workitem__head">
-                  <div>
-                    <span class="action-workitem__eyebrow">${workflowLabels[action.workflow] || "Cross-workflow"} priority</span>
-                    <h3>${action.title}</h3>
-                  </div>
-                  <div class="action-workitem__chips">
-                    <span class="workitem-pill workitem-pill--${severityMeta.tone}">${severityMeta.label}</span>
-                    <span class="workitem-pill workitem-pill--${statusMeta.tone}">${statusMeta.label}</span>
-                  </div>
-                </div>
-
-                <p class="action-workitem__source"><strong>Source signal:</strong> ${action.sourceSignal}</p>
-
-                <div class="action-progress">
-                  <div class="action-progress__head">
-                    <span>Closure progress</span>
-                    <strong>${action.progress}%</strong>
-                  </div>
-                  <div class="action-progress__track" aria-hidden="true">
-                    <span class="action-progress__fill action-progress__fill--${statusMeta.tone}" style="width: ${action.progress}%"></span>
-                  </div>
-                </div>
-
-                <div class="action-workitem__meta">
-                  <div>
-                    <span>Owner</span>
-                    <strong>${action.owner}</strong>
-                  </div>
-                  <div>
-                    <span>Due</span>
-                    <strong>${formatDateLabel(action.dueDate)}</strong>
-                  </div>
-                  <div>
-                    <span>Expected impact</span>
-                    <strong>${action.impact}</strong>
-                  </div>
-                  <div>
-                    <span>Evidence</span>
-                    <strong>${evidenceMeta.label}</strong>
-                  </div>
-                </div>
-
-                <p class="action-workitem__next"><strong>Next step:</strong> ${action.nextStep}</p>
-
-                <div class="action-workitem__footer">
-                  <span class="workitem-pill workitem-pill--${evidenceMeta.tone}">${action.evidenceSummary}</span>
-                  <button class="detail-link" type="button" data-evidence-id="${getActionEvidenceId(state.team, action.id)}" aria-label="Open evidence pack for ${action.title}">
-                    Open evidence pack
-                  </button>
-                </div>
-              </article>
-            `;
-          })
-          .join("")}
-      </div>
+      <section class="action-center__overview">
+        <div class="action-center__overview-head">
+          <div>
+            <p class="eyebrow">Operating action posture</p>
+            <h3>Where leadership attention is needed now</h3>
+          </div>
+          <span class="workitem-pill workitem-pill--watch">${thisMonthCount} due this month</span>
+        </div>
+        <p class="action-center__overview-note">The action center converts delivery signals into named operating work, with ownership, deadlines, and evidence attached before escalation becomes vague.</p>
+        <div class="action-summary-grid">
+          <article class="action-summary-card">
+            <span class="action-summary-card__label">High-severity items</span>
+            <strong>${highSeverityCount}</strong>
+            <p>These are the work items most likely to slow safe scale if they drift.</p>
+          </article>
+          <article class="action-summary-card">
+            <span class="action-summary-card__label">At risk or blocked</span>
+            <strong>${atRiskCount}</strong>
+            <p>These items need either executive clearance or missing evidence before they can close.</p>
+          </article>
+          <article class="action-summary-card">
+            <span class="action-summary-card__label">Evidence complete</span>
+            <strong>${evidenceReadyCount}</strong>
+            <p>These items have enough closure evidence attached to support an accountable decision.</p>
+          </article>
+        </div>
+      </section>
+      <section class="action-queue-lane action-queue-lane--urgent">
+        <div class="action-queue-lane__head">
+          <div>
+            <p class="eyebrow">Needs intervention now</p>
+            <h3>High-severity, blocked, or at-risk items rise first</h3>
+          </div>
+          <span class="workitem-pill workitem-pill--risk">${urgentActions.length} urgent</span>
+        </div>
+        <p class="action-queue-lane__note">This lane is for work most likely to slow safe scale unless leadership clears a decision, resolves a blocker, or closes missing evidence.</p>
+        <div class="action-workflow-grid">
+          ${renderActionCards(urgentActions)}
+        </div>
+      </section>
+      <section class="action-queue-lane action-queue-lane--closing">
+        <div class="action-queue-lane__head">
+          <div>
+            <p class="eyebrow">Track to close</p>
+            <h3>Items that are moving, but still need accountable finish</h3>
+          </div>
+          <span class="workitem-pill workitem-pill--good">${closingActions.length} progressing</span>
+        </div>
+        <p class="action-queue-lane__note">These items are healthier, but they stay visible until the last approvals, evidence, and workflow joins are complete.</p>
+        <div class="action-workflow-grid">
+          ${renderActionCards(closingActions)}
+        </div>
+      </section>
     </div>
   `;
 }
@@ -3919,8 +4270,8 @@ function renderTrustLayer(teamKey) {
       `
     : "";
 
-  elements.trustLayerPanel.innerHTML = `
-    <div class="trust-grid">
+  const controlsHtml = `
+    <div class="trust-grid trust-grid--controls">
       <article class="trust-card">
         <div class="trust-card__head">
           <div>
@@ -3992,7 +4343,11 @@ function renderTrustLayer(teamKey) {
         ${renderSourceFeeds(profile.sourceHealth.feeds)}
         <p class="trust-card__note">${profile.sourceHealth.note}</p>
       </article>
+    </div>
+  `;
 
+  const runtimeHtml = `
+    <div class="trust-grid trust-grid--runtime">
       <article class="trust-card trust-card--wide">
         <div class="trust-card__head">
           <div>
@@ -4031,7 +4386,11 @@ function renderTrustLayer(teamKey) {
         ${ragQualityContent}
         <p class="trust-card__note">${profile.ragQuality.note}</p>
       </article>
+    </div>
+  `;
 
+  const safetyHtml = `
+    <div class="trust-grid trust-grid--safety">
       <article class="trust-card trust-card--wide">
         <div class="trust-card__head">
           <div>
@@ -4057,6 +4416,80 @@ function renderTrustLayer(teamKey) {
         ${promptSecurityContent}
         <p class="trust-card__note">${profile.promptSecurity.note}</p>
       </article>
+    </div>
+  `;
+
+  const trustTabs = [
+    {
+      id: "controls",
+      label: "Controls",
+      note: "Access, observability, alerts, and data freshness.",
+      cta: "Foundation layer",
+      content: controlsHtml,
+    },
+    {
+      id: "runtime",
+      label: "Runtime",
+      note: "Model behavior, reliability, and retrieval grounding.",
+      cta: "Execution layer",
+      content: runtimeHtml,
+    },
+    {
+      id: "safety",
+      label: "Safety",
+      note: "Grounded-answer quality and prompt security assurance.",
+      cta: "Risk layer",
+      content: safetyHtml,
+    },
+  ];
+
+  const trustSwitchHtml = trustTabs
+    .map(
+      (tab, index) => `
+        <button
+          class="trust-layer__switcher ${state.deliveryTrustTab === tab.id ? "is-active" : ""}"
+          type="button"
+          role="tab"
+          aria-selected="${String(state.deliveryTrustTab === tab.id)}"
+          aria-controls="trust-layer-panel-${tab.id}"
+          data-delivery-trust-tab="${tab.id}"
+        >
+          <span class="trust-layer__switcher-topline">
+            <span class="trust-layer__switcher-index">${String(index + 1).padStart(2, "0")}</span>
+            <span class="trust-layer__switcher-state">${state.deliveryTrustTab === tab.id ? "Active" : "Open"}</span>
+          </span>
+          <span class="trust-layer__switcher-label">${tab.label}</span>
+          <span class="trust-layer__switcher-note">${tab.note}</span>
+          <span class="trust-layer__switcher-cta">${tab.cta}</span>
+        </button>
+      `,
+    )
+    .join("");
+
+  const trustPanelsHtml = trustTabs
+    .map(
+      (tab) => `
+        <section
+          id="trust-layer-panel-${tab.id}"
+          class="trust-layer__pane ${state.deliveryTrustTab === tab.id ? "is-active" : ""}"
+          role="tabpanel"
+          aria-label="${tab.label}"
+          ${state.deliveryTrustTab === tab.id ? "" : "hidden"}
+        >
+          ${tab.content}
+        </section>
+      `,
+    )
+    .join("");
+
+  elements.trustLayerPanel.innerHTML = `
+    <div class="trust-layer">
+      <div class="trust-layer__switch" role="tablist" aria-label="Operational trust buckets">
+        ${trustSwitchHtml}
+      </div>
+      <div class="trust-layer__body">
+        ${trustPanelsHtml}
+      </div>
     </div>
   `;
 }
@@ -6286,13 +6719,15 @@ elements.backHomeButtons.forEach((button) => {
 
 window.addEventListener("hashchange", () => {
   const nextScreen = getScreenFromHash(window.location.hash, state.screen);
-
-  syncToolTabsFromHash(window.location.hash);
+  const toolTabChanged = syncToolTabsFromHash(window.location.hash);
   updateInstitutionSubnavActive();
   updateDeliveryQuickNavActive();
   renderJumpReturnChip(window.location.hash);
 
   if (state.screen === nextScreen) {
+    if (toolTabChanged && (window.location.hash === "#institutionalizationAskPanel" || window.location.hash === "#deliveryAskPanel")) {
+      render();
+    }
     return;
   }
 
@@ -6305,6 +6740,10 @@ window.addEventListener("hashchange", () => {
 document.addEventListener("click", (event) => {
   const institutionToolTabTrigger = event.target.closest("[data-institution-tool-tab]");
   const deliveryToolTabTrigger = event.target.closest("[data-delivery-tool-tab]");
+  const deliveryTrustTabTrigger = event.target.closest("[data-delivery-trust-tab]");
+  const deliveryGovernanceTabTrigger = event.target.closest("[data-delivery-governance-tab]");
+  const deliveryEconomicsTabTrigger = event.target.closest("[data-delivery-economics-tab]");
+  const deliveryProductivityTabTrigger = event.target.closest("[data-delivery-productivity-tab]");
   const savedViewTrigger = event.target.closest("[data-saved-view-id]");
   const askTrigger = event.target.closest("[data-ask-prompt]");
   const askClearTrigger = event.target.closest("[data-ask-clear]");
@@ -6325,6 +6764,34 @@ document.addEventListener("click", (event) => {
   if (deliveryToolTabTrigger) {
     event.preventDefault();
     state.deliveryToolTab = deliveryToolTabTrigger.dataset.deliveryToolTab;
+    render();
+    return;
+  }
+
+  if (deliveryTrustTabTrigger) {
+    event.preventDefault();
+    state.deliveryTrustTab = deliveryTrustTabTrigger.dataset.deliveryTrustTab;
+    render();
+    return;
+  }
+
+  if (deliveryGovernanceTabTrigger) {
+    event.preventDefault();
+    state.deliveryGovernanceTab = deliveryGovernanceTabTrigger.dataset.deliveryGovernanceTab;
+    render();
+    return;
+  }
+
+  if (deliveryEconomicsTabTrigger) {
+    event.preventDefault();
+    state.deliveryEconomicsTab = deliveryEconomicsTabTrigger.dataset.deliveryEconomicsTab;
+    render();
+    return;
+  }
+
+  if (deliveryProductivityTabTrigger) {
+    event.preventDefault();
+    state.deliveryProductivityTab = deliveryProductivityTabTrigger.dataset.deliveryProductivityTab;
     render();
     return;
   }

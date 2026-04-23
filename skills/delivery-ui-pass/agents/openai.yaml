@@ -1,0 +1,4 @@
+interface:
+  display_name: "Delivery UI Pass"
+  short_description: "Polish Delivery sections without interaction drift"
+  default_prompt: "Use the delivery-ui-pass skill to improve a Delivery view section in this repo, keep the interaction patterns consistent, and update the standard Delivery UI files."

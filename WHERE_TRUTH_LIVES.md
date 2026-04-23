@@ -308,6 +308,17 @@ Use for:
 - what is in progress
 - what is intentionally deferred
 
+### UI workflow memory
+
+- `UI_POLISH_BACKLOG.md`
+- `skills/delivery-ui-pass/SKILL.md`
+
+Use for:
+
+- repeated Delivery UI workflow
+- deciding whether a Delivery section should stay direct or become clickable
+- keeping Delivery section updates consistent across `app.js`, styles, and handoff docs
+
 ### Metric understanding
 
 - `COCKPIT_METRIC_PRIMER.md`
@@ -321,11 +332,23 @@ Use for:
 
 - `LOGIC_AUDIT_CHECKLIST.md`
 - `METRIC_CHANGE_PROTOCOL.md`
+- `skills/metric-change/SKILL.md`
 
 Use for:
 
 - keeping metric truth aligned
 - checking changes safely
+- executing the repo-standard metric-change workflow
+
+### Delivery UI workflow
+
+- `skills/delivery-ui-pass/SKILL.md`
+
+Use for:
+
+- repeated Delivery hierarchy and density passes
+- consistent grouped-section implementation in Delivery
+- the standard Delivery UI update pattern
 
 ## 6. Reference-Only Files
 
@@ -346,6 +369,7 @@ Update:
 
 - `app-data.js`
 - `METRIC_CHANGE_PROTOCOL.md` checklist path
+- `skills/metric-change/SKILL.md` if the workflow itself should change
 - affected UI surfaces in `app.js`
 - `COCKPIT_METRIC_PRIMER.md` if meaning changed
 - `LOGIC_AUDIT_CHECKLIST.md` if audit scope changed

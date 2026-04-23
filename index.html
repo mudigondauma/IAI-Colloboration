@@ -285,7 +285,7 @@
         <section class="oversight-panel" id="delivery-oversight" aria-labelledby="oversightHeading">
           <div class="section-head section-head--dark">
             <div class="oversight-panel__intro">
-              <p class="eyebrow eyebrow--dark">Human Oversight Gateway</p>
+              <p class="eyebrow eyebrow--dark">Oversight Gateway</p>
               <h2 id="oversightHeading">Human Oversight Gateway</h2>
               <p class="oversight-panel__subtitle">
                 Policy routes low-risk work automatically and escalates material
@@ -394,25 +394,26 @@
                   <p class="eyebrow">Economics</p>
                   <h2 id="economicsHeading">Spend mix and outcome efficiency</h2>
                 </div>
+                <p class="section-head__note">
+                  Shows where AI run-rate is accumulating, how the model mix is shifting, and whether outcome efficiency is improving as scale increases.
+                </p>
               </div>
               <div id="economicsPanel"></div>
             </section>
           </div>
 
-          <div class="content-column content-column--secondary">
-            <section class="panel" id="delivery-governance" aria-labelledby="governanceHeading">
-              <div class="section-head">
-                <div>
-                  <p class="eyebrow">Governance</p>
-                  <h2 id="governanceHeading">Governance Console</h2>
-                </div>
-                <p class="section-head__note">
-                  Governance is now segmented by risk tier, service criticality, data sensitivity, and framework readiness so one topline percentage does not hide concentrated exposure.
-                </p>
+          <section class="panel panel--full content-governance" id="delivery-governance" aria-labelledby="governanceHeading">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Governance</p>
+                <h2 id="governanceHeading">Governance Console</h2>
               </div>
-              <div id="governancePanel"></div>
-            </section>
-          </div>
+              <p class="section-head__note">
+                Governance is now segmented by risk tier, service criticality, data sensitivity, and framework readiness so one topline percentage does not hide concentrated exposure.
+              </p>
+            </div>
+            <div id="governancePanel"></div>
+          </section>
 
           <section class="panel panel--full content-action" id="delivery-actions" aria-labelledby="actionsHeading">
             <div class="section-head">
@@ -420,6 +421,9 @@
                 <p class="eyebrow">Action Center</p>
                 <h2 id="actionsHeading">Executive action workflow</h2>
               </div>
+              <p class="section-head__note">
+                Separates immediate intervention from track-to-close work so leaders can distinguish blockers from items already moving toward closure.
+              </p>
             </div>
             <div id="actionCenter"></div>
           </section>
@@ -430,6 +434,9 @@
                 <p class="eyebrow">Roadmap</p>
                 <h2 id="roadmapHeading">30 / 60 / 90 day milestones</h2>
               </div>
+              <p class="section-head__note">
+                Connects immediate operating fixes, scale-up moves, and the next portfolio-governance milestones into one execution sequence.
+              </p>
             </div>
             <div id="roadmapPanel"></div>
           </section>
@@ -438,10 +445,10 @@
             <div class="section-head">
               <div>
                 <p class="eyebrow">Operational Trust Layer</p>
-                <h2 id="trustHeading">Access scope, reliability, instrumentation, retrieval grounding, model behavior, prompt security, alerting, and data health</h2>
+                <h2 id="trustHeading">Operational trust, safety, and observability</h2>
               </div>
               <p class="section-head__note">
-                These supporting signals explain how complete, searchable, observable, grounded, secure, alertable, and current the underlying cockpit telemetry really is.
+                Grouped into controls, runtime behavior, and safety so the operating trust posture can be read without scanning every evidence module at once.
               </p>
             </div>
             <div id="trustLayerPanel"></div>

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Metric Change"
+  short_description: "Safely update cockpit metrics without drift"
+  default_prompt: "Use the metric-change skill to update a user-facing metric in this repo and keep the metric library, UI, docs, and rollout files aligned."
