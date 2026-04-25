@@ -166,6 +166,7 @@ In `supabase-client.js`:
 - use the project URL
 - use the anon key
 - if using Codespaces, keep project-specific values in local-only setup described in `TEAMMATE_K_CODESPACES_SETUP.md`
+- use `supabase-config.example.js` as the safe starting file, then copy it to `supabase-config.local.js` and replace the placeholders locally
 
 Do not put business logic here.
 

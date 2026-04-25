@@ -74,6 +74,14 @@ If K needs a local config file during integration, use:
 
 - `supabase-config.local.js`
 
+Start by copying:
+
+- `supabase-config.example.js`
+
+Then rename the copy to:
+
+- `supabase-config.local.js`
+
 This file should be local-only and ignored by git.
 
 Example shape:
@@ -152,4 +160,3 @@ The goal is:
 - keep the UI stable
 - keep the repo safe
 - avoid secret leakage
-

@@ -254,6 +254,16 @@ Use for:
 - first seed assumptions
 - how mocked cockpit values map into tables
 
+### Browser integration scaffolding
+
+- `supabase-client.js`
+- `supabase-config.example.js`
+
+Use for:
+
+- the safe browser-side Supabase client setup
+- the tracked placeholder config pattern that should be copied into local-only `supabase-config.local.js`
+
 ### Adapter / integration contract
 
 - `SUPABASE_ADAPTER_CONTRACT.md`

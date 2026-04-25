@@ -86,6 +86,8 @@ These are already prepared:
 - `SUPABASE_ADAPTER_CONTRACT.md`
 - `TEAMMATE_K_SUPABASE_STEP_BY_STEP.md`
 - `TEAMMATE_K_CODESPACES_SETUP.md`
+- `supabase-client.js`
+- `supabase-config.example.js`
 - `supabase/phase1_schema.sql`
 - `supabase/phase1_seed.sql`
 
