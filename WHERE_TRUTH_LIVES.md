@@ -258,11 +258,15 @@ Use for:
 
 - `supabase-client.js`
 - `supabase-config.example.js`
+- `supabase-repositories.js`
+- `supabase-mappers.js`
+- `supabase-runtime.js`
 
 Use for:
 
 - the safe browser-side Supabase client setup
 - the tracked placeholder config pattern that should be copied into local-only `supabase-config.local.js`
+- the repository, mapper, and runtime-cache scaffolding for the first Supabase read path
 
 ### Adapter / integration contract
 
